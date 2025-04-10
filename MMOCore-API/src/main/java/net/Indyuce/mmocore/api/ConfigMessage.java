@@ -94,7 +94,7 @@ public class ConfigMessage {
         for (String line : lines) send(player, line);
     }
 
-    public void send(Collection<CommandSender> players) {
+    public void send(Collection<? extends CommandSender> players) {
         for (CommandSender player : players) for (String line : lines) send(player, line);
     }
 
