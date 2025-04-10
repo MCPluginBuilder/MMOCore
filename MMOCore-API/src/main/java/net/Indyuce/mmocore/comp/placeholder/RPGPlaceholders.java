@@ -79,6 +79,15 @@ public class RPGPlaceholders extends PlaceholderExpansion {
             return String.valueOf(playerData.getSkillLevel(skill));
         }
 
+        else if (identifier.startsWith("skill_tree_points_")) {
+            int length = "skill_tree_points_".length();
+            String id = identifier.substring(length);
+            return String.valueOf(PlayerData.get(player).getSkillTreePoints(id));
+        }
+
+        else if (identifier.equals("skill_tree_points"))
+            return String.valueOf(PlayerData.get(player).getSkillTreePoints("global"));
+
         /*
          * Given a skill slot number (integer) and a parameter name,
          * return the player's value of that skill parameter from that
