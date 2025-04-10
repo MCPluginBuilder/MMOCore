@@ -261,7 +261,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
      */
     @NotNull
     public Map<String, Integer> mapSkillTreePoints() {
-        return new HashMap(skillTreePoints);
+        return new HashMap<>(skillTreePoints);
     }
 
     @Override

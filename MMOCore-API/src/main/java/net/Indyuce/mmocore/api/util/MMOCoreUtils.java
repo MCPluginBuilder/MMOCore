@@ -154,8 +154,8 @@ public class MMOCoreUtils {
                 dataOutput.writeObject(item);
             dataOutput.close();
             return Base64Coder.encodeLines(outputStream.toByteArray());
-        } catch (Exception e) {
-            return null;
+        } catch (Throwable throwable) {
+            throw new RuntimeException("Could not serialize inventory", throwable);
         }
     }
 
@@ -168,8 +168,8 @@ public class MMOCoreUtils {
                 items[i] = (ItemStack) dataInput.readObject();
             dataInput.close();
             return items;
-        } catch (Exception e) {
-            return null;
+        } catch (Throwable throwable) {
+            throw new RuntimeException("Could not deserialize inventory", throwable);
         }
     }
 
