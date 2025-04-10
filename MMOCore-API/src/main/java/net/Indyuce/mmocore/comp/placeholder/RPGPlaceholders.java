@@ -85,9 +85,6 @@ public class RPGPlaceholders extends PlaceholderExpansion {
             return String.valueOf(PlayerData.get(player).getSkillTreePoints(id));
         }
 
-        else if (identifier.equals("skill_tree_points"))
-            return String.valueOf(PlayerData.get(player).getSkillTreePoints("global"));
-
         /*
          * Given a skill slot number (integer) and a parameter name,
          * return the player's value of that skill parameter from that
@@ -132,7 +129,11 @@ public class RPGPlaceholders extends PlaceholderExpansion {
             for (double j = 1; j < 20; j++)
                 format.append(ratio >= j ? ChatColor.RED : ratio >= j - .5 ? ChatColor.DARK_RED : ChatColor.DARK_GRAY).append(AltChar.listSquare);
             return format.toString();
-        } else if (identifier.equals("class"))
+        }
+
+        else if (identifier.equals("class_id"))
+            return playerData.getProfess().getId();
+         else if (identifier.equals("class"))
             return playerData.getProfess().getName();
 
         else if (identifier.startsWith("profession_percent_")) {
