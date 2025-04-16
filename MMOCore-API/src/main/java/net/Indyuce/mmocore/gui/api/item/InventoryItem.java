@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public abstract class InventoryItem<T extends GeneratedInventory> {
     private final String id, function;
     private final List<Integer> slots = new ArrayList<>();

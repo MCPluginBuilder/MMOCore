@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
 public class Placeholders {
     private final Map<String, String> placeholders = new HashMap<>();
 

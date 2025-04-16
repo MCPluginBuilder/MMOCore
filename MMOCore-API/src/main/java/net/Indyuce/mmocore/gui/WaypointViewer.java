@@ -1,29 +1,32 @@
 package net.Indyuce.mmocore.gui;
 
+import io.lumine.mythic.lib.gui.Navigator;
+import io.lumine.mythic.lib.gui.editable.EditableInventory;
+import io.lumine.mythic.lib.gui.editable.GeneratedInventory;
+import io.lumine.mythic.lib.gui.editable.item.InventoryItem;
+import io.lumine.mythic.lib.gui.editable.item.PhysicalItem;
+import io.lumine.mythic.lib.gui.editable.item.SimpleItem;
+import io.lumine.mythic.lib.gui.editable.item.builtin.NextPageItem;
+import io.lumine.mythic.lib.gui.editable.item.builtin.PreviousPageItem;
+import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.player.PlayerActivity;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import net.Indyuce.mmocore.api.util.MMOCoreUtils;
-import net.Indyuce.mmocore.gui.api.EditableInventory;
-import net.Indyuce.mmocore.gui.api.GeneratedInventory;
-import net.Indyuce.mmocore.gui.api.InventoryClickContext;
-import net.Indyuce.mmocore.gui.api.item.InventoryItem;
-import net.Indyuce.mmocore.gui.api.item.Placeholders;
-import net.Indyuce.mmocore.gui.api.item.SimplePlaceholderItem;
 import net.Indyuce.mmocore.waypoint.Waypoint;
 import net.Indyuce.mmocore.waypoint.WaypointPath;
 import net.Indyuce.mmocore.waypoint.WaypointPathCalculation;
 import org.apache.commons.lang.Validate;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -36,30 +39,12 @@ public class WaypointViewer extends EditableInventory {
     }
 
     @Override
-    public InventoryItem load(String function, ConfigurationSection config) {
+    public @Nullable InventoryItem<?> resolveItem(@NotNull String function, @NotNull ConfigurationSection config) {
+        if (function.equals("waypoint")) return new WaypointItem(config);
+        if (function.equals("previous")) return new PreviousPageItem<>(config);
+        if (function.equals("next")) return new NextPageItem<>(config);
 
-        if (function.equals("waypoint"))
-            return new WaypointItem(config);
-
-        if (function.equals("previous"))
-            return new SimplePlaceholderItem<WaypointViewerInventory>(config) {
-
-                @Override
-                public boolean canDisplay(WaypointViewerInventory inv) {
-                    return inv.page > 0;
-                }
-            };
-
-        if (function.equals("next"))
-            return new SimplePlaceholderItem<WaypointViewerInventory>(config) {
-
-                @Override
-                public boolean canDisplay(WaypointViewerInventory inv) {
-                    return inv.getEditable().getByFunction("waypoint").getSlots().size() * (inv.page + 1) < inv.waypoints.size();
-                }
-            };
-
-        return new SimplePlaceholderItem(config);
+        return null;
     }
 
     public GeneratedInventory newInventory(PlayerData data) {
@@ -70,12 +55,12 @@ public class WaypointViewer extends EditableInventory {
         return new WaypointViewerInventory(data, this, waypoint);
     }
 
-    public class WaypointItem extends SimplePlaceholderItem<WaypointViewerInventory> {
-        private final SimplePlaceholderItem noWaypoint, locked;
+    public class WaypointItem extends InventoryItem<WaypointViewerInventory> {
+        private final SimpleItem<WaypointViewerInventory> noWaypoint, locked;
         private final WaypointItemHandler availWaypoint, noStellium, notLinked, currentWayPoint;
 
         public WaypointItem(ConfigurationSection config) {
-            super(Material.BARRIER, config);
+            super(config);
 
             Validate.notNull(config.getConfigurationSection("no-waypoint"), "Could not load 'no-waypoint' config");
             Validate.notNull(config.getConfigurationSection("locked"), "Could not load 'locked' config");
@@ -85,8 +70,8 @@ public class WaypointViewer extends EditableInventory {
             Validate.notNull(config.getConfigurationSection("not-enough-stellium"), "Could not load 'not-enough-stellium' config");
             Validate.notNull(config.getConfigurationSection("display"), "Could not load 'display' config");
 
-            noWaypoint = new SimplePlaceholderItem(config.getConfigurationSection("no-waypoint"));
-            locked = new SimplePlaceholderItem(config.getConfigurationSection("locked"));
+            noWaypoint = new SimpleItem<>(config.getConfigurationSection("no-waypoint"));
+            locked = new SimpleItem<>(config.getConfigurationSection("locked"));
             notLinked = new WaypointItemHandler(config.getConfigurationSection("not-a-destination"), true);
             //notDynamic = new WaypointItemHandler(config.getConfigurationSection("not-dynamic"), true);
             currentWayPoint = new WaypointItemHandler(config.getConfigurationSection("current-waypoint"), true);
@@ -100,35 +85,35 @@ public class WaypointViewer extends EditableInventory {
         }
 
         @Override
-        public ItemStack display(WaypointViewerInventory inv, int n) {
+        public ItemStack getDisplayedItem(WaypointViewerInventory inv, int n) {
 
             int index = inv.page * inv.getEditable().getByFunction("waypoint").getSlots().size() + n;
             if (index >= inv.waypoints.size())
-                return noWaypoint.display(inv, n);
+                return noWaypoint.getDisplayedItem(inv, n);
 
             final Waypoint waypoint = inv.waypoints.get(index);
 
             // Current waypoint
             if (inv.current != null && inv.current.equals(waypoint))
-                return currentWayPoint.display(inv, n);
+                return currentWayPoint.getDisplayedItem(inv, n);
 
             // Locked waypoint
-            if (!inv.getPlayerData().hasWaypoint(waypoint))
-                return locked.display(inv, n);
+            if (!inv.playerData.hasWaypoint(waypoint))
+                return locked.getDisplayedItem(inv, n);
 
             // Waypoints are not linked
             if (!inv.paths.containsKey(waypoint))
-                return notLinked.display(inv, n);
+                return notLinked.getDisplayedItem(inv, n);
 
             // Normal cost
-            if (inv.paths.get(waypoint).getCost() > inv.getPlayerData().getStellium())
-                return noStellium.display(inv, n);
+            if (inv.paths.get(waypoint).getCost() > inv.playerData.getStellium())
+                return noStellium.getDisplayedItem(inv, n);
 
-            return availWaypoint.display(inv, n);
+            return availWaypoint.getDisplayedItem(inv, n);
         }
     }
 
-    public class WaypointItemHandler extends InventoryItem<WaypointViewerInventory> {
+    public class WaypointItemHandler extends PhysicalItem<WaypointViewerInventory> {
         private final boolean onlyName;
         private final String splitter, none;
 
@@ -141,27 +126,19 @@ public class WaypointViewer extends EditableInventory {
         }
 
         @Override
-        public ItemStack display(WaypointViewerInventory inv, int n) {
-            // TODO refactor code
-            final Placeholders placeholders = getPlaceholders(inv, n);
-            final OfflinePlayer effectivePlayer = getEffectivePlayer(inv, n);
+        public ItemStack getDisplayedItem(WaypointViewerInventory inv, int n) {
+            final OfflinePlayer effectivePlayer = getEffectivePlayer(inv, n); // TODO check if this is needed
 
-            final ItemStack item = new ItemStack(getMaterial());
+            final ItemStack item = super.getDisplayedItem(inv, n);
             final ItemMeta meta = item.getItemMeta();
-            meta.setCustomModelData(getModelData());
-            // if (texture != null && meta instanceof SkullMeta)
-            //    UtilityMethods.setTextureValue((SkullMeta) meta, texture);
+            final Placeholders placeholders = getPlaceholders(inv, n); // TODO remove dupe call
 
-            if (hasName()) meta.setDisplayName(placeholders.apply(effectivePlayer, getName()));
-
-            if (hideFlags()) MMOCoreUtils.addAllItemFlags(meta);
-            if (hideTooltip()) meta.setHideTooltip(true);
             // If a player can teleport to another waypoint given his location
             Waypoint waypoint = inv.waypoints.get(inv.page * inv.getEditable().getByFunction("waypoint").getSlots().size() + n);
 
-            if (hasLore()) {
+            if (meta.hasLore()) {
                 List<String> lore = new ArrayList<>();
-                getLore().forEach(line -> {
+                meta.getLore().forEach(line -> {
                     if (line.equals("{lore}")) for (String added : waypoint.getLore())
                         lore.add(ChatColor.GRAY + placeholders.apply(effectivePlayer, added));
                     else lore.add(ChatColor.GRAY + placeholders.apply(effectivePlayer, line));
@@ -187,12 +164,54 @@ public class WaypointViewer extends EditableInventory {
 
             if (!onlyName) {
                 holders.register("current_cost", inv.paths.get(waypoint).getCost());
-                holders.register("normal_cost", decimal.format(inv.paths.containsKey(waypoint) ? inv.paths.get(waypoint).getCost() : Double.POSITIVE_INFINITY));
-                holders.register("dynamic_cost", decimal.format(waypoint.getDynamicCost()));
+                holders.register("normal_cost", ONE_DIGIT.format(inv.paths.containsKey(waypoint) ? inv.paths.get(waypoint).getCost() : Double.POSITIVE_INFINITY));
+                holders.register("dynamic_cost", ONE_DIGIT.format(waypoint.getDynamicCost()));
                 holders.register("intermediary_waypoints", inv.paths.containsKey(waypoint) ? inv.paths.get(waypoint).displayIntermediaryWayPoints(splitter, none) : none);
             }
 
             return holders;
+        }
+
+        @Override
+        public void onClick(@NotNull WaypointViewerInventory inv, @NotNull InventoryClickEvent event) {
+            PersistentDataContainer container = event.getCurrentItem().getItemMeta().getPersistentDataContainer();
+            String tag = container.has(new NamespacedKey(MMOCore.plugin, "waypointId"), PersistentDataType.STRING) ?
+                    container.get(new NamespacedKey(MMOCore.plugin, "waypointId"), PersistentDataType.STRING) : "";
+
+            if (tag.isEmpty()) return;
+
+            // Locked waypoint?
+            final Waypoint waypoint = MMOCore.plugin.waypointManager.get(tag);
+            if (!inv.playerData.hasWaypoint(waypoint)) {
+                ConfigMessage.fromKey("not-unlocked-waypoint").send(inv.playerData);
+                return;
+            }
+
+            // Cannot teleport to current waypoint
+            if (waypoint.equals(inv.current)) {
+                ConfigMessage.fromKey("standing-on-waypoint").send(inv.playerData);
+                return;
+            }
+
+            // No access to that waypoint
+            if (inv.paths.get(waypoint) == null) {
+                ConfigMessage.fromKey("cannot-teleport-to").send(inv.playerData);
+                return;
+            }
+
+            // Stellium cost
+            double withdraw = inv.paths.get(waypoint).getCost();
+            double left = withdraw - inv.playerData.getStellium();
+            if (left > 0) {
+                ConfigMessage.fromKey("not-enough-stellium", "more", ONE_DIGIT.format(left)).send(inv.playerData);
+                return;
+            }
+
+            if (inv.playerData.getActivityTimeOut(PlayerActivity.USE_WAYPOINT) > 0)
+                return;
+
+            inv.getPlayer().closeInventory();
+            inv.playerData.warp(waypoint, withdraw);
         }
     }
 
@@ -200,81 +219,20 @@ public class WaypointViewer extends EditableInventory {
         private final List<Waypoint> waypoints = new ArrayList<>(MMOCore.plugin.waypointManager.getAll());
         @Nullable
         private final Waypoint current;
+        private final PlayerData playerData;
 
         private Map<Waypoint, WaypointPath> paths;
 
-        private int page;
-
         public WaypointViewerInventory(PlayerData playerData, EditableInventory editable, Waypoint current) {
-            super(playerData, editable);
+            super(new Navigator(playerData.getMMOPlayerData()), editable);
 
+            this.playerData = playerData;
             this.current = current;
             paths = new WaypointPathCalculation(playerData).run(current).getPaths();
         }
 
-        @Override
-        public String calculateName() {
-            return getName();
-        }
-
         public boolean isDynamicUse() {
             return current == null;
-        }
-
-        @Override
-        public void whenClicked(InventoryClickContext context, InventoryItem item) {
-            if (item.getFunction().equals("next")) {
-                page++;
-                open();
-                return;
-            }
-
-            if (item.getFunction().equals("previous")) {
-                page--;
-                open();
-                return;
-            }
-
-            if (item.getFunction().equals("waypoint")) {
-                PersistentDataContainer container = context.getClickedItem().getItemMeta().getPersistentDataContainer();
-                String tag = container.has(new NamespacedKey(MMOCore.plugin, "waypointId"), PersistentDataType.STRING) ?
-                        container.get(new NamespacedKey(MMOCore.plugin, "waypointId"), PersistentDataType.STRING) : "";
-
-                if (tag.isEmpty()) return;
-
-                // Locked waypoint?
-                final Waypoint waypoint = MMOCore.plugin.waypointManager.get(tag);
-                if (!playerData.hasWaypoint(waypoint)) {
-                    ConfigMessage.fromKey("not-unlocked-waypoint").send(player);
-                    return;
-                }
-
-                // Cannot teleport to current waypoint
-                if (waypoint.equals(current)) {
-                    ConfigMessage.fromKey("standing-on-waypoint").send(player);
-                    return;
-                }
-
-                // No access to that waypoint
-                if (paths.get(waypoint) == null) {
-                    ConfigMessage.fromKey("cannot-teleport-to").send(player);
-                    return;
-                }
-
-                // Stellium cost
-                double withdraw = paths.get(waypoint).getCost();
-                double left = withdraw - playerData.getStellium();
-                if (left > 0) {
-                    ConfigMessage.fromKey("not-enough-stellium", "more", decimal.format(left)).send(player);
-                    return;
-                }
-
-                if (playerData.getActivityTimeOut(PlayerActivity.USE_WAYPOINT) > 0)
-                    return;
-
-                player.closeInventory();
-                playerData.warp(waypoint, withdraw);
-            }
         }
     }
 }

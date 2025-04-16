@@ -90,6 +90,10 @@ public class ConfigMessage {
         send(player);
     }
 
+    public void send(PlayerData playerData) {
+        for (String line : lines) send(playerData.getPlayer(), line);
+    }
+
     public void send(CommandSender player) {
         for (String line : lines) send(player, line);
     }

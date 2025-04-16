@@ -1,17 +1,18 @@
 package net.Indyuce.mmocore.gui.social.guild;
 
+import io.lumine.mythic.lib.gui.Navigator;
+import io.lumine.mythic.lib.gui.editable.EditableInventory;
+import io.lumine.mythic.lib.gui.editable.GeneratedInventory;
+import io.lumine.mythic.lib.gui.editable.item.InventoryItem;
+import io.lumine.mythic.lib.gui.editable.item.PhysicalItem;
+import io.lumine.mythic.lib.gui.editable.item.SimpleItem;
+import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.util.input.ChatInput;
 import net.Indyuce.mmocore.api.util.input.PlayerInput;
 import net.Indyuce.mmocore.api.util.math.format.DelayFormat;
-import net.Indyuce.mmocore.gui.api.EditableInventory;
-import net.Indyuce.mmocore.gui.api.GeneratedInventory;
-import net.Indyuce.mmocore.gui.api.InventoryClickContext;
-import net.Indyuce.mmocore.gui.api.item.InventoryItem;
-import net.Indyuce.mmocore.gui.api.item.Placeholders;
-import net.Indyuce.mmocore.gui.api.item.SimplePlaceholderItem;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -19,184 +20,201 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.UUID;
 
+@Deprecated
 public class EditableGuildAdmin extends EditableInventory {
-	private static final NamespacedKey UUID_NAMESPACEDKEY = new NamespacedKey(MMOCore.plugin, "Uuid");
+    private static final NamespacedKey UUID_NAMESPACEDKEY = new NamespacedKey(MMOCore.plugin, "Uuid");
 
-	public EditableGuildAdmin() {
-		super("guild-admin");
-	}
+    public EditableGuildAdmin() {
+        super("guild-admin");
+    }
 
-	@Override
-	public InventoryItem load(String function, ConfigurationSection config) {
-		return function.equals("member") ? new MemberItem(config) : new SimplePlaceholderItem(config);
-	}
+    @Override
+    public @Nullable InventoryItem<?> resolveItem(@NotNull String function, @NotNull ConfigurationSection config) {
+        if (function.equalsIgnoreCase("member")) return new MemberItem(config);
+        if (function.equalsIgnoreCase("leave")) return new LeaveItem(config);
+        if (function.equalsIgnoreCase("invite")) return new InviteItem(config);
+        return null;
+    }
 
-	public GeneratedInventory newInventory(PlayerData data) {
-		return new GuildViewInventory(data, this);
-	}
+    public GeneratedInventory newInventory(PlayerData data) {
+        return new GuildViewInventory(data);
+    }
 
-	public static class MemberDisplayItem extends InventoryItem<GuildViewInventory> {
-		public MemberDisplayItem(MemberItem memberItem, ConfigurationSection config) {
-			super(memberItem, config);
-		}
+    public class InviteItem extends SimpleItem<GuildViewInventory> {
+        public InviteItem(ConfigurationSection config) {
+            super(config);
+        }
 
-		@Override
-		public boolean hasDifferentDisplay() {
-			return true;
-		}
+        @Override
+        public void onClick(@NotNull GuildViewInventory inv, @NotNull InventoryClickEvent event) {
+            if (inv.playerData.getGuild().countMembers() >= inv.max) {
+                ConfigMessage.fromKey("guild-is-full").send(inv.playerData);
+                inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
+                return;
+            }
 
-		@Override
-		public Placeholders getPlaceholders(GuildViewInventory inv, int n) {
-			PlayerData member = PlayerData.get(inv.members.get(n));
+            new ChatInput(inv.getPlayer(), PlayerInput.InputType.GUILD_INVITE, inv, input -> {
+                Player target = Bukkit.getPlayer(input);
+                if (target == null) {
+                    ConfigMessage.fromKey("not-online-player", "player", input).send(inv.playerData);
+                    inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
+                    inv.open();
+                    return;
+                }
 
-			Placeholders holders = new Placeholders();
+                long remaining = inv.playerData.getGuild().getLastInvite(target) + 60 * 2 * 1000 - System.currentTimeMillis();
+                if (remaining > 0) {
+                    ConfigMessage.fromKey("guild-invite-cooldown", "player", target.getName(), "cooldown",
+                            new DelayFormat().format(remaining)).send(inv.playerData);
+                    inv.open();
+                    return;
+                }
 
-			if (member.isOnline())
-				holders.register("name", member.getPlayer().getName());
-			holders.register("class", member.getProfess().getName());
-			holders.register("level", "" + member.getLevel());
-			holders.register("since", new DelayFormat(2).format(System.currentTimeMillis() - member.getLastLogin()));
-			return holders;
-		}
+                PlayerData targetData = PlayerData.get(target);
+                if (inv.playerData.getGuild().hasMember(target.getUniqueId())) {
+                    ConfigMessage.fromKey("already-in-guild", "player", target.getName()).send(inv.playerData);
+                    inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
+                    inv.open();
+                    return;
+                }
 
-		@Override
-		public ItemStack display(GuildViewInventory inv, int n) {
-			UUID uuid = inv.members.get(n);
-			OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
+                inv.playerData.getGuild().sendGuildInvite(inv.playerData, targetData);
+                ConfigMessage.fromKey("sent-guild-invite", "player", target.getName()).send(inv.playerData);
+                inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+                inv.open();
+            });
+        }
+    }
 
-			ItemStack disp = super.display(inv, n);
-			ItemMeta meta = disp.getItemMeta();
-			meta.getPersistentDataContainer().set(UUID_NAMESPACEDKEY, PersistentDataType.STRING, uuid.toString());
+    public class LeaveItem extends SimpleItem<GuildViewInventory> {
+        public LeaveItem(ConfigurationSection config) {
+            super(config);
+        }
 
-			if (meta instanceof SkullMeta && offlinePlayer != null)
-				inv.asyncUpdate(this, n, disp, current -> {
-					((SkullMeta) meta).setOwningPlayer(offlinePlayer);
-					current.setItemMeta(meta);
-				});
+        @Override
+        public void onClick(@NotNull GuildViewInventory inv, @NotNull InventoryClickEvent event) {
+            inv.playerData.getGuild().removeMember(inv.playerData.getUniqueId());
+            inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+            inv.getPlayer().closeInventory();
+        }
+    }
 
-			disp.setItemMeta(meta);
-			return disp;
-		}
-	}
+    public static class MemberDisplayItem extends PhysicalItem<GuildViewInventory> {
+        public MemberDisplayItem(MemberItem memberItem, ConfigurationSection config) {
+            super(memberItem, config);
+        }
 
-	public static class MemberItem extends SimplePlaceholderItem<GuildViewInventory> {
-		private final InventoryItem empty;
-		private final MemberDisplayItem member;
+        @Override
+        public boolean hasDifferentDisplay() {
+            return true;
+        }
 
-		public MemberItem(ConfigurationSection config) {
-			super(config);
+        @Override
+        public Placeholders getPlaceholders(GuildViewInventory inv, int n) {
+            PlayerData member = PlayerData.get(inv.members.get(n));
 
-			Validate.notNull(config.contains("empty"), "Could not load empty config");
-			Validate.notNull(config.contains("member"), "Could not load member config");
+            Placeholders holders = new Placeholders();
 
-			empty = new SimplePlaceholderItem(config.getConfigurationSection("empty"));
-			member = new MemberDisplayItem(this, config.getConfigurationSection("member"));
-		}
+            if (member.isOnline())
+                holders.register("name", member.getPlayer().getName());
+            holders.register("class", member.getProfess().getName());
+            holders.register("level", "" + member.getLevel());
+            holders.register("since", new DelayFormat(2).format(System.currentTimeMillis() - member.getLastLogin()));
+            return holders;
+        }
 
-		@Override
-		public ItemStack display(GuildViewInventory inv, int n) {
-			return inv.getPlayerData().getGuild().countMembers() > n ? member.display(inv, n) : empty.display(inv, n);
-		}
+        @Override
+        public ItemStack getDisplayedItem(GuildViewInventory inv, int n) {
+            UUID uuid = inv.members.get(n);
+            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
 
-		@Override
-		public boolean hasDifferentDisplay() {
-			return true;
-		}
-	}
+            ItemStack disp = super.getDisplayedItem(inv, n);
+            ItemMeta meta = disp.getItemMeta();
+            meta.getPersistentDataContainer().set(UUID_NAMESPACEDKEY, PersistentDataType.STRING, uuid.toString());
 
-	public class GuildViewInventory extends GeneratedInventory {
-		private final int max;
+            if (meta instanceof SkullMeta && offlinePlayer != null)
+                inv.asyncUpdate(this, n, disp, current -> {
+                    ((SkullMeta) meta).setOwningPlayer(offlinePlayer);
+                    current.setItemMeta(meta);
+                });
 
-		private List<UUID> members;
+            disp.setItemMeta(meta);
+            return disp;
+        }
+    }
 
-		public GuildViewInventory(PlayerData playerData, EditableInventory editable) {
-			super(playerData, editable);
+    public static class MemberItem extends InventoryItem<GuildViewInventory> {
+        private final InventoryItem<GuildViewInventory> empty;
+        private final MemberDisplayItem member;
 
-			max = editable.getByFunction("member").getSlots().size();
-		}
+        public MemberItem(ConfigurationSection config) {
+            super(config);
 
-		@Override
-		public void open() {
-			members = playerData.getGuild().listMembers();
-			super.open();
-		}
+            Validate.notNull(config.contains("empty"), "Could not load empty config");
+            Validate.notNull(config.contains("member"), "Could not load member config");
 
-		@Override
-		public String calculateName() {
-			return getName().replace("{max}", "" + max).replace("{players}", "" + getPlayerData().getGuild().countMembers());
-		}
+            empty = new SimpleItem<>(config.getConfigurationSection("empty"));
+            member = new MemberDisplayItem(this, config.getConfigurationSection("member"));
+        }
 
-		@Override
-		public void whenClicked(InventoryClickContext context, InventoryItem item) {
+        @Override
+        public ItemStack getDisplayedItem(GuildViewInventory inv, int n) {
+            return inv.playerData.getGuild().countMembers() > n ? member.getDisplayedItem(inv, n) : empty.getDisplayedItem(inv, n);
+        }
 
-			if (item.getFunction().equals("leave")) {
-				playerData.getGuild().removeMember(playerData.getUniqueId());
-				player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
-				player.closeInventory();
-				return;
-			}
+        @Override
+        public boolean hasDifferentDisplay() {
+            return true;
+        }
 
-			if (item.getFunction().equals("invite")) {
+        @Override
+        public void onClick(@NotNull GuildViewInventory inv, @NotNull InventoryClickEvent event) {
+            if (!inv.isGuildOwner) return;
 
-				if (playerData.getGuild().countMembers() >= max) {
-					ConfigMessage.fromKey("guild-is-full").send(player);
-					player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
-					return;
-				}
+            OfflinePlayer target = Bukkit.getOfflinePlayer(UUID.fromString(event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(UUID_NAMESPACEDKEY, PersistentDataType.STRING)));
+            if (target.equals(inv.getPlayer())) return;
 
-				new ChatInput(player, PlayerInput.InputType.GUILD_INVITE, context.getInventoryHolder(), input -> {
-					Player target = Bukkit.getPlayer(input);
-					if (target == null) {
-						ConfigMessage.fromKey("not-online-player", "player", input).send(player);
-						player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
-						open();
-						return;
-					}
+            inv.playerData.getGuild().removeMember(target.getUniqueId());
+            ConfigMessage.fromKey("kick-from-guild", "player", target.getName()).send(inv.playerData);
+            inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+        }
+    }
 
-					long remaining = playerData.getGuild().getLastInvite(target) + 60 * 2 * 1000 - System.currentTimeMillis();
-					if (remaining > 0) {
-						ConfigMessage.fromKey("guild-invite-cooldown", "player", target.getName(), "cooldown",
-								new DelayFormat().format(remaining)).send(player);
-						open();
-						return;
-					}
+    public class GuildViewInventory extends GeneratedInventory {
+        private final int max;
+        private final PlayerData playerData;
+        private final boolean isGuildOwner;
 
-					PlayerData targetData = PlayerData.get(target);
-					if (playerData.getGuild().hasMember(target.getUniqueId())) {
-						ConfigMessage.fromKey("already-in-guild", "player", target.getName()).send(player);
-						player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
-						open();
-						return;
-					}
+        private List<UUID> members;
 
-					playerData.getGuild().sendGuildInvite(playerData, targetData);
-					ConfigMessage.fromKey("sent-guild-invite", "player", target.getName()).send(player);
-					player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
-					open();
-				});
-			}
+        public GuildViewInventory(PlayerData playerData) {
+            super(new Navigator(playerData.getMMOPlayerData()), EditableGuildAdmin.this);
 
-			if (item.getFunction().equals("member") && context.getClickType() == ClickType.RIGHT) {
-				if (!playerData.getGuild().getOwner().equals(playerData.getUniqueId()))
-					return;
+            max = getEditable().getByFunction("member").getSlots().size();
+            this.playerData = playerData;
+            isGuildOwner = playerData.getGuild().getOwner().equals(playerData.getUniqueId());
+        }
 
-				OfflinePlayer target = Bukkit.getOfflinePlayer(UUID.fromString(context.getClickedItem().getItemMeta().getPersistentDataContainer().get(UUID_NAMESPACEDKEY, PersistentDataType.STRING)));
-				if (target.equals(player))
-					return;
+        @Override
+        public void open() {
+            members = playerData.getGuild().listMembers();
+            super.open();
+        }
 
-				playerData.getGuild().removeMember(target.getUniqueId());
-				ConfigMessage.fromKey("kick-from-guild", "player", target.getName()).send(player);
-				player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
-			}
-		}
-	}
+        @Override
+        public @NotNull String getRawName() {
+            return guiName.replace("{max}", String.valueOf(max)).replace("{players}", String.valueOf(playerData.getGuild().countMembers()));
+        }
+    }
 }

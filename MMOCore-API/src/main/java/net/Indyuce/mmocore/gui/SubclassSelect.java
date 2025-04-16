@@ -1,30 +1,31 @@
 package net.Indyuce.mmocore.gui;
 
-import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.gui.Navigator;
+import io.lumine.mythic.lib.gui.editable.EditableInventory;
+import io.lumine.mythic.lib.gui.editable.GeneratedInventory;
+import io.lumine.mythic.lib.gui.editable.item.InventoryItem;
+import io.lumine.mythic.lib.gui.editable.item.ItemOptions;
+import io.lumine.mythic.lib.gui.editable.item.SimpleItem;
+import io.lumine.mythic.lib.gui.editable.item.builtin.GoBackItem;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.SoundEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.profess.ClassOption;
 import net.Indyuce.mmocore.api.player.profess.PlayerClass;
-import net.Indyuce.mmocore.api.util.MMOCoreUtils;
-import net.Indyuce.mmocore.gui.api.EditableInventory;
-import net.Indyuce.mmocore.gui.api.GeneratedInventory;
-import net.Indyuce.mmocore.gui.api.InventoryClickContext;
-import net.Indyuce.mmocore.gui.api.item.InventoryItem;
-import net.Indyuce.mmocore.gui.api.item.SimplePlaceholderItem;
 import net.Indyuce.mmocore.manager.InventoryManager;
 import org.apache.commons.lang.Validate;
-import org.bukkit.Material;
+import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.inventory.ItemFlag;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class SubclassSelect extends EditableInventory {
@@ -33,26 +34,26 @@ public class SubclassSelect extends EditableInventory {
     }
 
     @Override
-    public InventoryItem load(String function, ConfigurationSection config) {
-        return function.startsWith("sub-class") ? new ClassItem(config) : new SimplePlaceholderItem(config);
+    public @Nullable InventoryItem<?> resolveItem(@NotNull String function, @NotNull ConfigurationSection config) {
+        if (function.startsWith("sub-class")) return new ClassItem(config);
+        if (function.equalsIgnoreCase("back")) return new GoBackItem<>(config);
+        return null;
     }
 
     public GeneratedInventory newInventory(PlayerData data) {
-        return new SubclassSelectionInventory(data, this);
+        ClassSelect.ProfessSelectionInventory prev = InventoryManager.CLASS_SELECT.newInventory(data);
+        return new SubclassSelectionInventory(prev.getNavigator(), data);
     }
 
-    public class ClassItem extends SimplePlaceholderItem<SubclassSelectionInventory> {
-        private final String name;
-        private final List<String> lore;
+    public class ClassItem extends SimpleItem<SubclassSelectionInventory> {
         private final PlayerClass playerClass;
 
         public ClassItem(ConfigurationSection config) {
-            super(config.contains("item") ? Material.valueOf(UtilityMethods.enumName(config.getString("item"))) : Material.BARRIER, config);
+            super(config);
+
             Validate.isTrue(config.getString("function").length() > 10, "Couldn't find the class associated to: " + config.getString("function"));
             String classId = UtilityMethods.enumName(config.getString("function").substring(10));
             this.playerClass = MMOCore.plugin.classManager.getOrThrow(classId);
-            this.name = config.getString("name");
-            this.lore = config.getStringList("lore");
         }
 
         public boolean hasDifferentDisplay() {
@@ -60,22 +61,22 @@ public class SubclassSelect extends EditableInventory {
         }
 
         @Override
-        public ItemStack display(SubclassSelectionInventory inv, int n) {
-            ItemStack item = n == 0 ? playerClass.getIcon() : super.display(inv, n);
+        public ItemStack getDisplayedItem(SubclassSelectionInventory inv, int n) {
+            ItemOptions options = n == 0 ? ItemOptions.item(n, playerClass.getIcon()) : ItemOptions.index(n);
+            ItemStack item = super.getDisplayedItem(inv, options);
             ItemMeta meta = item.getItemMeta();
-            if (hideFlags()) MMOCoreUtils.addAllItemFlags(meta);
-            if (hideTooltip()) meta.setHideTooltip(true);
-            meta.setDisplayName(MythicLib.plugin.parseColors(name).replace("{name}", playerClass.getName()));
-            List<String> lore = new ArrayList<>(this.lore);
+            if (meta.hasDisplayName())
+                meta.setDisplayName(meta.getDisplayName().replace("{name}", playerClass.getName()));
+            List<String> lore = meta.getLore();
 
-            int index = lore.indexOf("{lore}");
+            int index = lore.indexOf(ChatColor.GRAY + "{lore}");
             if (index >= 0) {
                 lore.remove(index);
                 for (int j = 0; j < playerClass.getDescription().size(); j++)
                     lore.add(index + j, playerClass.getDescription().get(j));
             }
 
-            index = lore.indexOf("{attribute-lore}");
+            index = lore.indexOf(ChatColor.GRAY + "{attribute-lore}");
             if (index >= 0) {
                 lore.remove(index);
                 for (int j = 0; j < playerClass.getAttributeDescription().size(); j++)
@@ -89,48 +90,41 @@ public class SubclassSelect extends EditableInventory {
         }
 
         @Override
-        public boolean canDisplay(SubclassSelectionInventory inv) {
-            return inv.getPlayerData()
+        public boolean isDisplayed(@NotNull SubclassSelectionInventory inv) {
+            return inv.playerData
                     .getProfess()
                     .getSubclasses()
                     .stream()
-                    .anyMatch(subclass -> subclass.getLevel() <= inv.getPlayerData().getLevel()
+                    .anyMatch(subclass -> subclass.getLevel() <= inv.playerData.getLevel()
                             && subclass.getProfess().getId().equals(playerClass.getId()));
+        }
+
+        @Override
+        public void onClick(@NotNull SubclassSelectionInventory inv, @NotNull InventoryClickEvent event) {
+
+            if (inv.playerData.getClassPoints() < 1) {
+                inv.getPlayer().closeInventory();
+                MMOCore.plugin.soundManager.getSound(SoundEvent.CANT_SELECT_CLASS).playTo(inv.getPlayer());
+                ConfigMessage.fromKey("cant-choose-new-class").send(inv.playerData);
+                return;
+            }
+            if (playerClass.hasOption(ClassOption.NEEDS_PERMISSION) && !inv.getPlayer().hasPermission("mmocore.class." + playerClass.getId().toLowerCase())) {
+                MMOCore.plugin.soundManager.getSound(SoundEvent.CANT_SELECT_CLASS).playTo(inv.getPlayer());
+                ConfigMessage.fromKey("no-permission-for-class").send(inv.playerData);
+                return;
+            }
+
+            InventoryManager.CLASS_CONFIRM.get(playerClass.getId()).newInventory(inv.getNavigator(), inv.playerData, true, null).open();
         }
     }
 
     public class SubclassSelectionInventory extends GeneratedInventory {
-        public SubclassSelectionInventory(PlayerData playerData, EditableInventory editable) {
-            super(playerData, editable);
-        }
+        private final PlayerData playerData;
 
-        @Override
-        public String calculateName() {
-            return getName();
-        }
+        public SubclassSelectionInventory(Navigator navigator, PlayerData playerData) {
+            super(navigator, SubclassSelect.this);
 
-        @Override
-        public void whenClicked(InventoryClickContext context, InventoryItem item) {
-            if (item.getFunction().equals("back"))
-                InventoryManager.CLASS_SELECT.newInventory(playerData).open();
-
-            if (item.getFunction().startsWith("sub-class")) {
-                String classId = UtilityMethods.ymlName(item.getFunction().substring(10));
-                PlayerClass profess = MMOCore.plugin.classManager.get(UtilityMethods.enumName(classId));
-                if (playerData.getClassPoints() < 1) {
-                    player.closeInventory();
-                    MMOCore.plugin.soundManager.getSound(SoundEvent.CANT_SELECT_CLASS).playTo(getPlayer());
-                    ConfigMessage.fromKey("cant-choose-new-class").send(player);
-                    return;
-                }
-                if (profess.hasOption(ClassOption.NEEDS_PERMISSION) && !player.hasPermission("mmocore.class." + profess.getId().toLowerCase())) {
-                    MMOCore.plugin.soundManager.getSound(SoundEvent.CANT_SELECT_CLASS).playTo(player);
-                    ConfigMessage.fromKey("no-permission-for-class").send(player);
-                    return;
-                }
-
-                InventoryManager.CLASS_CONFIRM.get(classId).newInventory(playerData, this, true, null).open();
-            }
+            this.playerData = playerData;
         }
     }
 }

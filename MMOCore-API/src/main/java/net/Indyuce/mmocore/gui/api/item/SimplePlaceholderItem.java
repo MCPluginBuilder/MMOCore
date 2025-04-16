@@ -4,6 +4,7 @@ import net.Indyuce.mmocore.gui.api.GeneratedInventory;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 
+@Deprecated
 public class SimplePlaceholderItem<T extends GeneratedInventory> extends InventoryItem<T> {
     public SimplePlaceholderItem(InventoryItem<?> parent, ConfigurationSection config) {
         super(parent, config);

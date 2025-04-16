@@ -3,7 +3,7 @@ package net.Indyuce.mmocore.quest.compat;
 import net.Indyuce.mmocore.quest.AbstractQuest;
 import org.bukkit.entity.Player;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public interface QuestModule<T extends AbstractQuest> {
 

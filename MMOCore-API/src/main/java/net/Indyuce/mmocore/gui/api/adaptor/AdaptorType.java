@@ -4,6 +4,7 @@ import net.Indyuce.mmocore.gui.api.GeneratedInventory;
 
 import java.util.function.Function;
 
+@Deprecated
 public enum AdaptorType {
     CLASSIC_ADAPTOR(ClassicAdaptor::new),
     THREE_DIM_ADAPTOR(ThreeDimAdaptor::new);

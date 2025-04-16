@@ -1,6 +1,13 @@
 package net.Indyuce.mmocore.gui;
 
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.gui.Navigator;
+import io.lumine.mythic.lib.gui.editable.EditableInventory;
+import io.lumine.mythic.lib.gui.editable.GeneratedInventory;
+import io.lumine.mythic.lib.gui.editable.item.InventoryItem;
+import io.lumine.mythic.lib.gui.editable.item.PhysicalItem;
+import io.lumine.mythic.lib.gui.editable.item.builtin.GoBackItem;
+import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.SoundEvent;
@@ -8,23 +15,15 @@ import net.Indyuce.mmocore.api.event.PlayerChangeClassEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.profess.PlayerClass;
 import net.Indyuce.mmocore.api.player.profess.SavedClassInformation;
-import net.Indyuce.mmocore.gui.api.EditableInventory;
-import net.Indyuce.mmocore.gui.api.GeneratedInventory;
-import net.Indyuce.mmocore.gui.api.InventoryClickContext;
-import net.Indyuce.mmocore.gui.api.PluginInventory;
-import net.Indyuce.mmocore.gui.api.item.InventoryItem;
-import net.Indyuce.mmocore.gui.api.item.Placeholders;
-import net.Indyuce.mmocore.gui.api.item.SimplePlaceholderItem;
 import net.Indyuce.mmocore.player.ClassDataContainer;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class ClassConfirmation extends EditableInventory {
     private final PlayerClass playerClass;
@@ -35,20 +34,23 @@ public class ClassConfirmation extends EditableInventory {
         this.playerClass = playerClass;
     }
 
+    @Nullable
     @Override
-    public InventoryItem load(String function, ConfigurationSection config) {
-        return function.equalsIgnoreCase("yes") ? new YesItem(config) : new SimplePlaceholderItem(config);
+    public InventoryItem<?> resolveItem(@NotNull String function, @NotNull ConfigurationSection config) {
+        if (function.equalsIgnoreCase("yes")) return new YesItem(config);
+        if (function.equalsIgnoreCase("back")) return new GoBackItem<>(config);
+        return null;
     }
 
-    public GeneratedInventory newInventory(PlayerData data, PluginInventory last, boolean setClass) {
-        return newInventory(data, last, setClass, null);
+    public GeneratedInventory newInventory(Navigator navigator, PlayerData playerData, boolean setClass) {
+        return newInventory(navigator, playerData, setClass, null);
     }
 
-    public GeneratedInventory newInventory(PlayerData data, PluginInventory last, boolean setClass, @Nullable Runnable profileRunnable) {
-        return new ClassConfirmationInventory(data, this, playerClass, last, setClass, profileRunnable);
+    public GeneratedInventory newInventory(Navigator navigator, PlayerData playerData, boolean setClass, @Nullable Runnable profileRunnable) {
+        return new ClassConfirmationInventory(navigator, playerData, playerClass, setClass, profileRunnable);
     }
 
-    public class UnlockedItem extends InventoryItem<ClassConfirmationInventory> {
+    public class UnlockedItem extends PhysicalItem<ClassConfirmationInventory> {
         public UnlockedItem(ConfigurationSection config) {
             super(config);
         }
@@ -56,10 +58,10 @@ public class ClassConfirmation extends EditableInventory {
         @Override
         public Placeholders getPlaceholders(ClassConfirmationInventory inv, int n) {
             PlayerClass profess = inv.profess;
-            ClassDataContainer info = inv.subclass ? inv.getPlayerData() : inv.getPlayerData().getClassInfo(profess);
+            ClassDataContainer info = inv.subclass ? inv.playerData : inv.playerData.getClassInfo(profess);
             Placeholders holders = new Placeholders();
 
-            final double nextLevelExp = inv.getPlayerData().getLevelUpExperience();
+            final double nextLevelExp = inv.playerData.getLevelUpExperience();
             final double ratio = info.getExperience() / nextLevelExp;
 
             StringBuilder bar = new StringBuilder("" + ChatColor.BOLD);
@@ -67,7 +69,7 @@ public class ClassConfirmation extends EditableInventory {
             for (int j = 0; j < 20; j++)
                 bar.append(j == chars ? "" + ChatColor.WHITE + ChatColor.BOLD : "").append("|");
 
-            holders.register("percent", decimal.format(ratio * 100));
+            holders.register("percent", ONE_DIGIT.format(ratio * 100));
             holders.register("progress", bar.toString());
             holders.register("class", profess.getName());
             holders.register("unlocked_skills", info.mapSkillLevels().size());
@@ -81,17 +83,17 @@ public class ClassConfirmation extends EditableInventory {
         }
     }
 
-    public class YesItem extends SimplePlaceholderItem<ClassConfirmationInventory> {
-        private final InventoryItem unlocked, locked;
+    public class YesItem extends InventoryItem<ClassConfirmationInventory> {
+        private final InventoryItem<ClassConfirmationInventory> unlocked, locked;
 
         public YesItem(ConfigurationSection config) {
-            super(Material.BARRIER, config);
+            super(config);
 
             Validate.isTrue(config.contains("unlocked"), "Could not load 'unlocked' config");
             Validate.isTrue(config.contains("locked"), "Could not load 'locked' config");
 
             unlocked = new UnlockedItem(config.getConfigurationSection("unlocked"));
-            locked = new InventoryItem<ClassConfirmationInventory>(config.getConfigurationSection("locked")) {
+            locked = new PhysicalItem<ClassConfirmationInventory>(config.getConfigurationSection("locked")) {
 
                 @Override
                 public Placeholders getPlaceholders(ClassConfirmationInventory inv, int n) {
@@ -103,71 +105,57 @@ public class ClassConfirmation extends EditableInventory {
         }
 
         @Override
-        public ItemStack display(ClassConfirmationInventory inv, int n) {
-            return inv.getPlayerData().hasSavedClass(inv.profess) ? unlocked.display(inv, n) : locked.display(inv, n);
+        public ItemStack getDisplayedItem(@NotNull ClassConfirmationInventory inv, int n) {
+            return inv.playerData.hasSavedClass(inv.profess) ? unlocked.getDisplayedItem(inv, n) : locked.getDisplayedItem(inv, n);
+        }
+
+        @Override
+        public void onClick(@NotNull ClassConfirmationInventory inv, @NotNull InventoryClickEvent event) {
+            PlayerChangeClassEvent called = new PlayerChangeClassEvent(inv.playerData, inv.profess);
+            Bukkit.getPluginManager().callEvent(called);
+            if (called.isCancelled())
+                return;
+
+            inv.getNavigator().unblockClosing();
+            inv.playerData.giveClassPoints(-1);
+            if (inv.subclass) inv.playerData.setClass(inv.profess);
+            else
+                (inv.playerData.hasSavedClass(inv.profess) ? inv.playerData.getClassInfo(inv.profess)
+                        : new SavedClassInformation(MMOCore.plugin.playerDataManager.getDefaultData())).load(inv.profess, inv.playerData);
+            ConfigMessage.fromKey("class-select", "class", inv.profess.getName()).send(inv.playerData);
+            MMOCore.plugin.soundManager.getSound(SoundEvent.SELECT_CLASS).playTo(inv.getPlayer());
+            inv.getPlayer().closeInventory();
         }
     }
 
     public class ClassConfirmationInventory extends GeneratedInventory {
         private final PlayerClass profess;
-        private final PluginInventory last;
         private final boolean subclass;
+        private final PlayerData playerData;
 
         @Nullable
+        // TODO check
         private final Runnable profileRunnable;
 
-        private boolean canClose;
+        public ClassConfirmationInventory(Navigator navigator, PlayerData playerData, PlayerClass profess, boolean subclass, @Nullable Runnable profileRunnable) {
+            super(navigator, ClassConfirmation.this);
 
-        public ClassConfirmationInventory(PlayerData playerData, EditableInventory editable, PlayerClass profess, PluginInventory last, boolean subclass, @Nullable Runnable profileRunnable) {
-            super(playerData, editable);
-
+            this.playerData = playerData;
             this.profess = profess;
-            this.last = last;
             this.subclass = subclass;
             this.profileRunnable = profileRunnable;
         }
 
+        @NotNull
         @Override
-        public void whenClicked(InventoryClickContext context, InventoryItem item) {
-            if (item.getFunction().equals("back")) {
-                canClose = true;
-                last.open();
-            } else if (item.getFunction().equals("yes")) {
-
-                PlayerChangeClassEvent called = new PlayerChangeClassEvent(playerData, profess);
-                Bukkit.getPluginManager().callEvent(called);
-                if (called.isCancelled())
-                    return;
-
-                canClose = true;
-                playerData.giveClassPoints(-1);
-                if (subclass)
-                    playerData.setClass(profess);
-                else
-                    (playerData.hasSavedClass(profess) ? playerData.getClassInfo(profess)
-                            : new SavedClassInformation(MMOCore.plugin.playerDataManager.getDefaultData())).load(profess, playerData);
-                ConfigMessage.fromKey("class-select", "class", profess.getName()).send(player);
-                MMOCore.plugin.soundManager.getSound(SoundEvent.SELECT_CLASS).playTo(player);
-                player.closeInventory();
-                if (profileRunnable != null) profileRunnable.run();
-            }
+        public String getRawName() {
+            return guiName.replace("{class}", profess.getName());
         }
 
         @Override
         public void open() {
-            canClose = false;
+            getNavigator().blockClosing();
             super.open();
-        }
-
-        @Override
-        public void whenClosed(InventoryCloseEvent event) {
-            if (profileRunnable != null && !canClose)
-                Bukkit.getScheduler().runTaskLater(MMOCore.plugin, () -> open(), 2 * 20);
-        }
-
-        @Override
-        public String calculateName() {
-            return getName().replace("{class}", profess.getName());
         }
     }
 }

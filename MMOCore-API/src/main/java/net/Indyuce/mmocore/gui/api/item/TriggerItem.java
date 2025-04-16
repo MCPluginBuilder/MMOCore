@@ -6,6 +6,7 @@ import net.Indyuce.mmocore.api.quest.trigger.Trigger;
 import net.Indyuce.mmocore.gui.api.GeneratedInventory;
 import org.bukkit.configuration.ConfigurationSection;
 
+@Deprecated
 public class TriggerItem extends InventoryItem {
     private final Trigger triggers;
 

@@ -37,6 +37,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+@Deprecated
 public class ThreeDimAdaptor extends Adaptor {
     private final double INITIAL_PERCENTAGE = 0.20;
     private final double INCREMENT_PERCENTAGE = 0.20;

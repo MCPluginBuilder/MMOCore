@@ -7,6 +7,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 
+@Deprecated
 public abstract class PluginInventory implements InventoryHolder {
     protected final Player player;
     protected final PlayerData playerData;

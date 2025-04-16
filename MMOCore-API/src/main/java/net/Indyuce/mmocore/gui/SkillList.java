@@ -3,17 +3,15 @@ package net.Indyuce.mmocore.gui;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.item.ItemTag;
 import io.lumine.mythic.lib.api.item.NBTItem;
+import io.lumine.mythic.lib.gui.editable.EditableInventory;
+import io.lumine.mythic.lib.gui.editable.item.InventoryItem;
+import io.lumine.mythic.lib.gui.editable.item.builtin.NextPageItem;
+import io.lumine.mythic.lib.gui.editable.item.builtin.PreviousPageItem;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.SoundEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.util.MMOCoreUtils;
-import net.Indyuce.mmocore.gui.api.EditableInventory;
-import net.Indyuce.mmocore.gui.api.GeneratedInventory;
-import net.Indyuce.mmocore.gui.api.InventoryClickContext;
-import net.Indyuce.mmocore.gui.api.item.InventoryItem;
-import net.Indyuce.mmocore.gui.api.item.Placeholders;
-import net.Indyuce.mmocore.gui.api.item.SimplePlaceholderItem;
 import net.Indyuce.mmocore.skill.ClassSkill;
 import net.Indyuce.mmocore.skill.RegisteredSkill;
 import net.Indyuce.mmocore.skill.binding.SkillSlot;
@@ -28,7 +26,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -41,16 +39,13 @@ public class SkillList extends EditableInventory {
     }
 
     @Override
-    public InventoryItem load(String function, ConfigurationSection config) {
+    public @Nullable InventoryItem<?> resolveItem(@NotNull String function, @NotNull ConfigurationSection config) {
 
-        if (function.equals("skill"))
-            return new SkillItem(config);
+        if (function.equals("skill"))            return new SkillItem(config);
 
-        if (function.equals("level"))
-            return new LevelItem(config);
+        if (function.equals("level"))            return new LevelItem(config);
 
-        if (function.equals("upgrade"))
-            return new UpgradeItem(config);
+        if (function.equals("upgrade"))            return new UpgradeItem(config);
 
         if (function.equals("reallocation")) {
 
@@ -70,29 +65,12 @@ public class SkillList extends EditableInventory {
         if (function.equals("slot"))
             return new SlotItem(config);
 
-        if (function.equals("previous"))
-            return new SimplePlaceholderItem<SkillViewerInventory>(config) {
+        if (function.equals("previous")) return new PreviousPageItem<>(config);
+        if (function.equals("next"))  return new NextPageItem<>(config);
 
-                @Override
-                public boolean canDisplay(SkillViewerInventory inv) {
-                    return inv.page > 0;
-                }
-            };
+        if (function.equals("selected")) return new SelectedItem(config);
 
-        if (function.equals("next")) {
-            return new SimplePlaceholderItem<SkillViewerInventory>(config) {
-
-                @Override
-                public boolean canDisplay(SkillViewerInventory inv) {
-                    final int perPage = inv.skillSlots.size();
-                    return inv.page < (inv.skills.size() - 1) / perPage;
-                }
-            };
-        }
-        if (function.equals("selected"))
-            return new SelectedItem(config);
-
-        return new SimplePlaceholderItem(config);
+        return null;
     }
 
     public GeneratedInventory newInventory(PlayerData data) {

@@ -1,11 +1,11 @@
 package net.Indyuce.mmocore.manager;
 
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.gui.editable.EditableInventory;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.ConfigFile;
 import net.Indyuce.mmocore.api.player.profess.PlayerClass;
 import net.Indyuce.mmocore.gui.*;
-import net.Indyuce.mmocore.gui.api.EditableInventory;
 import net.Indyuce.mmocore.gui.skilltree.SkillTreeViewer;
 import net.Indyuce.mmocore.gui.social.friend.EditableFriendList;
 import net.Indyuce.mmocore.gui.social.friend.EditableFriendRemoval;
@@ -62,14 +62,14 @@ public class InventoryManager {
                 final ConfigFile configFile = new ConfigFile("/gui/" + loader.name, loader.name + "-" + formattedId);
                 final EditableInventory GUI = loader.provider.apply(id, !configFile.exists());
                 loader.inventories.put(formattedId, GUI);
-                GUI.reload(new ConfigFile("/gui/" + loader.name, GUI.getId()).getConfig());
+                GUI.reload(MMOCore.plugin, new ConfigFile("/gui/" + loader.name, GUI.getId()).getConfig());
             }
         }
 
         LIST.forEach(inv -> {
             try {
                 MMOCore.plugin.configManager.copyDefaultFile("gui/" + inv.getId() + ".yml");
-                inv.reload(new ConfigFile("/gui", inv.getId()).getConfig());
+                inv.reload(MMOCore.plugin, new ConfigFile("/gui", inv.getId()).getConfig());
             } catch (Exception exception) {
                 MMOCore.log(Level.WARNING, "Could not load inventory '" + (inv instanceof ClassConfirmation ? "class-confirm/" : "") + inv.getId() + "': " + exception.getMessage());
             }

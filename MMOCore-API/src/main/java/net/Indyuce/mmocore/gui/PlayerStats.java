@@ -3,6 +3,13 @@ package net.Indyuce.mmocore.gui;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.stat.modifier.StatModifier;
+import io.lumine.mythic.lib.gui.Navigator;
+import io.lumine.mythic.lib.gui.editable.EditableInventory;
+import io.lumine.mythic.lib.gui.editable.GeneratedInventory;
+import io.lumine.mythic.lib.gui.editable.item.InventoryItem;
+import io.lumine.mythic.lib.gui.editable.item.PhysicalItem;
+import io.lumine.mythic.lib.gui.editable.item.SimpleItem;
+import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import io.lumine.mythic.lib.manager.StatManager;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.ConfigMessage;
@@ -11,20 +18,15 @@ import net.Indyuce.mmocore.api.player.attribute.PlayerAttribute;
 import net.Indyuce.mmocore.api.util.math.format.DelayFormat;
 import net.Indyuce.mmocore.experience.Booster;
 import net.Indyuce.mmocore.experience.Profession;
-import net.Indyuce.mmocore.gui.api.EditableInventory;
-import net.Indyuce.mmocore.gui.api.GeneratedInventory;
-import net.Indyuce.mmocore.gui.api.InventoryClickContext;
-import net.Indyuce.mmocore.gui.api.item.InventoryItem;
-import net.Indyuce.mmocore.gui.api.item.Placeholders;
-import net.Indyuce.mmocore.gui.api.item.SimplePlaceholderItem;
 import net.Indyuce.mmocore.party.AbstractParty;
 import org.apache.commons.lang.Validate;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 public class PlayerStats extends EditableInventory {
     public PlayerStats() {
@@ -32,125 +34,136 @@ public class PlayerStats extends EditableInventory {
     }
 
     @Override
-    public InventoryItem load(String function, ConfigurationSection config) {
+    public InventoryItem<?> resolveItem(String function, ConfigurationSection config) {
 
-        if (function.equals("boost"))
-            return new BoostItem(config);
+        if (function.equals("boost")) return new BoostItem(config);
 
-        if (function.equals("boost-next"))
-            return new SimplePlaceholderItem<PlayerStatsInventory>(config) {
+        if (function.equals("boost-next")) return new BoostNextButton(config);
+        if (function.equals("boost-previous")) return new BoostPreviousButton(config);
 
-                @Override
-                public boolean hasDifferentDisplay() {
-                    return true;
-                }
+        if (function.equals("party")) return new PartyMoraleItem(config);
+        if (function.startsWith("profession_")) return new ProfessionItem(function, config);
+        if (function.equals("profile")) return new PlayerProfileItem(config);
+        if (function.equals("stats")) return new StatsItem(config);
 
-                @Override
-                public boolean canDisplay(PlayerStatsInventory inv) {
-                    InventoryItem boost = inv.getByFunction("boost");
-                    return boost != null && inv.boostOffset + boost.getSlots().size() < MMOCore.plugin.boosterManager.getActive().size();
-                }
-            };
-
-        if (function.equals("boost-previous"))
-            return new SimplePlaceholderItem<PlayerStatsInventory>(config) {
-
-                @Override
-                public boolean canDisplay(PlayerStatsInventory inv) {
-                    return inv.boostOffset > 0;
-                }
-            };
-
-        if (function.equals("party"))
-            return new PartyMoraleItem(config);
-
-        if (function.startsWith("profession_")) {
-            String id = function.substring("profession_".length()).toLowerCase();
-            Validate.isTrue(MMOCore.plugin.professionManager.has(id));
-            Profession profession = MMOCore.plugin.professionManager.get(id);
-
-            return new InventoryItem<PlayerStatsInventory>(config) {
-
-                @Override
-                public boolean hasDifferentDisplay() {
-                    return true;
-                }
-
-                @Override
-                public Placeholders getPlaceholders(PlayerStatsInventory inv, int n) {
-
-                    Placeholders holders = new Placeholders();
-                    //net.Indyuce.mmocore.api.player.stats.PlayerStats stats = inv.target.getStats();
-
-                    double ratio = inv.target.getCollectionSkills().getExperience(profession)
-                            / (double) inv.target.getCollectionSkills().getLevelUpExperience(profession);
-
-                    String bar = "" + ChatColor.BOLD;
-                    int chars = (int) (ratio * 20);
-                    for (int j = 0; j < 20; j++)
-                        bar += (j == chars ? "" + ChatColor.WHITE + ChatColor.BOLD : "") + "|";
-
-                    // holders.register("profession", type.getName());
-                    holders.register("progress", bar);
-                    holders.register("level", String.valueOf(inv.target.getCollectionSkills().getLevel(profession)));
-                    holders.register("xp", inv.target.getCollectionSkills().getExperience(profession));
-                    holders.register("percent", decimal.format(ratio * 100));
-
-                    return holders;
-                }
-            };
-        }
-
-        if (function.equals("profile"))
-            return new PlayerProfileItem(config);
-
-        if (function.equals("stats"))
-            return new InventoryItem<PlayerStatsInventory>(config) {
-
-                @Override
-                public boolean hasDifferentDisplay() {
-                    return true;
-                }
-
-                @Override
-                public Placeholders getPlaceholders(PlayerStatsInventory inv, int n) {
-                    return new Placeholders() {
-                        final net.Indyuce.mmocore.api.player.stats.PlayerStats stats = inv.target.getStats();
-
-                        @Nullable
-                        @Override
-                        public String getPlaceholder(String holder) {
-                            if (holder.endsWith("_base")) {
-                                final String stat = UtilityMethods.enumName(holder.substring(0, holder.length() - 5));
-                                return StatManager.format(stat, stats.getBase(stat));
-                            }
-
-                            if (holder.endsWith("_extra")) {
-                                final String stat = UtilityMethods.enumName(holder.substring(0, holder.length() - 6));
-                                return StatManager.format(stat, stats.getStat(stat) - stats.getBase(stat));
-                            }
-
-                            if (holder.startsWith("attribute_")) {
-                                final PlayerAttribute attr = MMOCore.plugin.attributeManager.get(holder.substring(10).replace("_", "-").toLowerCase());
-                                return String.valueOf(inv.target.getAttributes().getAttribute(attr));
-                            }
-
-                            final String stat = UtilityMethods.enumName(holder);
-                            return StatManager.format(stat, stats.getStat(stat));
-                        }
-                    };
-                }
-            };
-
-        return new SimplePlaceholderItem(config);
+        return null;
     }
 
     public PlayerStatsInventory newInventory(PlayerData invTarget, PlayerData opening) {
-        return new PlayerStatsInventory(invTarget, opening, this);
+        return new PlayerStatsInventory(invTarget, opening);
     }
 
     public PlayerStatsInventory newInventory(PlayerData player) {
-        return new PlayerStatsInventory(player, player, this);
+        return new PlayerStatsInventory(player, player);
+    }
+
+    public class BoostPreviousButton extends SimpleItem<PlayerStatsInventory> {
+        public BoostPreviousButton(ConfigurationSection config) {
+            super(config);
+        }
+
+        @Override
+        public void onClick(@NotNull PlayerStatsInventory inv, @NotNull InventoryClickEvent event) {
+            inv.boostOffset--;
+            inv.open();
+        }
+
+        @Override
+        public boolean isDisplayed(@NotNull PlayerStatsInventory inv) {
+            return inv.boostOffset > 0;
+        }
+    }
+
+    public class BoostNextButton extends SimpleItem<PlayerStatsInventory> {
+        public BoostNextButton(ConfigurationSection config) {
+            super(config);
+        }
+
+        @Override
+        public boolean isDisplayed(@NotNull PlayerStatsInventory inv) {
+            InventoryItem boost = inv.getByFunction("boost");
+            return boost != null && inv.boostOffset + boost.getSlots().size() < MMOCore.plugin.boosterManager.getActive().size();
+        }
+
+        @Override
+        public void onClick(@NotNull PlayerStatsInventory inv, @NotNull InventoryClickEvent event) {
+            inv.boostOffset++;
+            inv.open();
+        }
+    }
+
+    public class ProfessionItem extends PhysicalItem<PlayerStatsInventory> {
+        private final Profession profession;
+
+        public ProfessionItem(String function, @NotNull ConfigurationSection config) {
+            super(config);
+
+            String id = function.substring("profession_".length()).toLowerCase();
+            Validate.isTrue(MMOCore.plugin.professionManager.has(id));
+            profession = MMOCore.plugin.professionManager.get(id);
+        }
+
+        @Override
+        public boolean hasDifferentDisplay() {
+            return true;
+        }
+
+        @Override
+        public Placeholders getPlaceholders(PlayerStatsInventory inv, int n) {
+
+            Placeholders holders = new Placeholders();
+            //net.Indyuce.mmocore.api.player.stats.PlayerStats stats = inv.target.getStats();
+
+            double ratio = inv.target.getCollectionSkills().getExperience(profession)
+                    / (double) inv.target.getCollectionSkills().getLevelUpExperience(profession);
+
+            String bar = "" + ChatColor.BOLD;
+            int chars = (int) (ratio * 20);
+            for (int j = 0; j < 20; j++)
+                bar += (j == chars ? "" + ChatColor.WHITE + ChatColor.BOLD : "") + "|";
+
+            // holders.register("profession", type.getName());
+            holders.register("progress", bar);
+            holders.register("level", String.valueOf(inv.target.getCollectionSkills().getLevel(profession)));
+            holders.register("xp", inv.target.getCollectionSkills().getExperience(profession));
+            holders.register("percent", ONE_DIGIT.format(ratio * 100));
+
+            return holders;
+        }
+    }
+
+    public class StatsItem extends PhysicalItem<PlayerStatsInventory> {
+        public StatsItem(ConfigurationSection config) {
+            super(config);
+        }
+
+        @Override
+        public @NotNull Placeholders getPlaceholders(PlayerStatsInventory inv, int n) {
+            return new Placeholders() {
+                final net.Indyuce.mmocore.api.player.stats.PlayerStats stats = inv.target.getStats();
+
+                @Override
+                public @NotNull String parsePlaceholder(String holder) {
+                    if (holder.endsWith("_base")) {
+                        final String stat = UtilityMethods.enumName(holder.substring(0, holder.length() - 5));
+                        return StatManager.format(stat, stats.getBase(stat));
+                    }
+
+                    if (holder.endsWith("_extra")) {
+                        final String stat = UtilityMethods.enumName(holder.substring(0, holder.length() - 6));
+                        return StatManager.format(stat, stats.getStat(stat) - stats.getBase(stat));
+                    }
+
+                    if (holder.startsWith("attribute_")) {
+                        final PlayerAttribute attr = MMOCore.plugin.attributeManager.get(holder.substring(10).replace("_", "-").toLowerCase());
+                        return String.valueOf(inv.target.getAttributes().getAttribute(attr));
+                    }
+
+                    final String stat = UtilityMethods.enumName(holder);
+                    return StatManager.format(stat, stats.getStat(stat));
+                }
+            };
+        }
     }
 
     public class PlayerStatsInventory extends GeneratedInventory {
@@ -158,33 +171,10 @@ public class PlayerStats extends EditableInventory {
 
         private int boostOffset;
 
-        /**
-         * @param invTarget Target player
-         * @param opening   Player opening the inventory
-         * @param inv       Corresponding editable inventory
-         */
-        public PlayerStatsInventory(PlayerData invTarget, PlayerData opening, EditableInventory inv) {
-            super(opening, inv);
+        public PlayerStatsInventory(PlayerData target, PlayerData opening) {
+            super(new Navigator(opening.getMMOPlayerData()), PlayerStats.this);
 
-            this.target = invTarget;
-        }
-
-        @Override
-        public String calculateName() {
-            return getName();
-        }
-
-        @Override
-        public void whenClicked(InventoryClickContext event, InventoryItem item) {
-            if (item.hasFunction())
-                if (item.getFunction().equals("boost-next")) {
-                    boostOffset++;
-                    open();
-
-                } else if (item.getFunction().equals("boost-previous")) {
-                    boostOffset--;
-                    open();
-                }
+            this.target = target;
         }
     }
 
@@ -193,7 +183,7 @@ public class PlayerStats extends EditableInventory {
         return item;
     }
 
-    public static class PartyMoraleItem extends InventoryItem<PlayerStatsInventory> {
+    public static class PartyMoraleItem extends PhysicalItem<PlayerStatsInventory> {
         public PartyMoraleItem(ConfigurationSection config) {
             super(config);
         }
@@ -211,20 +201,21 @@ public class PlayerStats extends EditableInventory {
         }
 
         @Override
-        public boolean canDisplay(PlayerStatsInventory inv) {
+        public boolean isDisplayed(@NotNull PlayerStatsInventory inv) {
             AbstractParty party = inv.target.getParty();
             return party != null && party.getOnlineMembers().size() > 1;
         }
     }
 
-    public static class PlayerProfileItem extends InventoryItem<PlayerStatsInventory> {
+    public static class PlayerProfileItem extends PhysicalItem<PlayerStatsInventory> {
         public PlayerProfileItem(ConfigurationSection config) {
             super(config);
         }
 
         @Override
-        public ItemStack display(PlayerStatsInventory inv, int n) {
-            ItemStack disp = super.display(inv, n);
+        public ItemStack getDisplayedItem(PlayerStatsInventory inv, int n) {
+            ItemStack disp = super.getDisplayedItem(inv, n);
+
             if (disp.getType() == Material.PLAYER_HEAD) {
                 SkullMeta meta = (SkullMeta) disp.getItemMeta();
                 inv.asyncUpdate(this, n, disp, current -> {
@@ -232,6 +223,7 @@ public class PlayerStats extends EditableInventory {
                     current.setItemMeta(meta);
                 });
             }
+
             return disp;
         }
 
@@ -248,41 +240,42 @@ public class PlayerStats extends EditableInventory {
             for (int j = 0; j < 20; j++)
                 bar.append(j == chars ? "" + ChatColor.WHITE + ChatColor.BOLD : "").append("|");
 
-            holders.register("percent", decimal.format(ratio * 100));
+            holders.register("percent", ONE_DIGIT.format(ratio * 100));
             holders.register("exp", MythicLib.plugin.getMMOConfig().decimal.format(data.getExperience()));
-            holders.register("level", "" + data.getLevel());
-            holders.register("class_points", "" + data.getClassPoints());
-            holders.register("skill_points", "" + data.getSkillPoints());
-            holders.register("attribute_points", "" + data.getAttributePoints());
+            holders.register("level", data.getLevel());
+            holders.register("class_points", data.getClassPoints());
+            holders.register("skill_points", data.getSkillPoints());
+            holders.register("attribute_points", data.getAttributePoints());
             holders.register("progress", bar.toString());
-            holders.register("next_level", "" + nextLevelExp);
+            holders.register("next_level", nextLevelExp);
             if (data.isOnline())
-                holders.register("player", "" + data.getPlayer().getName());
-            holders.register("class", "" + data.getProfess().getName());
+                holders.register("player", data.getPlayer().getName());
+            holders.register("class", data.getProfess().getName());
 
             return holders;
         }
     }
 
-    public class BoostItem extends SimplePlaceholderItem<PlayerStatsInventory> {
-        private final InventoryItem noBoost, mainLevel, profession;
+    public class BoostItem extends SimpleItem<PlayerStatsInventory> {
+        private final PhysicalItem<PlayerStatsInventory> noBoost, mainLevel, profession;
 
         public BoostItem(ConfigurationSection config) {
             super(config);
 
             ConfigurationSection noBoost = config.getConfigurationSection("no-boost");
             Validate.notNull(noBoost, "Could not load 'no-boost' config");
-            this.noBoost = new SimplePlaceholderItem(noBoost);
+            this.noBoost = new SimpleItem<>(noBoost);
 
             ConfigurationSection mainLevel = config.getConfigurationSection("main-level");
             Validate.notNull(mainLevel, "Could not load 'main-level' config");
-            this.mainLevel = new InventoryItem<PlayerStatsInventory>(mainLevel) {
+            this.mainLevel = new PhysicalItem<PlayerStatsInventory>(mainLevel) {
 
                 @Override
                 public boolean hasDifferentDisplay() {
                     return true;
                 }
 
+                @NotNull
                 @Override
                 public Placeholders getPlaceholders(PlayerStatsInventory inv, int n) {
                     Placeholders holders = new Placeholders();
@@ -300,13 +293,14 @@ public class PlayerStats extends EditableInventory {
 
             ConfigurationSection profession = config.getConfigurationSection("profession");
             Validate.notNull(profession, "Could not load 'profession' config");
-            this.profession = new InventoryItem<PlayerStatsInventory>(profession) {
+            this.profession = new PhysicalItem<PlayerStatsInventory>(profession) {
 
                 @Override
                 public boolean hasDifferentDisplay() {
                     return true;
                 }
 
+                @NotNull
                 @Override
                 public Placeholders getPlaceholders(PlayerStatsInventory inv, int n) {
                     Placeholders holders = new Placeholders();
@@ -330,13 +324,13 @@ public class PlayerStats extends EditableInventory {
         }
 
         @Override
-        public ItemStack display(PlayerStatsInventory inv, int n) {
+        public ItemStack getDisplayedItem(PlayerStatsInventory inv, int n) {
             int offset = inv.boostOffset;
             if (n + offset >= MMOCore.plugin.boosterManager.getActive().size())
-                return noBoost.display(inv, n);
+                return noBoost.getDisplayedItem(inv, n);
 
             Booster boost = MMOCore.plugin.boosterManager.get(inv.boostOffset + n);
-            return amount(boost.hasProfession() ? profession.display(inv, n) : mainLevel.display(inv, n), n + offset + 1);
+            return amount(boost.hasProfession() ? profession.getDisplayedItem(inv, n) : mainLevel.getDisplayedItem(inv, n), n + offset + 1);
         }
     }
 }

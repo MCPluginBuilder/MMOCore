@@ -13,6 +13,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+@Deprecated
 public class ClassicAdaptor extends Adaptor {
     private Inventory open;
 

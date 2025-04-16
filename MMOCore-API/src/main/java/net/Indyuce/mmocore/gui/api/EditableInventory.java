@@ -15,6 +15,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.logging.Level;
 
+@Deprecated
 public abstract class EditableInventory {
     private final String id;
 
