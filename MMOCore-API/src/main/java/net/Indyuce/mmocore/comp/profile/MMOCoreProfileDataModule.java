@@ -58,7 +58,7 @@ public class MMOCoreProfileDataModule implements ProfileDataModule, PlaceholderP
             }
 
             placeholderRequest.addPlaceholder("exp", MythicLib.plugin.getMMOConfig().decimal.format(fictiveData.getExperience()));
-            placeholderRequest.addPlaceholder("exp_next_level", MythicLib.plugin.getMMOConfig().decimal.format(fictiveData.getLevelUpExperience()));
+            placeholderRequest.addPlaceholder("exp_next_level", fictiveData.getLevelUpExperience());
 
             placeholderRequest.validate();
         });

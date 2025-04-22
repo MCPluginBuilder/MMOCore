@@ -29,7 +29,7 @@ public class SkillScroller extends SkillCastingHandler {
     /**
      * Key players need to press to start casting
      */
-    private final PlayerKey enterKey, castKey;
+    private final PlayerKey enterKey, castKey, scrollKey;
 
     @Nullable
     private final SoundObject enterSound, changeSound, leaveSound;
@@ -49,6 +49,7 @@ public class SkillScroller extends SkillCastingHandler {
         // Find keybinds
         enterKey = PlayerKey.valueOf(UtilityMethods.enumName(Objects.requireNonNull(config.getString("enter-key"), "Could not find enter key")));
         castKey = PlayerKey.valueOf(UtilityMethods.enumName(Objects.requireNonNull(config.getString("cast-key"), "Could not find cast key")));
+        scrollKey = config.contains("scroll-key") ? PlayerKey.valueOf(UtilityMethods.enumName(config.getString("scroll-key"))) : null;
     }
 
     @Override
@@ -124,12 +125,21 @@ public class SkillScroller extends SkillCastingHandler {
         }
 
         @EventHandler
+        public void onKeyPress(PlayerKeyPressEvent event) {
+            if (scrollKey == null || event.getPressed() != scrollKey) return;
+            if (!event.getData().equals(getCaster())) return;
+
+            event.setCancelled(true);
+            scrollOf(1);
+        }
+
+        @EventHandler
         public void onScroll(PlayerItemHeldEvent event) {
+            if (scrollKey != null) return;
             if (!event.getPlayer().equals(getCaster().getPlayer())) return;
 
-            PlayerData playerData = PlayerData.get(event.getPlayer());
-            if (!playerData.hasActiveSkillBound()) {
-                playerData.leaveSkillCasting(true);
+            if (!caster.hasActiveSkillBound()) {
+                caster.leaveSkillCasting(true);
                 return;
             }
 
@@ -138,14 +148,15 @@ public class SkillScroller extends SkillCastingHandler {
             final int previous = event.getPreviousSlot(), current = event.getNewSlot();
             final int dist1 = 9 + current - previous, dist2 = current - previous, dist3 = current - previous - 9;
             final int change = Math.abs(dist1) < Math.abs(dist2) ? (Math.abs(dist1) < Math.abs(dist3) ? dist1 : dist3) : (Math.abs(dist3) < Math.abs(dist2) ? dist3 : dist2);
+            scrollOf(change); // Scroll
+        }
 
-            // Scroll through items
-            final CustomSkillCastingInstance casting = (CustomSkillCastingInstance) playerData.getSkillCasting();
-            casting.index = mod(casting.index + change, getActiveSkills().size());
-            casting.onTick();
-            casting.refreshTimeOut();
+        private void scrollOf(int delta) {
+            this.index = mod(this.index + delta, getActiveSkills().size());
+            this.onTick();
+            this.refreshTimeOut();
 
-            if (changeSound != null) changeSound.playTo(event.getPlayer());
+            if (changeSound != null) changeSound.playTo(caster.getPlayer());
         }
     }
 

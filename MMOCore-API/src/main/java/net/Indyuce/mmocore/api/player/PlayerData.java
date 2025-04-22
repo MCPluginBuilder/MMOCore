@@ -5,6 +5,7 @@ import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import io.lumine.mythic.lib.player.cooldown.CooldownMap;
 import io.lumine.mythic.lib.util.Closeable;
+import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.version.VParticle;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.ConfigMessage;
@@ -55,7 +56,6 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.Validate;
 import org.bukkit.*;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -261,7 +261,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
      */
     @NotNull
     public Map<String, Integer> mapSkillTreePoints() {
-        return new HashMap(skillTreePoints);
+        return new HashMap<>(skillTreePoints);
     }
 
     @Override
@@ -658,7 +658,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     /**
      * @return Experience needed in order to reach next level
      */
-    public int getLevelUpExperience() {
+    public long getLevelUpExperience() {
         return getProfess().getExpCurve().getExperience(getLevel() + 1);
     }
 
@@ -683,9 +683,9 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     }
 
     public void giveLevels(int value, EXPSource source) {
-        int total = 0;
-        while (value-- > 0) total += getProfess().getExpCurve().getExperience(getLevel() + value + 1);
-        giveExperience(total, source);
+        long equivalentExp = 0;
+        while (value-- > 0) equivalentExp += getProfess().getExpCurve().getExperience(getLevel() + value + 1);
+        giveExperience(equivalentExp, source);
     }
 
     public void setExperience(double value) {
@@ -792,7 +792,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         if (!isOnline()) return;
 
         // Avoid calling an useless event
-        double max = getPlayer().getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+        double max = getPlayer().getAttribute(Attributes.MAX_HEALTH).getValue();
         double newest = Math.max(0, Math.min(getPlayer().getHealth() + heal, max));
         if (getPlayer().getHealth() == newest) return;
 
@@ -952,7 +952,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         experience = Math.max(0, experience + event.getExperience());
 
         // Calculate the player's next level
-        int oldLevel = level, needed;
+        int oldLevel = level;
+        long needed;
         while (experience >= (needed = getLevelUpExperience())) {
 
             if (hasReachedMaxLevel()) {

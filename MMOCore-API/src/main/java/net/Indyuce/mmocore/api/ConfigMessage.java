@@ -6,6 +6,7 @@ import net.Indyuce.mmocore.api.player.PlayerData;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.Validate;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -89,26 +90,33 @@ public class ConfigMessage {
         send(player);
     }
 
-    public void send(Player player) {
+    public void send(CommandSender player) {
         for (String line : lines) send(player, line);
     }
 
-    public void send(Collection<? extends Player> players) {
-        for (Player player : players) for (String line : lines) send(player, line);
+    public void send(Collection<? extends CommandSender> players) {
+        for (CommandSender player : players) for (String line : lines) send(player, line);
     }
 
     /**
      * Sends a line of text to a target player
      *
-     * @param player        Player to send message to. His player
+     * @param recipient     Player to send message to. His player
      *                      data is not necessarily fully loaded
      * @param messageFormat Raw/normal message to send
      */
-    private void send(@NotNull Player player, String messageFormat) {
-        Validate.notNull(player, "Player cannot be null");
+    private void send(@NotNull CommandSender recipient, String messageFormat) {
+        Validate.notNull(recipient, "Recipient cannot be null");
 
+        // Command blocks and console
+        if (!(recipient instanceof Player)) {
+            recipient.sendMessage(format(null, messageFormat));
+            return;
+        }
+
+        final Player player = (Player) recipient;
         final String rawMessage = format(player, messageFormat);
-        final PlayerData playerData = PlayerData.has(player) ? PlayerData.get(player) : null;
+        final PlayerData playerData = PlayerData.has((Player) recipient) ? PlayerData.get((Player) recipient) : null;
 
         // Handle special case with player data + action bar
         if (playerData != null && playerData.isOnline() && actionbar) {

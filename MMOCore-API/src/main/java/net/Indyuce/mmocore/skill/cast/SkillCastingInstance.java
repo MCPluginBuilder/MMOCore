@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public abstract class SkillCastingInstance extends BukkitRunnable implements Listener {
-    private final PlayerData caster;
+    protected final PlayerData caster;
     private final SkillCastingHandler handler;
 
     private static final int RUNNABLE_PERIOD = 10;
