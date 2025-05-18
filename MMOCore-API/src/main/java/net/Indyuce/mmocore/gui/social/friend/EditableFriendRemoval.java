@@ -21,19 +21,20 @@ public class EditableFriendRemoval extends EditableInventory {
         super("friend-removal");
     }
 
-
     @Override
     public @Nullable InventoryItem<?> resolveItem(@NotNull String function, @NotNull ConfigurationSection config) {
         if (function.equalsIgnoreCase("yes")) return new YesItem(config);
-        if (function.equalsIgnoreCase("back")) return new GoBackItem<>(config);
+        if (function.equalsIgnoreCase("back")) return new GoBackItem<ClassConfirmationInventory>(config) {
+
+            @Override
+            public @NotNull Placeholders getPlaceholders(ClassConfirmationInventory inv, int n) {
+                Placeholders inherited = super.getPlaceholders(inv, n);
+                inherited.register("name", inv.friend.getName());
+                return inherited;
+            }
+        };
 
         return null;
-    }
-
-    public Placeholders getGlobalPlaceholders(ClassConfirmationInventory inv) {
-        Placeholders holders = new Placeholders();
-        holders.register("name", inv.friend.getName());
-        return holders;
     }
 
     public class YesItem extends SimpleItem<ClassConfirmationInventory> {
@@ -43,7 +44,9 @@ public class EditableFriendRemoval extends EditableInventory {
 
         @Override
         public @NotNull Placeholders getPlaceholders(ClassConfirmationInventory inv, int n) {
-            return getGlobalPlaceholders(inv);
+            Placeholders holders = new Placeholders();
+            holders.register("name", inv.friend.getName());
+            return holders;
         }
 
         @Override
