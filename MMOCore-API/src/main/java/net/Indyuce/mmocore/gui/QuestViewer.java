@@ -17,7 +17,6 @@ import net.Indyuce.mmocore.api.quest.Quest;
 import net.Indyuce.mmocore.api.util.math.format.DelayFormat;
 import net.Indyuce.mmocore.experience.Profession;
 import org.apache.commons.lang.Validate;
-import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.inventory.ClickType;
@@ -53,6 +52,8 @@ public class QuestViewer extends EditableInventory {
         return new QuestInventory(data);
     }
 
+    private static final NamespacedKey QUEST_ID_KEY = new NamespacedKey(MMOCore.plugin, "quest_id");
+
     public class QuestItem extends PhysicalItem<QuestInventory> {
         private final SimpleItem<QuestInventory> noQuest, locked;
 
@@ -85,43 +86,54 @@ public class QuestViewer extends EditableInventory {
         }
 
         @Override
-        public ItemStack getDisplayedItem(QuestInventory inv, int itemIndex) {
-            final int index = inv.getPageIndex(itemIndex);
-
-            if (index >= inv.quests.size())
-                return noQuest.getDisplayedItem(inv, itemIndex);
+        public void preprocessLore(@NotNull QuestInventory inv, int n, @NotNull List<String> lore) {
+            final int index = inv.getPageIndex(n);
+            if (index >= inv.quests.size()) return;
 
             Quest quest = inv.quests.get(index);
-            if (quest.hasParent() && !inv.playerData.getQuestData().checkParentAvailability(quest))
-                return locked.getDisplayedItem(inv, itemIndex);
-
-            ItemStack item = super.getDisplayedItem(inv, itemIndex);
-            ItemMeta meta = item.getItemMeta();
-            List<String> lore = new ArrayList<>(meta.getLore());
 
             // Replace quest lore
-            int loreIndex = lore.indexOf(ChatColor.GRAY + "{lore}");
+            int loreIndex = lore.indexOf("{lore}");
             if (loreIndex >= 0) {
                 lore.remove(loreIndex);
                 for (int j = 0; j < quest.getLore().size(); j++)
                     lore.add(loreIndex + j, quest.getLore().get(j));
             }
 
-            // Calculate lore for later
+            // For later
             int reqCount = quest.countLevelRestrictions();
             boolean started = inv.playerData.getQuestData().hasCurrent(quest), completed = inv.playerData.getQuestData().hasFinished(quest),
                     cooldown = completed && inv.playerData.getQuestData().checkCooldownAvailability(quest);
 
-            lore.removeIf(next -> (next.startsWith(ChatColor.GRAY + "{level_req}") && reqCount < 1)
-                    || (next.startsWith(ChatColor.GRAY + "{started}") && !started)
-                    || (next.startsWith(ChatColor.GRAY + "{!started}") && started)
-                    || (next.startsWith(ChatColor.GRAY + "{completed}") && !completed)
-                    || (next.startsWith(ChatColor.GRAY + "{completed_cannot_redo}") && !(completed && !quest.isRedoable()))
-                    || (next.startsWith(ChatColor.GRAY + "{completed_can_redo}") && !(cooldown && quest.isRedoable()))
-                    || (next.startsWith(ChatColor.GRAY + "{completed_delay}") && !(completed && !cooldown)));
+            // Filter out lines and remove condition placeholders
+            for (int i = 0; i < lore.size(); ) {
+                String next = lore.get(i);
+                if (next.startsWith("{level_req}")) {
+                    if (reqCount < 1) lore.remove(i);
+                    else lore.set(i++, next.replace("{level_req}", ""));
+                } else if (next.startsWith("{started}")) {
+                    if (!started) lore.remove(i);
+                    else lore.set(i++, next.replace("{started}", ""));
+                } else if (next.startsWith("{!started}")) {
+                    if (started) lore.remove(i);
+                    else lore.set(i++, next.replace("{!started}", ""));
+                } else if (next.startsWith("{completed}")) {
+                    if (!completed) lore.remove(i);
+                    else lore.set(i++, next.replace("{completed}", ""));
+                } else if (next.startsWith("{completed_cannot_redo}")) {
+                    if (!(completed && !quest.isRedoable())) lore.remove(i);
+                    else lore.set(i++, next.replace("{completed_cannot_redo}", ""));
+                } else if (next.startsWith("{completed_can_redo}")) {
+                    if (!(cooldown && quest.isRedoable())) lore.remove(i);
+                    else lore.set(i++, next.replace("{completed_can_redo}", ""));
+                } else if (next.startsWith("{completed_delay}")) {
+                    if (!(completed && !cooldown)) lore.remove(i);
+                    else lore.set(i++, next.replace("{completed_delay}", ""));
+                } else i++;
+            }
 
             // Replace level requirements
-            loreIndex = lore.indexOf(ChatColor.GRAY + "{level_req}{level_requirements}");
+            loreIndex = lore.indexOf("{level_requirements}");
             if (loreIndex >= 0) {
                 lore.remove(loreIndex);
                 int mainRequired = quest.getLevelRestriction(null);
@@ -135,13 +147,20 @@ public class QuestViewer extends EditableInventory {
                                     .replace("{level}", "" + required).replace("{profession}", profession.getName()));
                 }
             }
+        }
 
-            Placeholders holders = getPlaceholders(inv, itemIndex);
-            lore.replaceAll(str -> ChatColor.GRAY + holders.apply(inv.getPlayer(), str));
+        @Override
+        public ItemStack getDisplayedItem(QuestInventory inv, int n) {
+            final int index = inv.getPageIndex(n);
+            if (index >= inv.quests.size()) return noQuest.getDisplayedItem(inv, n);
 
-            // Generate item
-            meta.setLore(lore);
-            meta.getPersistentDataContainer().set(new NamespacedKey(MMOCore.plugin, "quest_id"), PersistentDataType.STRING, quest.getId());
+            Quest quest = inv.quests.get(index);
+            if (quest.hasParent() && !inv.playerData.getQuestData().checkParentAvailability(quest))
+                return locked.getDisplayedItem(inv, n);
+
+            ItemStack item = super.getDisplayedItem(inv, n);
+            ItemMeta meta = item.getItemMeta();
+            meta.getPersistentDataContainer().set(QUEST_ID_KEY, PersistentDataType.STRING, quest.getId());
             item.setItemMeta(meta);
 
             return item;
@@ -175,7 +194,7 @@ public class QuestViewer extends EditableInventory {
         @Override
         public void onClick(@NotNull QuestInventory inv, @NotNull InventoryClickEvent event) {
             String questId = event.getCurrentItem().getItemMeta().getPersistentDataContainer()
-                    .get(new NamespacedKey(MMOCore.plugin, "quest_id"), PersistentDataType.STRING);
+                    .get(QUEST_ID_KEY, PersistentDataType.STRING);
             if (questId == null || questId.equals(""))
                 return;
 
