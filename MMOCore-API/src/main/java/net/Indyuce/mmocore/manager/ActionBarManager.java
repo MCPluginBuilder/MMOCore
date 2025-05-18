@@ -1,12 +1,12 @@
 package net.Indyuce.mmocore.manager;
 
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import io.lumine.mythic.lib.manager.StatManager;
 import io.lumine.mythic.lib.version.Attributes;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerActivity;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import net.Indyuce.mmocore.gui.api.item.Placeholders;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.configuration.ConfigurationSection;

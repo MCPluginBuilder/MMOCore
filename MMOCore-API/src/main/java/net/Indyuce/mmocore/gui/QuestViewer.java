@@ -86,7 +86,7 @@ public class QuestViewer extends EditableInventory {
 
         @Override
         public ItemStack getDisplayedItem(QuestInventory inv, int itemIndex) {
-            final int index = inv.page * inv.perPage + itemIndex;
+            final int index = inv.getPageIndex(itemIndex);
 
             if (index >= inv.quests.size())
                 return noQuest.getDisplayedItem(inv, itemIndex);
@@ -148,8 +148,8 @@ public class QuestViewer extends EditableInventory {
         }
 
         @Override
-        public Placeholders getPlaceholders(QuestInventory inv, int itemIndex) {
-            final Quest quest = inv.quests.get(inv.page * inv.perPage + itemIndex);
+        public Placeholders getPlaceholders(QuestInventory inv, int n) {
+            final Quest quest = inv.quests.get(inv.getPageIndex(n));
             PlayerData data = inv.playerData;
 
             Placeholders holders = new Placeholders();
@@ -238,14 +238,19 @@ public class QuestViewer extends EditableInventory {
 
     public class QuestInventory extends GeneratedInventory {
         private final List<Quest> quests = new ArrayList<>(MMOCore.plugin.questManager.getAll());
-        private final int perPage;
         private final PlayerData playerData;
 
         public QuestInventory(PlayerData playerData, EditableInventory editable) {
             super(new Navigator(playerData.getMMOPlayerData()), editable);
 
             this.playerData = playerData;
-            perPage = editable.getByFunction("quest").getSlots().size();
+
+            enablePagination(getByFunction("quest").getSlots().size());
+        }
+
+        @Override
+        public int getMaxPage() {
+            return computeMaxPage(quests.size());
         }
     }
 }

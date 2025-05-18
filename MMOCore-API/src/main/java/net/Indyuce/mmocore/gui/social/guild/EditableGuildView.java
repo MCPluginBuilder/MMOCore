@@ -223,7 +223,7 @@ public class EditableGuildView extends EditableInventory {
 
         @Override
         public ItemStack getDisplayedItem(GuildViewInventory inv, int n) {
-            int index = n + inv.page * getSlots().size();
+            int index = inv.getPageIndex(n);
             return inv.playerData.getGuild().countMembers() > index ? member.getDisplayedItem(inv, index) : empty.getDisplayedItem(inv, index);
         }
 
@@ -250,6 +250,8 @@ public class EditableGuildView extends EditableInventory {
             maxpages = (playerData.getGuild().countMembers() + 20) / getEditable().getByFunction("member").getSlots().size();
             this.playerData = playerData;
             isGuildOwner = playerData.getGuild().getOwner().equals(playerData.getUniqueId());
+
+            enablePagination(getEditable().getByFunction("member").getSlots().size());
         }
 
         @Override
@@ -259,10 +261,16 @@ public class EditableGuildView extends EditableInventory {
         }
 
         @Override
+        public int getMaxPage() {
+            return computeMaxPage(members.size());
+        }
+
+        @Override
         public @NotNull String getRawName() {
             return guiName
                     .replace("{online_players}", String.valueOf(playerData.getGuild().countOnlineMembers()))
-                    .replace("{page}", "" + page).replace("{maxpages}", "" + maxpages)
+                    .replace("{page}", String.valueOf(page))
+                    .replace("{maxpages}", String.valueOf(maxpages))
                     .replace("{players}", String.valueOf(playerData.getGuild().countMembers()))
                     .replace("{tag}", playerData.getGuild().getTag())
                     .replace("{name}", playerData.getGuild().getName());

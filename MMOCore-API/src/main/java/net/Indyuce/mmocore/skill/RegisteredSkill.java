@@ -23,7 +23,7 @@ public class RegisteredSkill {
 
     private final Map<String, DecimalFormat> parameterDecimalFormats = new HashMap<>();
 
-    private final ItemStack icon;
+    private final Icon icon;
     private final List<String> lore;
     private final List<String> categories;
     private final TriggerType triggerType;
@@ -32,7 +32,7 @@ public class RegisteredSkill {
         this.handler = handler;
 
         name = Objects.requireNonNull(config.getString("name"), "Could not find skill name");
-        icon = Icon.from(config.get("material")).toItem();
+        icon = Icon.from(config.get("material"));
         lore = Objects.requireNonNull(config.getStringList("lore"), "Could not find skill lore");
 
         // Trigger type
@@ -65,7 +65,7 @@ public class RegisteredSkill {
     public RegisteredSkill(SkillHandler<?> handler, String name, ItemStack icon, List<String> lore, @Nullable TriggerType triggerType) {
         this.handler = handler;
         this.name = name;
-        this.icon = icon;
+        this.icon = Icon.fromItem(icon);
         this.lore = lore;
         this.triggerType = triggerType;
         this.categories = new ArrayList<>();
@@ -87,8 +87,14 @@ public class RegisteredSkill {
         return categories;
     }
 
+    @Deprecated
     public ItemStack getIcon() {
-        return icon.clone();
+        return icon.toItem();
+    }
+
+    @NotNull
+    public Icon getRawIcon() {
+        return icon;
     }
 
     public boolean hasParameter(String parameter) {

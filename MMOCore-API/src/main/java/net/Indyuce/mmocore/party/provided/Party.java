@@ -1,12 +1,13 @@
 package net.Indyuce.mmocore.party.provided;
 
+import io.lumine.mythic.lib.gui.Navigator;
+import io.lumine.mythic.lib.gui.PluginInventory;
 import io.lumine.mythic.lib.version.VInventoryView;
 import io.lumine.mythic.lib.version.VersionUtils;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.social.Request;
-import net.Indyuce.mmocore.gui.api.PluginInventory;
 import net.Indyuce.mmocore.gui.social.party.EditablePartyView;
 import net.Indyuce.mmocore.manager.InventoryManager;
 import net.Indyuce.mmocore.party.AbstractParty;

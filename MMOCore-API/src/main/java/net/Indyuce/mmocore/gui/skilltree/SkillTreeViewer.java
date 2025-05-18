@@ -333,7 +333,7 @@ public class SkillTreeViewer extends EditableInventory {
             IntegerCoordinates coordinates = inv.getCoordinates(n);
             if (inv.getSkillTree().isPathOrNode(coordinates)) {
                 Icon icon = inv.getIcon(coordinates);
-                ItemStack item = super.getDisplayedItem(inv, ItemOptions.model(n, icon.getMaterial(), icon.getModelData()));
+                ItemStack item = super.getDisplayedItem(inv, icon.toItemOptions(n));
                 ItemMeta meta = item.getItemMeta();
                 Placeholders holders = getPlaceholders(inv, n);
                 if (inv.getSkillTree().isNode(coordinates)) {

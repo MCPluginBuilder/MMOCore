@@ -1,6 +1,7 @@
 package net.Indyuce.mmocore.skilltree;
 
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.util.MMOCoreUtils;
@@ -8,7 +9,6 @@ import net.Indyuce.mmocore.experience.EXPSource;
 import net.Indyuce.mmocore.experience.ExpCurve;
 import net.Indyuce.mmocore.experience.ExperienceObject;
 import net.Indyuce.mmocore.experience.droptable.ExperienceTable;
-import net.Indyuce.mmocore.gui.api.item.Placeholders;
 import net.Indyuce.mmocore.util.Icon;
 import net.Indyuce.mmocore.skilltree.tree.SkillTree;
 import org.apache.commons.lang.Validate;

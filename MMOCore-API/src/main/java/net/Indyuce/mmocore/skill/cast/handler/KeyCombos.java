@@ -3,6 +3,7 @@ package net.Indyuce.mmocore.skill.cast.handler;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.event.skill.PlayerCastSkillEvent;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
+import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.skill.result.SkillResult;
 import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
@@ -11,7 +12,6 @@ import io.lumine.mythic.lib.util.SoundObject;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerKeyPressEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import net.Indyuce.mmocore.gui.api.item.Placeholders;
 import net.Indyuce.mmocore.skill.ClassSkill;
 import net.Indyuce.mmocore.skill.cast.*;
 import org.bukkit.GameMode;
@@ -19,8 +19,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.jetbrains.annotations.NotNull;
-
 import org.jetbrains.annotations.Nullable;
+
 import java.util.*;
 
 public class KeyCombos extends SkillCastingHandler {

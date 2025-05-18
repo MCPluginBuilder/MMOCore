@@ -87,7 +87,7 @@ public class WaypointViewer extends EditableInventory {
         @Override
         public ItemStack getDisplayedItem(WaypointViewerInventory inv, int n) {
 
-            int index = inv.page * inv.getEditable().getByFunction("waypoint").getSlots().size() + n;
+            int index = inv.getPageIndex(n);
             if (index >= inv.waypoints.size())
                 return noWaypoint.getDisplayedItem(inv, n);
 
@@ -134,7 +134,7 @@ public class WaypointViewer extends EditableInventory {
             final Placeholders placeholders = getPlaceholders(inv, n); // TODO remove dupe call
 
             // If a player can teleport to another waypoint given his location
-            Waypoint waypoint = inv.waypoints.get(inv.page * inv.getEditable().getByFunction("waypoint").getSlots().size() + n);
+            Waypoint waypoint = inv.waypoints.get(inv.getPageIndex(n));
 
             if (meta.hasLore()) {
                 List<String> lore = new ArrayList<>();
@@ -159,7 +159,7 @@ public class WaypointViewer extends EditableInventory {
         public Placeholders getPlaceholders(WaypointViewerInventory inv, int n) {
             Placeholders holders = new Placeholders();
 
-            Waypoint waypoint = inv.waypoints.get(inv.page * inv.getByFunction("waypoint").getSlots().size() + n);
+            Waypoint waypoint = inv.waypoints.get(inv.getPageIndex(n));
             holders.register("name", waypoint.getName());
 
             if (!onlyName) {
@@ -229,6 +229,13 @@ public class WaypointViewer extends EditableInventory {
             this.playerData = playerData;
             this.current = current;
             paths = new WaypointPathCalculation(playerData).run(current).getPaths();
+
+            enablePagination(editable.getByFunction("waypoint").getSlots().size());
+        }
+
+        @Override
+        public int getMaxPage() {
+            return computeMaxPage(waypoints.size());
         }
 
         public boolean isDynamicUse() {
