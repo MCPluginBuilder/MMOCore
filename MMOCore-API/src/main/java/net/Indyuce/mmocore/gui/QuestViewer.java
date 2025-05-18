@@ -50,7 +50,7 @@ public class QuestViewer extends EditableInventory {
     }
 
     public GeneratedInventory newInventory(PlayerData data) {
-        return new QuestInventory(data, this);
+        return new QuestInventory(data);
     }
 
     public class QuestItem extends PhysicalItem<QuestInventory> {
@@ -240,12 +240,12 @@ public class QuestViewer extends EditableInventory {
         private final List<Quest> quests = new ArrayList<>(MMOCore.plugin.questManager.getAll());
         private final PlayerData playerData;
 
-        public QuestInventory(PlayerData playerData, EditableInventory editable) {
-            super(new Navigator(playerData.getMMOPlayerData()), editable);
+        public QuestInventory(PlayerData playerData) {
+            super(new Navigator(playerData.getMMOPlayerData()), QuestViewer.this);
 
             this.playerData = playerData;
 
-            enablePagination(getByFunction("quest").getSlots().size());
+            enablePagination(QuestViewer.this.getByFunction("quest").getSlots().size());
         }
 
         @Override

@@ -251,7 +251,7 @@ public class EditableGuildView extends EditableInventory {
             this.playerData = playerData;
             isGuildOwner = playerData.getGuild().getOwner().equals(playerData.getUniqueId());
 
-            enablePagination(getEditable().getByFunction("member").getSlots().size());
+            enablePagination(EditableGuildView.this.getByFunction("member").getSlots().size());
         }
 
         @Override

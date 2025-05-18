@@ -112,7 +112,7 @@ public class SkillTreeViewer extends EditableInventory {
     }
 
     public SkillTreeInventory newInventory(PlayerData playerData) {
-        return new SkillTreeInventory(playerData, this, defaultSkillTree);
+        return new SkillTreeInventory(playerData, defaultSkillTree);
     }
 
     public class ReallocateButton extends PhysicalItem<SkillTreeInventory> {
@@ -477,18 +477,18 @@ public class SkillTreeViewer extends EditableInventory {
         //width and height correspond to the the size of the 'board' representing the skill tree
         private int minSlot, maxSlot;
 
-        public SkillTreeInventory(PlayerData playerData, EditableInventory editable, SkillTree skillTree) {
-            super(new Navigator(playerData.getMMOPlayerData()), editable);
+        public SkillTreeInventory(PlayerData playerData, SkillTree skillTree) {
+            super(new Navigator(playerData.getMMOPlayerData()), SkillTreeViewer.this);
 
             this.playerData = playerData;
             skillTrees = playerData.getProfess().getSkillTrees();
             this.skillTree = skillTree == null ? skillTrees.get(0) : skillTree;
             if (skillTree == null)
-                maxTreeListPage = (skillTrees.size() - 1) / editable.getByFunction("skill-tree").getSlots().size();
+                maxTreeListPage = (skillTrees.size() - 1) / SkillTreeViewer.this.getByFunction("skill-tree").getSlots().size();
             else
                 maxTreeListPage = 0;
             //We get the width and height of the GUI(corresponding to the slots given)
-            slots = editable.getByFunction("skill-tree-node").getSlots();
+            slots = SkillTreeViewer.this.getByFunction("skill-tree-node").getSlots();
             minSlot = 64;
             maxSlot = 0;
             for (int slot : slots) {

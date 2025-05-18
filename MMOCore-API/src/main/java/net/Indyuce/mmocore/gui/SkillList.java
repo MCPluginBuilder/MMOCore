@@ -65,7 +65,7 @@ public class SkillList extends EditableInventory {
     }
 
     public GeneratedInventory newInventory(PlayerData data) {
-        return new SkillViewerInventory(data, this);
+        return new SkillViewerInventory(data);
     }
 
     public class ReallocationItem extends PhysicalItem<SkillViewerInventory> {
@@ -498,8 +498,8 @@ public class SkillList extends EditableInventory {
 
         private final PlayerData playerData;
 
-        public SkillViewerInventory(PlayerData playerData, EditableInventory editable) {
-            super(new Navigator(playerData.getMMOPlayerData()), editable);
+        public SkillViewerInventory(PlayerData playerData) {
+            super(new Navigator(playerData.getMMOPlayerData()), SkillList.this);
 
             this.playerData = playerData;
             skills = playerData.getProfess().getSkills().stream().filter(playerData::hasUnlocked).sorted(Comparator.comparingInt(ClassSkill::getUnlockLevel)).collect(Collectors.toList());

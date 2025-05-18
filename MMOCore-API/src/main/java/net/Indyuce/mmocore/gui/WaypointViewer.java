@@ -50,7 +50,7 @@ public class WaypointViewer extends EditableInventory {
     }
 
     public GeneratedInventory newInventory(PlayerData data, Waypoint waypoint) {
-        return new WaypointViewerInventory(data, this, waypoint);
+        return new WaypointViewerInventory(data, waypoint);
     }
 
     public class WaypointItem extends InventoryItem<WaypointViewerInventory> {
@@ -218,14 +218,14 @@ public class WaypointViewer extends EditableInventory {
 
         private Map<Waypoint, WaypointPath> paths;
 
-        public WaypointViewerInventory(PlayerData playerData, EditableInventory editable, Waypoint current) {
-            super(new Navigator(playerData.getMMOPlayerData()), editable);
+        public WaypointViewerInventory(PlayerData playerData, Waypoint current) {
+            super(new Navigator(playerData.getMMOPlayerData()), WaypointViewer.this);
 
             this.playerData = playerData;
             this.current = current;
             paths = new WaypointPathCalculation(playerData).run(current).getPaths();
 
-            enablePagination(editable.getByFunction("waypoint").getSlots().size());
+            enablePagination(WaypointViewer.this.getByFunction("waypoint").getSlots().size());
         }
 
         @Override
