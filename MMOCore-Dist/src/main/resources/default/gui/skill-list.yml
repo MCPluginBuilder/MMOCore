@@ -11,6 +11,7 @@ items:
 
     function: skill
     name: '&a{skill} &6[{level}]'
+    hide-flags: true
     lore:
       - ''
       - '{unlocked}&a✔ Requires Level {unlock}'

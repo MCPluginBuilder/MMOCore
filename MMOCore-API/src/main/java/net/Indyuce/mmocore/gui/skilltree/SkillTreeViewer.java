@@ -38,7 +38,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 public class SkillTreeViewer extends EditableInventory {
     protected final Map<DisplayInfo, Icon> icons = new HashMap<>();
@@ -220,6 +219,20 @@ public class SkillTreeViewer extends EditableInventory {
         }
 
         @Override
+        public void preprocessLore(@NotNull SkillTreeInventory inv, int n, @NotNull List<String> lore) {
+
+            int index = inv.getEditable().getByFunction("skill-tree").getSlots().size() * inv.treeListPage + n;
+            if (inv.skillTrees.size() <= index) return;
+            SkillTree skillTree = inv.skillTrees.get(index);
+
+            var loreIdx = lore.indexOf("{tree-lore}");
+            if (loreIdx != -1) {
+                lore.remove(loreIdx);
+                lore.addAll(loreIdx, skillTree.getLore());
+            }
+        }
+
+        @Override
         public ItemStack getDisplayedItem(SkillTreeInventory inv, int n) {
             int index = inv.getEditable().getByFunction("skill-tree").getSlots().size() * inv.treeListPage + n;
             if (inv.skillTrees.size() <= index) return null;
@@ -229,17 +242,8 @@ public class SkillTreeViewer extends EditableInventory {
             ItemStack item = super.getDisplayedItem(inv, ItemOptions.material(n, skillTree.getItem()));
 
             ItemMeta meta = item.getItemMeta();
-            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES); // Hardcore 'hide-flags' on
             meta.setDisplayName(skillTree.getName());
-            Placeholders holders = getPlaceholders(inv, n);
-            List<String> lore = new ArrayList<>();
-            meta.getLore().forEach(string -> {
-                if (string.contains("{tree-lore}")) {
-                    lore.addAll(skillTree.getLore());
-                } else
-                    lore.add(holders.apply(inv.getPlayer(), string));
-            });
-            meta.setLore(lore);
             meta.setCustomModelData(skillTree.getCustomModelData());
             PersistentDataContainer container = meta.getPersistentDataContainer();
             container.set(new NamespacedKey(MMOCore.plugin, "skill-tree-id"), PersistentDataType.STRING, skillTree.getId());
@@ -322,6 +326,42 @@ public class SkillTreeViewer extends EditableInventory {
             return true;
         }
 
+        @Override
+        public void preprocessLore(@NotNull SkillTreeInventory inv, int n, @NotNull List<String> lore) {
+            IntegerCoordinates coordinates = inv.getCoordinates(n);
+            if (!inv.getSkillTree().isNode(coordinates)) return;
+
+            SkillTreeNode node = inv.getSkillTree().getNode(coordinates);
+
+            for (int i = 0; i < lore.size(); ) {
+                String str = lore.get(i);
+                if (str.contains("{node-lore}")) {
+                    lore.remove(i);
+                    List<String> shaded = node.getLore(inv.playerData);
+                    var _i = i;
+                    shaded.forEach(s -> lore.add(_i, str.replace("{node-lore}", s)));
+                    i += shaded.size();
+                } else if (str.contains("{strong-parents}")) {
+                    lore.remove(i);
+                    List<String> shaded = getParentsLore(inv, node, node.getParents(ParentType.STRONG));
+                    lore.addAll(i, shaded);
+                    i += shaded.size();
+                } else if (str.contains("{soft-parents}")) {
+                    lore.remove(i);
+                    List<String> shaded = getParentsLore(inv, node, node.getParents(ParentType.SOFT));
+                    lore.addAll(i, shaded);
+                    i += shaded.size();
+                } else if (str.contains("{incompatible-parents}")) {
+                    lore.remove(i);
+                    List<String> shaded = getParentsLore(inv, node, node.getParents(ParentType.INCOMPATIBLE));
+                    lore.addAll(i, shaded);
+                    i += shaded.size();
+                } else {
+                    i++;
+                }
+            }
+        }
+
         /**
          * Display the node/path with the lore and name filled in the yml of the skill tree node with the right material
          * and model-data.
@@ -331,43 +371,30 @@ public class SkillTreeViewer extends EditableInventory {
         @Override
         public ItemStack getDisplayedItem(SkillTreeInventory inv, int n) {
             IntegerCoordinates coordinates = inv.getCoordinates(n);
-            if (inv.getSkillTree().isPathOrNode(coordinates)) {
-                Icon icon = inv.getIcon(coordinates);
-                ItemStack item = super.getDisplayedItem(inv, icon.toItemOptions(n));
-                ItemMeta meta = item.getItemMeta();
-                Placeholders holders = getPlaceholders(inv, n);
-                if (inv.getSkillTree().isNode(coordinates)) {
-                    SkillTreeNode node = inv.getSkillTree().getNode(coordinates);
-                    List<String> lore = new ArrayList<>();
-                    meta.getLore().forEach(str -> {
-                        if (str.contains("{node-lore}")) {
-                            node.getLore(inv.playerData).forEach(s -> lore.add(holders.apply(inv.getPlayer(), str.replace("{node-lore}", s))));
-                        } else if (str.contains("{strong-parents}")) {
-                            lore.addAll(getParentsLore(inv, node, node.getParents(ParentType.STRONG)));
-                        } else if (str.contains("{soft-parents}")) {
-                            lore.addAll(getParentsLore(inv, node, node.getParents(ParentType.SOFT)));
-                        } else if (str.contains("{incompatible-parents}")) {
-                            lore.addAll(getParentsLore(inv, node, node.getParents(ParentType.INCOMPATIBLE)));
-                        } else
-                            lore.add(holders.apply(inv.getPlayer(), str));
-                    });
-                    meta.setLore(lore);
-                    final String name = meta.getDisplayName();
-                    meta.setDisplayName(name == null || name.isEmpty() ? node.getName() : name);
-                }
-                //If it is path we remove the display name and the lore.
-                else {
-                    meta.setLore(pathLore.stream().map(str -> holders.apply(inv.getPlayer(), str)).collect(Collectors.toList()));
-                    meta.setDisplayName(" ");
-                }
-                meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-                PersistentDataContainer container = meta.getPersistentDataContainer();
-                container.set(new NamespacedKey(MMOCore.plugin, "coordinates.x"), PersistentDataType.INTEGER, coordinates.getX());
-                container.set(new NamespacedKey(MMOCore.plugin, "coordinates.y"), PersistentDataType.INTEGER, coordinates.getY());
-                item.setItemMeta(meta);
-                return item;
+            if (!inv.getSkillTree().isPathOrNode(coordinates)) return new ItemStack(Material.AIR);
+
+            Icon icon = inv.getIcon(coordinates);
+            ItemStack item = super.getDisplayedItem(inv, icon.toItemOptions(n));
+            ItemMeta meta = item.getItemMeta();
+
+            // Make sure name is not null
+            if (inv.getSkillTree().isNode(coordinates)) {
+                SkillTreeNode node = inv.getSkillTree().getNode(coordinates);
+                if (!meta.hasDisplayName() || meta.getDisplayName().isEmpty()) meta.setDisplayName(node.getName());
             }
-            return new ItemStack(Material.AIR);
+
+            // If it is path we remove the display name and the lore.
+            else {
+                meta.setLore(new ArrayList<>(pathLore));
+                meta.setDisplayName(" ");
+            }
+
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES); // Hardcode hide-flags to 'true'
+            PersistentDataContainer container = meta.getPersistentDataContainer();
+            container.set(new NamespacedKey(MMOCore.plugin, "coordinates.x"), PersistentDataType.INTEGER, coordinates.getX());
+            container.set(new NamespacedKey(MMOCore.plugin, "coordinates.y"), PersistentDataType.INTEGER, coordinates.getY());
+            item.setItemMeta(meta);
+            return item;
         }
 
         /**

@@ -19,18 +19,15 @@ import net.Indyuce.mmocore.skill.ClassSkill;
 import net.Indyuce.mmocore.skill.RegisteredSkill;
 import net.Indyuce.mmocore.skill.binding.SkillSlot;
 import org.apache.commons.lang.Validate;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -120,42 +117,52 @@ public class SkillList extends EditableInventory {
         }
 
         @Override
-        public ItemStack getDisplayedItem(SkillViewerInventory inv, int n) {
-            if (inv.selected == null) return new ItemStack(Material.AIR);
+        public void preprocessLore(@NotNull SkillViewerInventory inv, int index, @NotNull List<String> lore) {
+            if (inv.selected == null) return;
 
-            ItemStack item = getDisplayedItem(inv, inv.selected.getSkill().getRawIcon().toItemOptions(n));
-            ItemMeta meta = item.getItemMeta();
             int skillLevel = inv.playerData.getSkillLevel(inv.selected.getSkill());
             boolean unlocked = inv.selected.getUnlockLevel() <= inv.playerData.getLevel();
 
-            if (meta.hasLore()) {
-                Placeholders holders = getPlaceholders(inv, n);
-                List<String> lore = new ArrayList<>();
-                for (String str : meta.getLore()) {
-                    if ((str.startsWith(ChatColor.GRAY + "{unlocked}") && !unlocked) || (str.startsWith(ChatColor.GRAY + "{locked}") && unlocked) || (str.startsWith(ChatColor.GRAY + "{max_level}") && (!inv.selected.hasMaxLevel() || inv.selected.getMaxLevel() > inv.playerData.getSkillLevel(inv.selected.getSkill()))))
-                        continue;
-                    if (str.contains("{lore}")) for (String loreLine : inv.selected.calculateLore(inv.playerData))
-                        lore.add(ChatColor.GRAY + loreLine);
-                    else lore.add(holders.apply(inv.getPlayer(), str));
-                }
-                meta.setLore(lore);
+            // Replace skill lore
+            int loreIdx = lore.indexOf("{lore}");
+            if (loreIdx >= 0) {
+                lore.remove(loreIdx);
+                lore.addAll(loreIdx, inv.selected.calculateLore(inv.playerData));
             }
 
-            if (meta.hasDisplayName()) {
-                meta.setDisplayName(MMOCore.plugin.placeholderParser.parse(inv.getPlayer(), meta.getDisplayName().replace("{skill}", inv.selected.getSkill().getName()).replace("{roman}", MMOCoreUtils.intToRoman(skillLevel)).replace("{level}", "" + skillLevel)));
+            // Remove condition placeholders
+            for (var i = 0; i < lore.size(); ) {
+                String str = lore.get(i);
+                if (str.startsWith("{unlocked}")) {
+                    if (!unlocked) lore.remove(i);
+                    else lore.set(i, str.substring("{unlocked}".length()));
+                } else if (str.startsWith("{locked}")) {
+                    if (unlocked) lore.remove(i);
+                    else lore.set(i, str.substring("{locked}".length()));
+                } else if (str.startsWith("{max_level}")) {
+                    if (!inv.selected.hasMaxLevel() || inv.selected.getMaxLevel() > inv.playerData.getSkillLevel(inv.selected.getSkill()))
+                        lore.remove(i);
+                    else lore.set(i, str.substring("{max_level}".length()));
+                } else i++;
             }
+        }
 
-            item.setItemMeta(meta);
-            return item;
+        public ItemStack getDisplayedItem(SkillViewerInventory inv, int n) {
+            if (inv.selected == null) return new ItemStack(Material.AIR);
+
+            return getDisplayedItem(inv, inv.selected.getSkill().getRawIcon().toItemOptions(n));
         }
 
         @Override
         public Placeholders getPlaceholders(SkillViewerInventory inv, int n) {
+            var skillLevel = inv.playerData.getSkillLevel(inv.selected.getSkill());
+
             Placeholders holders = new Placeholders();
             holders.register("selected", inv.selected.getSkill().getName());
             holders.register("skill", inv.selected.getSkill().getName());
             holders.register("unlock", inv.selected.getUnlockLevel());
-            holders.register("level", inv.playerData.getSkillLevel(inv.selected.getSkill()));
+            holders.register("level", skillLevel);
+            holders.register("roman", MMOCoreUtils.intToRoman(skillLevel));
             return holders;
         }
 
