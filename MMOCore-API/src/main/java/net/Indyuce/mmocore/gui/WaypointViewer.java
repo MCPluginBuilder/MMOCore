@@ -17,9 +17,7 @@ import net.Indyuce.mmocore.waypoint.Waypoint;
 import net.Indyuce.mmocore.waypoint.WaypointPath;
 import net.Indyuce.mmocore.waypoint.WaypointPathCalculation;
 import org.apache.commons.lang.Validate;
-import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
@@ -126,27 +124,24 @@ public class WaypointViewer extends EditableInventory {
         }
 
         @Override
-        public ItemStack getDisplayedItem(WaypointViewerInventory inv, int n) {
-            final OfflinePlayer effectivePlayer = getEffectivePlayer(inv, n); // TODO check if this is needed
+        public void preprocessLore(@NotNull WaypointViewerInventory inv, int n, @NotNull List<String> lore) {
+            Waypoint waypoint = inv.waypoints.get(inv.getPageIndex(n));
+            if (waypoint == null) return;
 
+            int loreIdx = lore.indexOf("{lore}");
+            if (loreIdx != -1) {
+                lore.remove(loreIdx);
+                lore.addAll(waypoint.getLore());
+            }
+        }
+
+        @Override
+        public ItemStack getDisplayedItem(WaypointViewerInventory inv, int n) {
             final ItemStack item = super.getDisplayedItem(inv, n);
             final ItemMeta meta = item.getItemMeta();
-            final Placeholders placeholders = getPlaceholders(inv, n); // TODO remove dupe call
 
             // If a player can teleport to another waypoint given his location
             Waypoint waypoint = inv.waypoints.get(inv.getPageIndex(n));
-
-            if (meta.hasLore()) {
-                List<String> lore = new ArrayList<>();
-                meta.getLore().forEach(line -> {
-                    if (line.equals("{lore}")) for (String added : waypoint.getLore())
-                        lore.add(ChatColor.GRAY + placeholders.apply(effectivePlayer, added));
-                    else lore.add(ChatColor.GRAY + placeholders.apply(effectivePlayer, line));
-                });
-                meta.setLore(lore);
-            }
-
-            item.setItemMeta(meta);
 
             // Extra code
             PersistentDataContainer container = meta.getPersistentDataContainer();
@@ -238,6 +233,7 @@ public class WaypointViewer extends EditableInventory {
             return computeMaxPage(waypoints.size());
         }
 
+        @Deprecated
         public boolean isDynamicUse() {
             return current == null;
         }
