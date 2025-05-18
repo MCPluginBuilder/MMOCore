@@ -17,6 +17,9 @@ items:
         slots: [13]
         function: sub-class-arcane-mage
         name: '&a&lThe Arcane Mage'
+        # You can set custom model data int and string here
+        #custom-model-data-string: 'whatever'
+        #custom-model-data: 1234
         lore:
         - '{lore}'
         - ''
