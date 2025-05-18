@@ -21,6 +21,9 @@ items:
         - '&7&oMining unlocks rare ores and raw materials.'
         - '&7&oThis is vital to your rise in power and strength,'
         - '&7&omine frequently for unique and rare drops.'
+        # You can set custom model data int and string here
+        #custom_model_data_string: 'something'
+        #custom_model_data: 1234
     woodcutting-profession:
         slots: [11]
         function: profession_woodcutting

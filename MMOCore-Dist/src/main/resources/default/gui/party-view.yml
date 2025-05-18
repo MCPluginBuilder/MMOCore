@@ -19,6 +19,10 @@ items:
             lore:
             - '&7Level {level} {class}'
             - '&7Online Since: {since}'
+
+        # You can set custom model data int and string here
+        #custom_model_data_string: 'something'
+        #custom_model_data: 1234
     leave:
         slots: [50]
         function: leave

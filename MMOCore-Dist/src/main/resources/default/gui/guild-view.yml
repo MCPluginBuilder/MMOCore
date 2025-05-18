@@ -13,6 +13,10 @@ items:
         empty:  
             item: GRAY_STAINED_GLASS_PANE
             name: '&aNo Player'
+
+            # You can set custom model data int and string here
+            #custom_model_data_string: 'something'
+            #custom_model_data: 1234
         member:
             item: PLAYER_HEAD
             name: '&a{name}'
@@ -20,6 +24,10 @@ items:
             lore:
             - '&7Level {level} {class}'
             - '&7Online Since: {since}'
+
+            # You can set custom model data int and string here
+            #custom_model_data_string: 'something'
+            #custom_model_data: 1234
     next:
         slots: [26]
         function: next
