@@ -2,7 +2,6 @@ package net.Indyuce.mmocore.gui;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.gui.Navigator;
-import io.lumine.mythic.lib.gui.editable.EditableInventory;
 import io.lumine.mythic.lib.gui.editable.GeneratedInventory;
 import io.lumine.mythic.lib.gui.editable.item.InventoryItem;
 import io.lumine.mythic.lib.gui.editable.item.PhysicalItem;
@@ -25,7 +24,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ClassConfirmation extends EditableInventory {
+public class ClassConfirmation extends AbstractClassSelect {
     private final PlayerClass playerClass;
 
     public ClassConfirmation(PlayerClass playerClass, boolean isDefault) {
@@ -42,12 +41,12 @@ public class ClassConfirmation extends EditableInventory {
         return null;
     }
 
-    public GeneratedInventory newInventory(Navigator navigator, PlayerData playerData, boolean setClass) {
-        return newInventory(navigator, playerData, setClass, null);
+    public GeneratedInventory newInventory(Navigator navigator, PlayerData playerData, boolean subclass) {
+        return newInventory(navigator, playerData, subclass, null);
     }
 
-    public GeneratedInventory newInventory(Navigator navigator, PlayerData playerData, boolean setClass, @Nullable Runnable profileRunnable) {
-        return new ClassConfirmationInventory(navigator, playerData, playerClass, setClass, profileRunnable);
+    public GeneratedInventory newInventory(Navigator navigator, PlayerData playerData, boolean subclass, @Nullable Runnable profileRunnable) {
+        return new ClassConfirmationInventory(navigator, playerData, playerClass, subclass, profileRunnable);
     }
 
     public class UnlockedItem extends PhysicalItem<ClassConfirmationInventory> {
@@ -93,7 +92,7 @@ public class ClassConfirmation extends EditableInventory {
             Validate.isTrue(config.contains("locked"), "Could not load 'locked' config");
 
             unlocked = new UnlockedItem(config.getConfigurationSection("unlocked"));
-            locked = new PhysicalItem<ClassConfirmationInventory>(config.getConfigurationSection("locked")) {
+            locked = new PhysicalItem<>(config.getConfigurationSection("locked")) {
 
                 @Override
                 public Placeholders getPlaceholders(ClassConfirmationInventory inv, int n) {
@@ -128,34 +127,21 @@ public class ClassConfirmation extends EditableInventory {
         }
     }
 
-    public class ClassConfirmationInventory extends GeneratedInventory {
+    public class ClassConfirmationInventory extends AbstractClassGeneratedInventory {
         private final PlayerClass profess;
         private final boolean subclass;
-        private final PlayerData playerData;
-
-        @Nullable
-        // TODO check
-        private final Runnable profileRunnable;
 
         public ClassConfirmationInventory(Navigator navigator, PlayerData playerData, PlayerClass profess, boolean subclass, @Nullable Runnable profileRunnable) {
-            super(navigator, ClassConfirmation.this);
+            super(navigator, playerData, profileRunnable);
 
-            this.playerData = playerData;
             this.profess = profess;
             this.subclass = subclass;
-            this.profileRunnable = profileRunnable;
         }
 
         @NotNull
         @Override
         public String getRawName() {
             return guiName.replace("{class}", profess.getName());
-        }
-
-        @Override
-        public void open() {
-            getNavigator().blockClosing();
-            super.open();
         }
     }
 }
