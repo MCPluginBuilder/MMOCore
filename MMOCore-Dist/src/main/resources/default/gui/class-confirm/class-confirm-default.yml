@@ -10,6 +10,13 @@ items:
         slots: [12]
         function: 'yes'
 
+        # Only applies when MMOProfiles is installed.
+        #
+        # If disabled, MMOCore will not send any message/sound
+        # to the player when choosing a class for the first time,
+        # when creating a new MMOProfiles profile.
+        enable_initial_mmoprofiles_class_select_sound: false
+
         # Displayed when the player had already selected this class
         # before (only if class slots are enabled in the config).
         unlocked:

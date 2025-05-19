@@ -69,20 +69,28 @@ public abstract class AbstractClassSelect extends EditableInventory {
     }
 
     public abstract class AbstractClassGeneratedInventory extends GeneratedInventory {
+
+        /**
+         * When a profile plugin is installed, this runnable will be called
+         * as soon as the player chooses a class. It is a callback runnable
+         * that informs MMOProfiles that MMOCore is done and the ProfileCreateEvent
+         * can be safely terminated.
+         */
         @Nullable
-        public final Runnable profileRunnable;
+        public final Runnable profileCallback;
+
         public final PlayerData playerData;
 
-        public AbstractClassGeneratedInventory(Navigator navigator, PlayerData playerData, @Nullable Runnable profileRunnable) {
+        public AbstractClassGeneratedInventory(Navigator navigator, PlayerData playerData, @Nullable Runnable profileCallback) {
             super(navigator, AbstractClassSelect.this);
 
             this.playerData = playerData;
-            this.profileRunnable = profileRunnable;
+            this.profileCallback = profileCallback;
         }
 
         @Override
         public void open() {
-            if (profileRunnable != null) getNavigator().blockClosing();
+            if (profileCallback != null) getNavigator().blockClosing();
             super.open();
         }
     }

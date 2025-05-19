@@ -41,12 +41,8 @@ public class ClassConfirmation extends AbstractClassSelect {
         return null;
     }
 
-    public GeneratedInventory newInventory(Navigator navigator, PlayerData playerData, boolean subclass) {
-        return newInventory(navigator, playerData, subclass, null);
-    }
-
-    public GeneratedInventory newInventory(Navigator navigator, PlayerData playerData, boolean subclass, @Nullable Runnable profileRunnable) {
-        return new ClassConfirmationInventory(navigator, playerData, playerClass, subclass, profileRunnable);
+    public GeneratedInventory newInventory(AbstractClassGeneratedInventory prev, boolean forceSetClass) {
+        return new ClassConfirmationInventory(prev.getNavigator(), prev.playerData, playerClass, forceSetClass, prev.profileCallback);
     }
 
     public class UnlockedItem extends PhysicalItem<ClassConfirmationInventory> {
@@ -57,7 +53,7 @@ public class ClassConfirmation extends AbstractClassSelect {
         @Override
         public Placeholders getPlaceholders(ClassConfirmationInventory inv, int n) {
             PlayerClass profess = inv.profess;
-            ClassDataContainer info = inv.subclass ? inv.playerData : inv.playerData.getClassInfo(profess);
+            ClassDataContainer info = inv.forceSetClass ? inv.playerData : inv.playerData.getClassInfo(profess);
             Placeholders holders = new Placeholders();
 
             final double nextLevelExp = inv.playerData.getLevelUpExperience();
@@ -84,12 +80,15 @@ public class ClassConfirmation extends AbstractClassSelect {
 
     public class YesItem extends InventoryItem<ClassConfirmationInventory> {
         private final InventoryItem<ClassConfirmationInventory> unlocked, locked;
+        private final boolean enableInitialMMOProfilesClassSelectSound;
 
         public YesItem(ConfigurationSection config) {
             super(config);
 
             Validate.isTrue(config.contains("unlocked"), "Could not load 'unlocked' config");
             Validate.isTrue(config.contains("locked"), "Could not load 'locked' config");
+
+            enableInitialMMOProfilesClassSelectSound = config.getBoolean("enable_initial_mmoprofiles_class_select_sound");
 
             unlocked = new UnlockedItem(config.getConfigurationSection("unlocked"));
             locked = new PhysicalItem<>(config.getConfigurationSection("locked")) {
@@ -112,30 +111,37 @@ public class ClassConfirmation extends AbstractClassSelect {
         public void onClick(@NotNull ClassConfirmationInventory inv, @NotNull InventoryClickEvent event) {
             PlayerChangeClassEvent called = new PlayerChangeClassEvent(inv.playerData, inv.profess);
             Bukkit.getPluginManager().callEvent(called);
-            if (called.isCancelled())
-                return;
+            if (called.isCancelled()) return;
 
             inv.getNavigator().unblockClosing();
             inv.playerData.giveClassPoints(-1);
-            if (inv.subclass) inv.playerData.setClass(inv.profess);
+            if (inv.forceSetClass) inv.playerData.setClass(inv.profess);
             else
                 (inv.playerData.hasSavedClass(inv.profess) ? inv.playerData.getClassInfo(inv.profess)
                         : new SavedClassInformation(MMOCore.plugin.playerDataManager.getDefaultData())).load(inv.profess, inv.playerData);
-            ConfigMessage.fromKey("class-select", "class", inv.profess.getName()).send(inv.playerData);
-            MMOCore.plugin.soundManager.getSound(SoundEvent.SELECT_CLASS).playTo(inv.getPlayer());
+
+            // Send message
+            if (enableInitialMMOProfilesClassSelectSound || inv.profileCallback == null) {
+                ConfigMessage.fromKey("class-select", "class", inv.profess.getName()).send(inv.playerData);
+                MMOCore.plugin.soundManager.getSound(SoundEvent.SELECT_CLASS).playTo(inv.getPlayer());
+            }
+
             inv.getPlayer().closeInventory();
+
+            // Call profile callback if necessary
+            if (inv.profileCallback != null) inv.profileCallback.run();
         }
     }
 
     public class ClassConfirmationInventory extends AbstractClassGeneratedInventory {
         private final PlayerClass profess;
-        private final boolean subclass;
+        private final boolean forceSetClass;
 
-        public ClassConfirmationInventory(Navigator navigator, PlayerData playerData, PlayerClass profess, boolean subclass, @Nullable Runnable profileRunnable) {
-            super(navigator, playerData, profileRunnable);
+        public ClassConfirmationInventory(Navigator navigator, PlayerData playerData, PlayerClass profess, boolean forceSetClass, @Nullable Runnable profileCallback) {
+            super(navigator, playerData, profileCallback);
 
             this.profess = profess;
-            this.subclass = subclass;
+            this.forceSetClass = forceSetClass;
         }
 
         @NotNull

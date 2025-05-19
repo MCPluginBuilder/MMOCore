@@ -43,7 +43,7 @@ public class ClassSelect extends AbstractClassSelect {
         @Override
         public void onClick(@NotNull ProfessSelectionInventory inv, @NotNull InventoryClickEvent event) {
 
-            if (inv.profileRunnable == null && inv.playerData.getClassPoints() < 1) {
+            if (inv.profileCallback == null && inv.playerData.getClassPoints() < 1) {
                 MMOCore.plugin.soundManager.getSound(SoundEvent.CANT_SELECT_CLASS).playTo(inv.getPlayer());
                 ConfigMessage.fromKey("cant-choose-new-class").send(inv.playerData);
                 return;
@@ -63,7 +63,7 @@ public class ClassSelect extends AbstractClassSelect {
 
             inv.getNavigator().unblockClosing();
             final PlayerClass playerClass = findDeepestSubclass(inv.playerData, this.playerClass);
-            InventoryManager.CLASS_CONFIRM.get(MMOCoreUtils.ymlName(playerClass.getId())).newInventory(inv.getNavigator(), inv.playerData, inv.profileRunnable != null, inv.profileRunnable).open();
+            InventoryManager.CLASS_CONFIRM.get(MMOCoreUtils.ymlName(playerClass.getId())).newInventory(inv, inv.profileCallback != null).open();
         }
     }
 

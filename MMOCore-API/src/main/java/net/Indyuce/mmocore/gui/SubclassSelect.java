@@ -61,13 +61,13 @@ public class SubclassSelect extends AbstractClassSelect {
                 return;
             }
 
-            InventoryManager.CLASS_CONFIRM.get(playerClass.getId()).newInventory(inv.getNavigator(), inv.playerData, true, null).open();
+            InventoryManager.CLASS_CONFIRM.get(playerClass.getId()).newInventory(inv, true).open();
         }
     }
 
     public class SubclassSelectionInventory extends AbstractClassGeneratedInventory {
         public SubclassSelectionInventory(ClassSelect.ProfessSelectionInventory inv, PlayerData playerData) {
-            super(inv.getNavigator(), playerData, null);
+            super(inv.getNavigator(), playerData, inv.profileCallback);
         }
     }
 }
