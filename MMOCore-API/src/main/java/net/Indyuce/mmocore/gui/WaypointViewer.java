@@ -9,6 +9,7 @@ import io.lumine.mythic.lib.gui.editable.item.SimpleItem;
 import io.lumine.mythic.lib.gui.editable.item.builtin.NextPageItem;
 import io.lumine.mythic.lib.gui.editable.item.builtin.PreviousPageItem;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.player.PlayerActivity;
@@ -16,13 +17,11 @@ import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.waypoint.Waypoint;
 import net.Indyuce.mmocore.waypoint.WaypointPath;
 import net.Indyuce.mmocore.waypoint.WaypointPathCalculation;
-import org.apache.commons.lang.Validate;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -109,7 +108,50 @@ public class WaypointViewer extends EditableInventory {
 
             return availWaypoint.getDisplayedItem(inv, n);
         }
+
+        @Override
+        public void onClick(@NotNull WaypointViewerInventory inv, @NotNull InventoryClickEvent event) {
+
+            // Check item tag
+            var container = event.getCurrentItem().getItemMeta().getPersistentDataContainer();
+            String tag = container.has(WAYPOINT_ID_KEY, PersistentDataType.STRING) ? container.get(WAYPOINT_ID_KEY, PersistentDataType.STRING) : "";
+            if (tag.isEmpty()) return;
+
+            // Locked waypoint?
+            final Waypoint waypoint = MMOCore.plugin.waypointManager.get(tag);
+            if (!inv.playerData.hasWaypoint(waypoint)) {
+                ConfigMessage.fromKey("not-unlocked-waypoint").send(inv.playerData);
+                return;
+            }
+
+            // Cannot teleport to current waypoint
+            if (waypoint.equals(inv.current)) {
+                ConfigMessage.fromKey("standing-on-waypoint").send(inv.playerData);
+                return;
+            }
+
+            // No access to that waypoint
+            if (inv.paths.get(waypoint) == null) {
+                ConfigMessage.fromKey("cannot-teleport-to").send(inv.playerData);
+                return;
+            }
+
+            // Stellium cost
+            double withdraw = inv.paths.get(waypoint).getCost();
+            double left = withdraw - inv.playerData.getStellium();
+            if (left > 0) {
+                ConfigMessage.fromKey("not-enough-stellium", "more", ONE_DIGIT.format(left)).send(inv.playerData);
+                return;
+            }
+
+            if (inv.playerData.getActivityTimeOut(PlayerActivity.USE_WAYPOINT) > 0) return;
+
+            inv.getPlayer().closeInventory();
+            inv.playerData.warp(waypoint, withdraw);
+        }
     }
+
+    private static final NamespacedKey WAYPOINT_ID_KEY = new NamespacedKey(MMOCore.plugin, "waypointId");
 
     public class WaypointItemHandler extends PhysicalItem<WaypointViewerInventory> {
         private final boolean onlyName;
@@ -144,8 +186,8 @@ public class WaypointViewer extends EditableInventory {
             Waypoint waypoint = inv.waypoints.get(inv.getPageIndex(n));
 
             // Extra code
-            PersistentDataContainer container = meta.getPersistentDataContainer();
-            container.set(new NamespacedKey(MMOCore.plugin, "waypointId"), PersistentDataType.STRING, waypoint.getId());
+            var container = meta.getPersistentDataContainer();
+            container.set(WAYPOINT_ID_KEY, PersistentDataType.STRING, waypoint.getId());
             item.setItemMeta(meta);
             return item;
         }
@@ -165,48 +207,6 @@ public class WaypointViewer extends EditableInventory {
             }
 
             return holders;
-        }
-
-        @Override
-        public void onClick(@NotNull WaypointViewerInventory inv, @NotNull InventoryClickEvent event) {
-            PersistentDataContainer container = event.getCurrentItem().getItemMeta().getPersistentDataContainer();
-            String tag = container.has(new NamespacedKey(MMOCore.plugin, "waypointId"), PersistentDataType.STRING) ?
-                    container.get(new NamespacedKey(MMOCore.plugin, "waypointId"), PersistentDataType.STRING) : "";
-
-            if (tag.isEmpty()) return;
-
-            // Locked waypoint?
-            final Waypoint waypoint = MMOCore.plugin.waypointManager.get(tag);
-            if (!inv.playerData.hasWaypoint(waypoint)) {
-                ConfigMessage.fromKey("not-unlocked-waypoint").send(inv.playerData);
-                return;
-            }
-
-            // Cannot teleport to current waypoint
-            if (waypoint.equals(inv.current)) {
-                ConfigMessage.fromKey("standing-on-waypoint").send(inv.playerData);
-                return;
-            }
-
-            // No access to that waypoint
-            if (inv.paths.get(waypoint) == null) {
-                ConfigMessage.fromKey("cannot-teleport-to").send(inv.playerData);
-                return;
-            }
-
-            // Stellium cost
-            double withdraw = inv.paths.get(waypoint).getCost();
-            double left = withdraw - inv.playerData.getStellium();
-            if (left > 0) {
-                ConfigMessage.fromKey("not-enough-stellium", "more", ONE_DIGIT.format(left)).send(inv.playerData);
-                return;
-            }
-
-            if (inv.playerData.getActivityTimeOut(PlayerActivity.USE_WAYPOINT) > 0)
-                return;
-
-            inv.getPlayer().closeInventory();
-            inv.playerData.warp(waypoint, withdraw);
         }
     }
 
