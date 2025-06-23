@@ -1,6 +1,5 @@
 package net.Indyuce.mmocore.skill.cast.handler;
 
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.event.skill.PlayerCastSkillEvent;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
@@ -32,14 +31,14 @@ public class KeyCombos extends SkillCastingHandler {
      * These "starting keys" are saved in the combo map
      */
     @Nullable
-    private final PlayerKey initializerKey;
+    private final Keybind initializerKey;
 
     /**
      * Key players can press in order to cancel the current combo
      * and prematurely leave skill casting.
      */
     @Nullable
-    private final PlayerKey quitKey;
+    private final Keybind quitKey;
 
     /**
      * Handles the display of the action bar when casting a skill.
@@ -67,8 +66,8 @@ public class KeyCombos extends SkillCastingHandler {
         failSkillSound = config.contains("sound.fail-skill") ? new SoundObject(config.getConfigurationSection("sound.fail-skill")) : null;
 
         // Find initializer key
-        initializerKey = config.contains("initializer-key") ? PlayerKey.valueOf(UtilityMethods.enumName(config.get("initializer-key").toString())) : null;
-        quitKey = config.contains("quit-key") ? PlayerKey.valueOf(UtilityMethods.enumName(config.get("quit-key").toString())) : null;
+        initializerKey = Keybind.fromConfig(config.get("initializer-key"));
+        quitKey = Keybind.fromConfig(config.get("quit-key"));
     }
 
     @Override
@@ -92,7 +91,7 @@ public class KeyCombos extends SkillCastingHandler {
 
         // Start combo when there is an initializer key
         if (!event.getData().isCasting() && initializerKey != null) {
-            if (event.getPressed() == initializerKey) {
+            if (initializerKey.matches(event)) {
 
                 // Cancel event if necessary
                 if (event.getPressed().shouldCancelEvent()) event.setCancelled(true);
@@ -104,7 +103,7 @@ public class KeyCombos extends SkillCastingHandler {
         }
 
         // Cancel casting if possible
-        if (quitKey != null && event.getPressed() == quitKey && event.getData().isCasting()) {
+        if (quitKey != null && quitKey.matches(event) && event.getData().isCasting()) {
 
             // Cancel event is necessary
             if (event.getPressed().shouldCancelEvent()) event.setCancelled(true);

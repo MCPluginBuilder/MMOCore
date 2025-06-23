@@ -1,16 +1,14 @@
 package net.Indyuce.mmocore.skill.cast.handler;
 
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
-import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import io.lumine.mythic.lib.util.SoundObject;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerKeyPressEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.skill.ClassSkill;
-import net.Indyuce.mmocore.skill.cast.PlayerKey;
+import net.Indyuce.mmocore.skill.cast.Keybind;
 import net.Indyuce.mmocore.skill.cast.SkillCastingHandler;
 import net.Indyuce.mmocore.skill.cast.SkillCastingInstance;
 import net.Indyuce.mmocore.skill.cast.SkillCastingMode;
@@ -20,21 +18,20 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.jetbrains.annotations.NotNull;
-
 import org.jetbrains.annotations.Nullable;
+
 import java.util.Objects;
 
 public class SkillScroller extends SkillCastingHandler {
 
-    /**
-     * Key players need to press to start casting
-     */
-    private final PlayerKey enterKey, castKey, scrollKey;
+    private final Keybind enterKey, castKey, scrollKey, scrollBackKey;
 
     @Nullable
-    private final SoundObject enterSound, changeSound, leaveSound;
+    private final SoundObject enterSound, changeSound, changeBackSound, leaveSound;
 
     private final String actionBarFormat;
+
+    private final boolean quitOnCast;
 
     public SkillScroller(@NotNull ConfigurationSection config) {
         super(config);
@@ -42,14 +39,17 @@ public class SkillScroller extends SkillCastingHandler {
         // Load sounds
         enterSound = config.contains("sound.enter") ? new SoundObject(config.getConfigurationSection("sound.enter")) : null;
         changeSound = config.contains("sound.change") ? new SoundObject(config.getConfigurationSection("sound.change")) : null;
+        changeBackSound = config.contains("sound.change-back") ? new SoundObject(config.getConfigurationSection("sound.change-back")) : null;
         leaveSound = config.contains("sound.leave") ? new SoundObject(config.getConfigurationSection("sound.leave")) : null;
 
         actionBarFormat = config.getString("action-bar-format", "CLICK TO CAST: {selected}");
+        quitOnCast = config.getBoolean("quit-on-cast", false);
 
         // Find keybinds
-        enterKey = PlayerKey.valueOf(UtilityMethods.enumName(Objects.requireNonNull(config.getString("enter-key"), "Could not find enter key")));
-        castKey = PlayerKey.valueOf(UtilityMethods.enumName(Objects.requireNonNull(config.getString("cast-key"), "Could not find cast key")));
-        scrollKey = config.contains("scroll-key") ? PlayerKey.valueOf(UtilityMethods.enumName(config.getString("scroll-key"))) : null;
+        enterKey = Objects.requireNonNull(Keybind.fromConfig(config.get("enter-key")), "Could not find enter key");
+        castKey = Objects.requireNonNull(Keybind.fromConfig(config.get("cast-key")), "Could not find cast key");
+        scrollKey = Keybind.fromConfig(config.get("scroll-key"));
+        scrollBackKey = Keybind.fromConfig(config.get("scroll-back-key"));
     }
 
     @Override
@@ -69,7 +69,7 @@ public class SkillScroller extends SkillCastingHandler {
         if (player.getGameMode() == GameMode.CREATIVE && !MMOCore.plugin.configManager.canCreativeCast)
             return;
 
-        if (event.getPressed() == enterKey) {
+        if (enterKey.matches(event)) {
 
             // Leave casting mode
             if (playerData.isCasting()) {
@@ -95,14 +95,18 @@ public class SkillScroller extends SkillCastingHandler {
             if (enterSound != null) enterSound.playTo(player);
         }
 
-        if (event.getPressed() == castKey && playerData.isCasting()) {
+        if (castKey.matches(event) && playerData.isCasting()) {
 
             // Cancel event if necessary
             if (event.getPressed().shouldCancelEvent()) event.setCancelled(true);
 
-            CustomSkillCastingInstance casting = (CustomSkillCastingInstance) playerData.getSkillCasting();
-            PlayerMetadata caster = playerData.getMMOPlayerData().getStatMap().cache(EquipmentSlot.MAIN_HAND);
-            casting.getSelected().toCastable(playerData).cast(new TriggerMetadata(caster, null, null));
+            // Cast skill
+            var casting = (CustomSkillCastingInstance) playerData.getSkillCasting();
+            var caster = playerData.getMMOPlayerData().getStatMap().cache(EquipmentSlot.MAIN_HAND);
+            var result = casting.getSelected().toCastable(playerData).cast(new TriggerMetadata(caster, null, null));
+
+            // Quit on cast? Only if successful
+            if (result.isSuccessful() && quitOnCast) playerData.leaveSkillCasting();
         }
     }
 
@@ -126,11 +130,17 @@ public class SkillScroller extends SkillCastingHandler {
 
         @EventHandler
         public void onKeyPress(PlayerKeyPressEvent event) {
-            if (scrollKey == null || event.getPressed() != scrollKey) return;
+            if (scrollKey == null) return;
             if (!event.getData().equals(getCaster())) return;
 
+            // Find scroll direction
+            int delta;
+            if (scrollKey.matches(event)) delta = 1;
+            else if (scrollBackKey != null && scrollBackKey.matches(event)) delta = -1;
+            else return;
+
             event.setCancelled(true);
-            scrollOf(1);
+            scrollOf(delta);
         }
 
         @EventHandler
@@ -152,11 +162,17 @@ public class SkillScroller extends SkillCastingHandler {
         }
 
         private void scrollOf(int delta) {
+
+            // Safeguard, filter out useless scrolls
+            if (delta == 0) return;
+
             this.index = mod(this.index + delta, getActiveSkills().size());
             this.onTick();
             this.refreshTimeOut();
 
-            if (changeSound != null) changeSound.playTo(caster.getPlayer());
+            // Play sound
+            var sound = delta > 0 || changeBackSound == null ? changeSound : changeBackSound; // Select sound
+            if (sound != null) sound.playTo(caster.getPlayer());
         }
     }
 
