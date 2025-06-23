@@ -8,6 +8,7 @@ import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.SoundEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.profess.ClassOption;
+import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import net.Indyuce.mmocore.manager.InventoryManager;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -61,7 +62,7 @@ public class SubclassSelect extends AbstractClassSelect {
                 return;
             }
 
-            InventoryManager.CLASS_CONFIRM.get(playerClass.getId()).newInventory(inv, true).open();
+            InventoryManager.CLASS_CONFIRM.get(MMOCoreUtils.ymlName(playerClass.getId())).newInventory(inv, true).open();
         }
     }
 
