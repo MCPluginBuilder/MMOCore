@@ -1,6 +1,7 @@
 package net.Indyuce.mmocore.skill.cast.handler;
 
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import io.lumine.mythic.lib.util.SoundObject;
@@ -30,7 +31,7 @@ public class SkillScroller extends SkillCastingHandler {
 
     private final String actionBarFormat;
 
-    private final boolean ignoreSneak, quitOnCast, quitOnEmptySwitch;
+    private final boolean ignoreSneak, quitOnCast, quitOnSwitchEmpty;
 
     public SkillScroller(@NotNull ConfigurationSection config) {
         super(config);
@@ -44,7 +45,7 @@ public class SkillScroller extends SkillCastingHandler {
         actionBarFormat = config.getString("action-bar-format", "CLICK TO CAST: {selected}");
         ignoreSneak = config.getBoolean("ignore-sneak");
         quitOnCast = config.getBoolean("quit-on-cast");
-        quitOnEmptySwitch = config.getBoolean("quit-on-switch-empty-hand");
+        quitOnSwitchEmpty = config.getBoolean("quit-on-switch-empty-hand");
 
         // Find keybinds
         enterKey = Objects.requireNonNull(Keybind.fromConfig(config.get("enter-key")), "Could not find enter key");
@@ -133,11 +134,15 @@ public class SkillScroller extends SkillCastingHandler {
 
         @EventHandler
         public void onKeyPress(PlayerKeyPressEvent event) {
-            if (scrollKey == null) return;
-            if (!event.getData().equals(getCaster())) return;
+            if (scrollKey == null) return; // Only when mouse scrolling is enabled
+            if (!event.getData().equals(getCaster())) return; // Player check
+            if (ignoreSneak && event.getPlayer().isSneaking()) return; // Improves compatibility with other plugins
 
-            // Extra option to improve support with other plugins
-            if (ignoreSneak && event.getPlayer().isSneaking()) return;
+            // Quit scrolling if no skill bound
+            if (!caster.hasActiveSkillBound()) {
+                caster.leaveSkillCasting(true);
+                return;
+            }
 
             // Find scroll direction
             int delta;
@@ -151,12 +156,18 @@ public class SkillScroller extends SkillCastingHandler {
 
         @EventHandler
         public void onScroll(PlayerItemHeldEvent event) {
-            if (scrollKey != null) return;
-            if (!event.getPlayer().equals(getCaster().getPlayer())) return;
+            if (!event.getPlayer().equals(getCaster().getPlayer())) return; // Player check
 
-            // Extra option to improve support with other plugins
-            if (ignoreSneak && event.getPlayer().isSneaking()) return;
+            // Quit if switching to empty hand
+            if (quitOnSwitchEmpty && UtilityMethods.isAir(event.getPlayer().getInventory().getItem(event.getNewSlot()))) {
+                caster.leaveSkillCasting(true);
+                return;
+            }
 
+            if (scrollKey != null) return; // Only when mouse scrolling is disabled
+            if (ignoreSneak && event.getPlayer().isSneaking()) return; // Improves compatibility with other plugins
+
+            // Quit scrolling if no skill bound
             if (!caster.hasActiveSkillBound()) {
                 caster.leaveSkillCasting(true);
                 return;
@@ -175,7 +186,7 @@ public class SkillScroller extends SkillCastingHandler {
             // Safeguard, filter out useless scrolls
             if (delta == 0) return;
 
-            caster.permSkillScrollIndex = mod(caster.permSkillScrollIndex + delta, getActiveSkills().size());
+            caster.permSkillScrollIndex = remainder(caster.permSkillScrollIndex + delta, getActiveSkills().size());
             this.onTick();
             this.refreshTimeOut();
 
@@ -185,7 +196,7 @@ public class SkillScroller extends SkillCastingHandler {
         }
     }
 
-    private int mod(int x, int n) {
+    private static int remainder(int x, int n) {
         while (x < 0) x += n;
         while (x >= n) x -= n;
         return x;

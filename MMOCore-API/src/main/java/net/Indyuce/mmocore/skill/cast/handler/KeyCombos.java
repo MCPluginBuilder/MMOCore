@@ -47,7 +47,7 @@ public class KeyCombos extends SkillCastingHandler {
     @Nullable
     private final ActionBarOptions actionBarOptions;
 
-    private final boolean stayIn;
+    private final boolean stayIn, ignoreSneak;
 
     @Nullable
     private final SoundObject beginComboSound, comboClickSound, failComboSound, failSkillSound;
@@ -68,6 +68,7 @@ public class KeyCombos extends SkillCastingHandler {
         // Find initializer key
         initializerKey = Keybind.fromConfig(config.get("initializer-key"));
         quitKey = Keybind.fromConfig(config.get("quit-key"));
+        ignoreSneak = config.getBoolean("ignore-sneak", false);
     }
 
     @Override

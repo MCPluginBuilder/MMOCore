@@ -29,7 +29,7 @@ public class SkillBar extends SkillCastingHandler {
         super(config);
 
         mainKey = Objects.requireNonNull(Keybind.fromConfig(config.get("open")), "Could not find open keybind");
-        ignoreSneak = config.getBoolean("disable-sneak");
+        ignoreSneak = config.getBoolean("ignore-sneak", config.getBoolean("disable-sneak", false));
         lowestKeybinds = config.getBoolean("use-lowest-keybinds");
     }
 
