@@ -63,8 +63,6 @@ public class InventoryManager {
                 MMOCore.log(Level.WARNING, "Could not load inventory 'gui/" + invType.name + "/" + invType.name + "-default" + "': " + exception.getMessage());
             }
 
-            MMOCore.plugin.getLogger().log(Level.INFO, "For inv type " + invType.name+" got " + invType.ids.get());
-
             for (String id : invType.ids.get()) {
                 final var formattedId = UtilityMethods.ymlName(id);
                 final var configFile = new ConfigFile("/gui/" + invType.name, invType.name + "-" + formattedId);
