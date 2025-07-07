@@ -14,7 +14,6 @@ import net.Indyuce.mmocore.skill.cast.SkillCastingInstance;
 import net.Indyuce.mmocore.skill.cast.SkillCastingMode;
 import org.bukkit.GameMode;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.jetbrains.annotations.NotNull;
@@ -31,7 +30,7 @@ public class SkillScroller extends SkillCastingHandler {
 
     private final String actionBarFormat;
 
-    private final boolean quitOnCast;
+    private final boolean ignoreSneak, quitOnCast, quitOnEmptySwitch;
 
     public SkillScroller(@NotNull ConfigurationSection config) {
         super(config);
@@ -43,7 +42,9 @@ public class SkillScroller extends SkillCastingHandler {
         leaveSound = config.contains("sound.leave") ? new SoundObject(config.getConfigurationSection("sound.leave")) : null;
 
         actionBarFormat = config.getString("action-bar-format", "CLICK TO CAST: {selected}");
-        quitOnCast = config.getBoolean("quit-on-cast", false);
+        ignoreSneak = config.getBoolean("ignore-sneak");
+        quitOnCast = config.getBoolean("quit-on-cast");
+        quitOnEmptySwitch = config.getBoolean("quit-on-switch-empty-hand");
 
         // Find keybinds
         enterKey = Objects.requireNonNull(Keybind.fromConfig(config.get("enter-key")), "Could not find enter key");
@@ -64,10 +65,14 @@ public class SkillScroller extends SkillCastingHandler {
 
     @EventHandler
     public void whenPressingKey(PlayerKeyPressEvent event) {
-        PlayerData playerData = event.getData();
-        Player player = playerData.getPlayer();
-        if (player.getGameMode() == GameMode.CREATIVE && !MMOCore.plugin.configManager.canCreativeCast)
-            return;
+        var playerData = event.getData();
+        var player = playerData.getPlayer();
+
+        // Disable creative
+        if (player.getGameMode() == GameMode.CREATIVE && !MMOCore.plugin.configManager.canCreativeCast) return;
+
+        // Extra option to improve support with other plugins
+        if (ignoreSneak && player.isSneaking()) return;
 
         if (enterKey.matches(event)) {
 
@@ -111,8 +116,6 @@ public class SkillScroller extends SkillCastingHandler {
     }
 
     public class CustomSkillCastingInstance extends SkillCastingInstance {
-        private int index = 0;
-
         CustomSkillCastingInstance(PlayerData caster) {
             super(SkillScroller.this, caster);
         }
@@ -125,13 +128,16 @@ public class SkillScroller extends SkillCastingHandler {
         }
 
         public ClassSkill getSelected() {
-            return getActiveSkills().get(index).getClassSkill();
+            return getActiveSkills().get(caster.permSkillScrollIndex).getClassSkill();
         }
 
         @EventHandler
         public void onKeyPress(PlayerKeyPressEvent event) {
             if (scrollKey == null) return;
             if (!event.getData().equals(getCaster())) return;
+
+            // Extra option to improve support with other plugins
+            if (ignoreSneak && event.getPlayer().isSneaking()) return;
 
             // Find scroll direction
             int delta;
@@ -147,6 +153,9 @@ public class SkillScroller extends SkillCastingHandler {
         public void onScroll(PlayerItemHeldEvent event) {
             if (scrollKey != null) return;
             if (!event.getPlayer().equals(getCaster().getPlayer())) return;
+
+            // Extra option to improve support with other plugins
+            if (ignoreSneak && event.getPlayer().isSneaking()) return;
 
             if (!caster.hasActiveSkillBound()) {
                 caster.leaveSkillCasting(true);
@@ -166,7 +175,7 @@ public class SkillScroller extends SkillCastingHandler {
             // Safeguard, filter out useless scrolls
             if (delta == 0) return;
 
-            this.index = mod(this.index + delta, getActiveSkills().size());
+            caster.permSkillScrollIndex = mod(caster.permSkillScrollIndex + delta, getActiveSkills().size());
             this.onTick();
             this.refreshTimeOut();
 
