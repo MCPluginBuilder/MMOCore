@@ -4,6 +4,7 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.util.AltChar;
 import io.lumine.mythic.lib.manager.StatManager;
+import io.lumine.mythic.lib.version.Attributes;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
@@ -20,10 +21,9 @@ import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -79,6 +79,12 @@ public class RPGPlaceholders extends PlaceholderExpansion {
             return String.valueOf(playerData.getSkillLevel(skill));
         }
 
+        else if (identifier.startsWith("skill_tree_points_")) {
+            int length = "skill_tree_points_".length();
+            String id = identifier.substring(length);
+            return String.valueOf(PlayerData.get(player).getSkillTreePoints(id));
+        }
+
         /*
          * Given a skill slot number (integer) and a parameter name,
          * return the player's value of that skill parameter from that
@@ -115,15 +121,19 @@ public class RPGPlaceholders extends PlaceholderExpansion {
             return StatManager.format("MAX_HEALTH", player.getPlayer().getHealth());
 
         else if (identifier.equals("max_health"))
-            return StatManager.format("MAX_HEALTH", player.getPlayer().getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+            return StatManager.format("MAX_HEALTH", player.getPlayer().getAttribute(Attributes.MAX_HEALTH).getValue());
 
         else if (identifier.equals("health_bar") && player.isOnline()) {
             StringBuilder format = new StringBuilder();
-            double ratio = 20 * player.getPlayer().getHealth() / player.getPlayer().getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+            double ratio = 20 * player.getPlayer().getHealth() / player.getPlayer().getAttribute(Attributes.MAX_HEALTH).getValue();
             for (double j = 1; j < 20; j++)
                 format.append(ratio >= j ? ChatColor.RED : ratio >= j - .5 ? ChatColor.DARK_RED : ChatColor.DARK_GRAY).append(AltChar.listSquare);
             return format.toString();
-        } else if (identifier.equals("class"))
+        }
+
+        else if (identifier.equals("class_id"))
+            return playerData.getProfess().getId();
+         else if (identifier.equals("class"))
             return playerData.getProfess().getName();
 
         else if (identifier.startsWith("profession_percent_")) {

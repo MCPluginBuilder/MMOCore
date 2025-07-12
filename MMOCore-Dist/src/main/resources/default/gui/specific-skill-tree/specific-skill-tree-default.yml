@@ -71,7 +71,7 @@ items:
       - '&7{node-lore}'
       - ''
       - '&e◆ Points Spent:&6 {point-spent}&e/&6{max-point-spent}'
-      - '&e◆ Current {skill-tree} &ePoints: &6{skill-tree-points} &e(&6{global-points} &eglobal)'
+      - '&e◆ Available: &6{skill-tree-points} &e(&6{global-points} &eglobal)'
     path-lore: []
 
 #This is the name that will be displayed for each status.

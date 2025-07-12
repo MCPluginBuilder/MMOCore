@@ -1,6 +1,7 @@
 package net.Indyuce.mmocore.util;
 
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.gui.editable.item.ItemOptions;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -41,6 +42,11 @@ public class Icon {
         return stack;
     }
 
+    @NotNull
+    public ItemOptions toItemOptions(int index) {
+        return ItemOptions.model(index, material, modelData);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -57,6 +63,12 @@ public class Icon {
     @Override
     public String toString() {
         return "Icon{" + "material=" + material + ", customModelData=" + modelData + '}';
+    }
+
+    public static Icon fromItem(@NotNull ItemStack from) {
+        Material mat = from.getType();
+        int cmd = from.hasItemMeta() ? from.getItemMeta().getCustomModelData() : 0;
+        return new Icon(mat, cmd);
     }
 
     @NotNull

@@ -21,14 +21,14 @@ public enum SkillCastingMode {
      * When pressing a key, the list of bound skills display on the
      * action bar
      */
-    SKILL_BAR(config -> new SkillBar(config)),
+    SKILL_BAR(SkillBar::new),
 
     /**
      * When entering casting mode you can use the mouse scroller
      * to navigate through the entire castable skill list. Then press
      * one key to cast the one selected.
      */
-    SKILL_SCROLLER(config -> new SkillScroller(config)),
+    SKILL_SCROLLER(SkillScroller::new),
 
     /**
      * Initialize your skill combo by pressing some key.
@@ -37,12 +37,12 @@ public enum SkillCastingMode {
      * to map key combos to skill bind slots, for instance LLR
      * would cast the 2nd skill but LRL the 3rd one.
      */
-    KEY_COMBOS(config -> new KeyCombos(config)),
+    KEY_COMBOS(KeyCombos::new),
 
     /**
      * Entirely disables skill casting.
      */
-    NONE(config -> new SkillCastingDisabled(config));
+    NONE(SkillCastingDisabled::new);
 
     /**
      * Not implemented yet.

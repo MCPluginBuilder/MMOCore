@@ -20,6 +20,9 @@ items:
         no-quest:
             item: GRAY_STAINED_GLASS_PANE
             name: '&a'
+            # You can set custom model data int and string here
+            #custom_model_data_string: 'something'
+            #custom_model_data: 1234
         
         level-requirement:
             main:
@@ -28,12 +31,18 @@ items:
             profession:
                 hit: '&a  ✔ Requires {profession} Level {level}'
                 not-hit: '&c  ✖ Requires {profession} Level {level}'
+            # You can set custom model data int and string here
+            #custom_model_data_string: 'something'
+            #custom_model_data: 1234
         
         # Date format used in the {date} placeholder
         date-format: 'MMM d yyyy'
         
         item: BOOK
         name: '&a{name}'
+        # You can set custom model data int and string here
+        #custom_model_data_string: 'something'
+        #custom_model_data: 1234
         lore:
         - '{lore}'
         - ''

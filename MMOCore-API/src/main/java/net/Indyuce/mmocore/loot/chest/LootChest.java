@@ -14,7 +14,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class LootChest {
     private final ChestTier tier;

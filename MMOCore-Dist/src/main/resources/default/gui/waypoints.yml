@@ -39,6 +39,9 @@ items:
     current-waypoint:
       name: '&a{name}'
       item: ENDER_PEARL
+      # You can set custom model data int and string here
+      #custom-model-data-string: 'whatever'
+      #custom-model-data: 1234
 
       lore:
         - '{lore}'
@@ -48,6 +51,9 @@ items:
     not-enough-stellium:
       name: '&a{name}'
       item: ENDER_PEARL
+      # You can set custom model data int and string here
+      #custom-model-data-string: 'whatever'
+      #custom-model-data: 1234
 
       lore:
         - '{lore}'
@@ -58,6 +64,9 @@ items:
     display:
       name: '&a{name}'
       item: ENDER_EYE
+      # You can set custom model data int and string here
+      #custom-model-data-string: 'whatever'
+      #custom-model-data: 1234
       path:
         splitter: ', '
         none: 'None'

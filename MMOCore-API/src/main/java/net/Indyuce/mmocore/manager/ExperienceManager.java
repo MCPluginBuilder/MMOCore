@@ -10,7 +10,7 @@ import org.apache.commons.lang.Validate;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class ExperienceManager implements MMOCoreManager {

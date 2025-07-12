@@ -11,7 +11,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import net.Indyuce.mmocore.api.ConfigFile;
 import net.Indyuce.mmocore.guild.provided.Guild;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class GuildDataManager {
     protected final Map<String, Guild> guilds = new HashMap<>();

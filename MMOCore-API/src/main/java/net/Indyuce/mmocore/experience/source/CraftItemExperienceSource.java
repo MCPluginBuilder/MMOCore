@@ -16,7 +16,7 @@ import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.ItemStack;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class CraftItemExperienceSource extends SpecificExperienceSource<Material> {
     public final Material material;

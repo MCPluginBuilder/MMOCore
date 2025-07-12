@@ -10,3 +10,5 @@ MMOCore.eml
 MMOCore.iml
 /MMOCore-API/MMOCore-API.iml
 /MMOCore-Dist/MMOCore-Dist.iml
+
+local_install.bat

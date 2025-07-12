@@ -98,7 +98,7 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
     public PlayerClass(String id, ConfigurationSection config) {
         postLoadAction.cacheConfig(config);
 
-        this.id = id.toUpperCase().replace("-", "_").replace(" ", "_");
+        this.id = UtilityMethods.enumName(id);
 
         name = MythicLib.plugin.parseColors(config.getString("display.name", "INVALID DISPLAY NAME"));
         icon = Icon.from(config.get("display.item", "BARRIER")).toItem();

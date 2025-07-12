@@ -54,7 +54,7 @@ public class YAMLPlayerDataHandler extends YAMLSynchronizedDataHandler<PlayerDat
         data.setAttributePoints(config.getInt("attribute-points"));
         data.setAttributeReallocationPoints(config.getInt("attribute-realloc-points"));
         data.setLevel(config.getInt("level"));
-        data.setExperience(config.getInt("experience"));
+        data.setExperience(config.getDouble("experience"));
         if (config.contains("class")) data.setClass(MMOCore.plugin.classManager.get(config.getString("class")));
 
         if (config.contains("guild")) {
@@ -199,7 +199,7 @@ public class YAMLPlayerDataHandler extends YAMLSynchronizedDataHandler<PlayerDat
             info.getSkillKeys().forEach(skill -> config.set("class-info." + key + ".skill." + skill, info.getSkillLevel(skill)));
             info.getAttributeKeys().forEach(attribute -> config.set("class-info." + key + ".attribute." + attribute, info.getAttributeLevel(attribute)));
             info.getNodeKeys().forEach(node -> config.set("class-info." + key + ".node-levels." + node, info.getNodeLevel(node)));
-            info.getSkillTreePointsKeys().forEach(skillTreeId -> config.set("class-info." + key + ".skill-tree-points." + skillTreeId, info.getAttributeLevel(skillTreeId)));
+            info.getSkillTreePointsKeys().forEach(skillTreeId -> config.set("class-info." + key + ".skill-tree-points." + skillTreeId, info.getSkillTreePoints(skillTreeId)));
             info.mapBoundSkills().forEach((slot, skill) -> config.set("class-info." + key + ".bound-skills." + slot, skill));
             config.set("class-info." + key + ".unlocked-items", new ArrayList<>(info.getUnlockedItems()));
         }

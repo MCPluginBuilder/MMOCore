@@ -1,8 +1,8 @@
 package net.Indyuce.mmocore.skill.cast.handler;
 
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.event.skill.PlayerCastSkillEvent;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
+import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.skill.result.SkillResult;
 import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
@@ -11,7 +11,6 @@ import io.lumine.mythic.lib.util.SoundObject;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerKeyPressEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import net.Indyuce.mmocore.gui.api.item.Placeholders;
 import net.Indyuce.mmocore.skill.ClassSkill;
 import net.Indyuce.mmocore.skill.cast.*;
 import org.bukkit.GameMode;
@@ -19,8 +18,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 public class KeyCombos extends SkillCastingHandler {
@@ -32,14 +31,14 @@ public class KeyCombos extends SkillCastingHandler {
      * These "starting keys" are saved in the combo map
      */
     @Nullable
-    private final PlayerKey initializerKey;
+    private final Keybind initializerKey;
 
     /**
      * Key players can press in order to cancel the current combo
      * and prematurely leave skill casting.
      */
     @Nullable
-    private final PlayerKey quitKey;
+    private final Keybind quitKey;
 
     /**
      * Handles the display of the action bar when casting a skill.
@@ -48,7 +47,7 @@ public class KeyCombos extends SkillCastingHandler {
     @Nullable
     private final ActionBarOptions actionBarOptions;
 
-    private final boolean stayIn;
+    private final boolean stayIn, ignoreSneak;
 
     @Nullable
     private final SoundObject beginComboSound, comboClickSound, failComboSound, failSkillSound;
@@ -67,8 +66,9 @@ public class KeyCombos extends SkillCastingHandler {
         failSkillSound = config.contains("sound.fail-skill") ? new SoundObject(config.getConfigurationSection("sound.fail-skill")) : null;
 
         // Find initializer key
-        initializerKey = config.contains("initializer-key") ? PlayerKey.valueOf(UtilityMethods.enumName(config.get("initializer-key").toString())) : null;
-        quitKey = config.contains("quit-key") ? PlayerKey.valueOf(UtilityMethods.enumName(config.get("quit-key").toString())) : null;
+        initializerKey = Keybind.fromConfig(config.get("initializer-key"));
+        quitKey = Keybind.fromConfig(config.get("quit-key"));
+        ignoreSneak = config.getBoolean("ignore-sneak", false);
     }
 
     @Override
@@ -92,7 +92,7 @@ public class KeyCombos extends SkillCastingHandler {
 
         // Start combo when there is an initializer key
         if (!event.getData().isCasting() && initializerKey != null) {
-            if (event.getPressed() == initializerKey) {
+            if (initializerKey.matches(event)) {
 
                 // Cancel event if necessary
                 if (event.getPressed().shouldCancelEvent()) event.setCancelled(true);
@@ -104,7 +104,7 @@ public class KeyCombos extends SkillCastingHandler {
         }
 
         // Cancel casting if possible
-        if (quitKey != null && event.getPressed() == quitKey && event.getData().isCasting()) {
+        if (quitKey != null && quitKey.matches(event) && event.getData().isCasting()) {
 
             // Cancel event is necessary
             if (event.getPressed().shouldCancelEvent()) event.setCancelled(true);
@@ -205,7 +205,7 @@ public class KeyCombos extends SkillCastingHandler {
          */
         @EventHandler
         public void ignoreOtherSkills(PlayerCastSkillEvent event) {
-            if (event.getPlayer().equals(getCaster().getPlayer()) && IGNORED_WHEN_CASTING.contains(event.getCast().getTrigger()))
+            if (event.getPlayer().equals(getCaster().getPlayer()) && IGNORED_WHEN_CASTING.contains(event.getMetadata()))
                 event.setCancelled(true);
         }
     }

@@ -1,8 +1,8 @@
 package net.Indyuce.mmocore.api.util.input;
 
+import io.lumine.mythic.lib.gui.editable.GeneratedInventory;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.ConfigMessage;
-import net.Indyuce.mmocore.gui.api.PluginInventory;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -13,10 +13,9 @@ import org.bukkit.util.Consumer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-
 public class ChatInput extends PlayerInput {
     private final InputType inputType;
-    private final PluginInventory lastOpened;
+    private final GeneratedInventory lastOpened;
 
     @Deprecated
     public ChatInput(@NotNull Player player, @NotNull InputType inputType, @NotNull Consumer<String> output) {
@@ -31,7 +30,7 @@ public class ChatInput extends PlayerInput {
      * @param lastOpened Inventory opened again if 'cancel' is input. Set to null to disable
      * @param output     What to do when input is detected
      */
-    public ChatInput(@NotNull Player player, @NotNull InputType inputType, @Nullable PluginInventory lastOpened, @NotNull Consumer<String> output) {
+    public ChatInput(@NotNull Player player, @NotNull InputType inputType, @Nullable GeneratedInventory lastOpened, @NotNull Consumer<String> output) {
         super(player, output);
 
         this.inputType = inputType;

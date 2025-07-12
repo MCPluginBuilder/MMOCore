@@ -15,6 +15,10 @@ items:
         item: GRAY_STAINED_GLASS_PANE
         name: '&cNo Friend'
         lore: {}
+
+        # You can set custom model data int and string here
+        #custom_model_data_string: 'something'
+        #custom_model_data: 1234
         
         # Online friend
         online:

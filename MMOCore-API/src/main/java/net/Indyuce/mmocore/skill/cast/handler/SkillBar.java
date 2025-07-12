@@ -1,6 +1,5 @@
 package net.Indyuce.mmocore.skill.cast.handler;
 
-import io.lumine.mythic.lib.UtilityMethods;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.SoundEvent;
@@ -8,7 +7,7 @@ import net.Indyuce.mmocore.api.event.PlayerKeyPressEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.skill.ClassSkill;
 import net.Indyuce.mmocore.skill.binding.BoundSkillInfo;
-import net.Indyuce.mmocore.skill.cast.PlayerKey;
+import net.Indyuce.mmocore.skill.cast.Keybind;
 import net.Indyuce.mmocore.skill.cast.SkillCastingHandler;
 import net.Indyuce.mmocore.skill.cast.SkillCastingInstance;
 import net.Indyuce.mmocore.skill.cast.SkillCastingMode;
@@ -23,14 +22,14 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 
 public class SkillBar extends SkillCastingHandler {
-    private final PlayerKey mainKey;
-    private final boolean disableSneak, lowestKeybinds;
+    private final Keybind mainKey;
+    private final boolean ignoreSneak, lowestKeybinds;
 
     public SkillBar(@NotNull ConfigurationSection config) {
         super(config);
 
-        mainKey = PlayerKey.valueOf(UtilityMethods.enumName(Objects.requireNonNull(config.getString("open"), "Could not find open key")));
-        disableSneak = config.getBoolean("disable-sneak");
+        mainKey = Objects.requireNonNull(Keybind.fromConfig(config.get("open")), "Could not find open keybind");
+        ignoreSneak = config.getBoolean("ignore-sneak", config.getBoolean("disable-sneak", false));
         lowestKeybinds = config.getBoolean("use-lowest-keybinds");
     }
 
@@ -63,11 +62,11 @@ public class SkillBar extends SkillCastingHandler {
 
     @EventHandler
     public void enterSkillCasting(PlayerKeyPressEvent event) {
-        if (event.getPressed() != mainKey) return;
+        if (!mainKey.matches(event)) return;
 
         // Extra option to improve support with other plugins
         final Player player = event.getPlayer();
-        if (disableSneak && player.isSneaking()) return;
+        if (ignoreSneak && player.isSneaking()) return;
 
         // Always cancel event
         if (event.getPressed().shouldCancelEvent()) event.setCancelled(true);
@@ -101,7 +100,7 @@ public class SkillBar extends SkillCastingHandler {
 
             // Extra option to improve support with other plugins
             final Player player = event.getPlayer();
-            if (disableSneak && player.isSneaking()) return;
+            if (ignoreSneak && player.isSneaking()) return;
 
             /*
              * When the event is cancelled, another playerItemHeldEvent is
@@ -130,11 +129,11 @@ public class SkillBar extends SkillCastingHandler {
         public void stopCasting(PlayerKeyPressEvent event) {
             if (!event.getPlayer().equals(getCaster().getPlayer())) return;
 
-            if (event.getPressed() != mainKey) return;
+            if (!mainKey.matches(event)) return;
 
             // Extra option to improve support with other plugins
             final Player player = event.getPlayer();
-            if (disableSneak && player.isSneaking()) return;
+            if (ignoreSneak && player.isSneaking()) return;
 
             if (getCaster().leaveSkillCasting()) {
                 MMOCore.plugin.soundManager.getSound(SoundEvent.SPELL_CAST_END).playTo(player);

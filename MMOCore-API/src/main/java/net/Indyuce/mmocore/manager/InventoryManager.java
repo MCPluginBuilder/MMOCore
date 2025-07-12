@@ -1,11 +1,11 @@
 package net.Indyuce.mmocore.manager;
 
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.gui.editable.EditableInventory;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.ConfigFile;
 import net.Indyuce.mmocore.api.player.profess.PlayerClass;
 import net.Indyuce.mmocore.gui.*;
-import net.Indyuce.mmocore.gui.api.EditableInventory;
 import net.Indyuce.mmocore.gui.skilltree.SkillTreeViewer;
 import net.Indyuce.mmocore.gui.social.friend.EditableFriendList;
 import net.Indyuce.mmocore.gui.social.friend.EditableFriendRemoval;
@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -49,66 +50,67 @@ public class InventoryManager {
     @Deprecated
     public static final List<EditableInventory> list = LIST;
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static void load() {
-        //Loads the specific inventories
-        for (SpecificInventoryLoader loader : SpecificInventoryLoader.values()) {
+
+        // Loads specific inventories
+        for (var invType : InventoryDuplicate.values()) {
+
+            // Copy default config
             try {
-                MMOCore.plugin.configManager.copyDefaultFile("gui/" + loader.name + "/" + loader.name + "-default.yml");
+                MMOCore.plugin.configManager.copyDefaultFile("gui/" + invType.name + "/" + invType.name + "-default.yml");
             } catch (Exception exception) {
-                MMOCore.log(Level.WARNING, "Could not load inventory 'gui/" + loader.name + "/" + loader.name + "-default" + "': " + exception.getMessage());
+                MMOCore.log(Level.WARNING, "Could not load inventory 'gui/" + invType.name + "/" + invType.name + "-default" + "': " + exception.getMessage());
             }
-            for (String id : loader.ids) {
-                String formattedId = UtilityMethods.ymlName(id);
-                final ConfigFile configFile = new ConfigFile("/gui/" + loader.name, loader.name + "-" + formattedId);
-                final EditableInventory GUI = loader.provider.apply(id, !configFile.exists());
-                loader.inventories.put(formattedId, GUI);
-                GUI.reload(new ConfigFile("/gui/" + loader.name, GUI.getId()).getConfig());
+
+            for (String id : invType.ids.get()) {
+                final var formattedId = UtilityMethods.ymlName(id);
+                final var configFile = new ConfigFile("/gui/" + invType.name, invType.name + "-" + formattedId);
+                final var specificUi = invType.provider.apply(id, !configFile.exists());
+
+                ((Map) invType.inventories).put(formattedId, specificUi);
+                specificUi.reload(MMOCore.plugin, new ConfigFile("/gui/" + invType.name, specificUi.getId()).getConfig());
             }
         }
 
         LIST.forEach(inv -> {
             try {
                 MMOCore.plugin.configManager.copyDefaultFile("gui/" + inv.getId() + ".yml");
-                inv.reload(new ConfigFile("/gui", inv.getId()).getConfig());
+                inv.reload(MMOCore.plugin, new ConfigFile("/gui", inv.getId()).getConfig());
             } catch (Exception exception) {
                 MMOCore.log(Level.WARNING, "Could not load inventory '" + (inv instanceof ClassConfirmation ? "class-confirm/" : "") + inv.getId() + "': " + exception.getMessage());
             }
         });
     }
 
-    public enum SpecificInventoryLoader {
-        CLASS_CONFIRM("class-confirm",
-                InventoryManager.CLASS_CONFIRM,
-                MMOCore.plugin.classManager.getAll().
+    private static enum InventoryDuplicate {
+        CLASS_CONFIRM("class-confirm", InventoryManager.CLASS_CONFIRM,
+                (id, isDefault) -> new ClassConfirmation(MMOCore.plugin.classManager.get(id), isDefault),
+                () -> MMOCore.plugin.classManager.getAll().
                         stream().
                         map(PlayerClass::getId).
-                        collect(Collectors.toList()),
-                (id, isDefault) -> new ClassConfirmation(MMOCore.plugin.classManager.get(id), isDefault)
-        ),
+                        collect(Collectors.toList())),
 
-        SPECIFIC_TREE("specific-skill-tree",
-                InventoryManager.SPECIFIC_TREE_VIEW,
-                MMOCore.plugin.skillTreeManager.getAll().
+        SPECIFIC_TREE("specific-skill-tree", InventoryManager.SPECIFIC_TREE_VIEW,
+                (id, isDefault) -> new SkillTreeViewer(MMOCore.plugin.skillTreeManager.get(id), isDefault),
+                () -> MMOCore.plugin.skillTreeManager.getAll().
                         stream().
                         map(SkillTree::getId).
-                        collect(Collectors.toList()),
-                (id, isDefault) -> new SkillTreeViewer(MMOCore.plugin.skillTreeManager.get(id), isDefault));
+                        collect(Collectors.toList()));
 
         private final String name;
-
-        private final Map inventories;
-
-        private final List<String> ids;
-
+        private final Map<String, ? extends EditableInventory> inventories;
+        private final Supplier<List<String>> ids;
         private final BiFunction<String, Boolean, ? extends EditableInventory> provider;
 
-        SpecificInventoryLoader(String name, Map inventories, List<String> ids,
-                                BiFunction<String, Boolean, ? extends EditableInventory> provider) {
+        InventoryDuplicate(String name,
+                           Map<String, ? extends EditableInventory> inventories,
+                           BiFunction<String, Boolean, ? extends EditableInventory> provider,
+                           Supplier<List<String>> ids) {
             this.name = name;
             this.inventories = inventories;
             this.ids = ids;
             this.provider = provider;
         }
-
     }
 }
