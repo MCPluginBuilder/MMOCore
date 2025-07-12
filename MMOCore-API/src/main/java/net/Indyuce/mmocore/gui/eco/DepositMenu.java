@@ -48,12 +48,10 @@ public class DepositMenu extends PluginInventory {
             event.setCancelled(true);
 
             updateDeposit(event.getInventory());
-            if (deposit <= 0)
-                return;
+            if (deposit <= 0) return;
 
             EconomyResponse response = MMOCore.plugin.economy.getEconomy().depositPlayer(player, deposit);
-            if (!response.transactionSuccess())
-                return;
+            if (!response.transactionSuccess()) return;
 
             event.getInventory().clear();
             player.closeInventory();
@@ -62,11 +60,10 @@ public class DepositMenu extends PluginInventory {
             return;
         }
 
-        int worth = NBTItem.get(event.getCursor()).getInteger("RpgWorth");
-        if (worth < 1)
-            event.setCancelled(true);
-        else
-            scheduleUpdate(event.getInventory());
+        // Can only move around currency items
+        var worth = NBTItem.get(event.getCurrentItem()).getInteger("RpgWorth");
+        if (worth < 1) event.setCancelled(true);
+        else scheduleUpdate(event.getInventory());
     }
 
     @Override
