@@ -16,15 +16,25 @@ public class SkillTreePath {
         to = skillTreeNode;
     }
 
+    /**
+     * Defines the status of a path between two nodes, which is determined
+     * by the pair of states of the two nodes.
+     */
     public NodeState getStatus(PlayerData playerData) {
-        NodeState fromStatus = playerData.getNodeState(from);
-        NodeState toStatus = playerData.getNodeState(to);
-        if (fromStatus == NodeState.UNLOCKED && toStatus == NodeState.UNLOCKED)
-            return NodeState.UNLOCKED;
-        if ((fromStatus == NodeState.UNLOCKABLE && toStatus == NodeState.UNLOCKED) || (fromStatus == NodeState.UNLOCKED && toStatus == NodeState.UNLOCKABLE))
+        var from = playerData.getNodeState(this.from);
+        var to = playerData.getNodeState(this.to);
+
+        // Either one is fully locked => gray out path
+        if (from == NodeState.FULLY_LOCKED || to == NodeState.FULLY_LOCKED) return NodeState.FULLY_LOCKED;
+
+        // Both are unlocked => path is taken, unlocked
+        if (from.isUnlocked() && to.isUnlocked()) return NodeState.UNLOCKED;
+
+        // One of them is unlocked, other one is unlockable => path is not taken yet, but can be
+        if ((from == NodeState.UNLOCKABLE && to.isUnlocked()) || (from.isUnlocked() && to == NodeState.UNLOCKABLE))
             return NodeState.UNLOCKABLE;
-        if (fromStatus == NodeState.FULLY_LOCKED || toStatus == NodeState.FULLY_LOCKED)
-            return NodeState.FULLY_LOCKED;
+
+        // Otherwise, locked path
         return NodeState.LOCKED;
     }
 

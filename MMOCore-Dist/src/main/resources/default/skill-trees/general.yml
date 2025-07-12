@@ -483,6 +483,23 @@ nodes:
 #      up: 'WHITE_CONCRETE:0'
 #      down: 'WHITE_CONCRETE:0'
 #      no-path: 'WHITE_CONCRETE:0'
+#    maxed-out:
+#      up-right-down-left: 'GREEN_CONCRETE:0'
+#      up-right-down: 'GREEN_CONCRETE:0'
+#      up-right-left: 'GREEN_CONCRETE:0'
+#      up-down-left: 'GREEN_CONCRETE:0'
+#      down-right-left: 'GREEN_CONCRETE:0'
+#      up-right: 'GREEN_CONCRETE:0'
+#      up-down: 'GREEN_CONCRETE:0'
+#      up-left: 'GREEN_CONCRETE:0'
+#      down-right: 'GREEN_CONCRETE:0'
+#      down-left: 'GREEN_CONCRETE:0'
+#      right-left: 'GREEN_CONCRETE:0'
+#      right: 'GREEN_CONCRETE:0'
+#      left: 'GREEN_CONCRETE:0'
+#      up: 'GREEN_CONCRETE:0'
+#      down: 'GREEN_CONCRETE:0'
+#      no-path: 'GREEN_CONCRETE:0'
 #    locked:
 #      up-right-down-left: 'GRAY_CONCRETE:0'
 #      up-right-down: 'GRAY_CONCRETE:0'
@@ -534,3 +551,16 @@ nodes:
 #      up: 'BLACK_CONCRETE:0'
 #      down: 'BLACK_CONCRETE:0'
 #      no-path: 'BLACK_CONCRETE:0'
+
+# The following syntax works too, it applies the same texture
+# no matter the neighboring paths.
+#
+#display:
+#  paths:
+#    .......
+#  nodes:
+#    unlocked: 'WHITE_CONCRETE:0'
+#    maxed-out: 'GREEN_CONCRETE:0'
+#    locked: 'GRAY_CONCRETE:0'
+#    unlockable: 'BLUE_CONCRETE:0'
+#    fully-locked: 'BLACK_CONCRETE:0'

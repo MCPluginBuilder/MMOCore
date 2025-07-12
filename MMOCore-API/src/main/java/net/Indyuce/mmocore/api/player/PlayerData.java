@@ -324,17 +324,18 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     @NotNull
     public NodeIncrementResult canIncrementNodeLevel(@NotNull SkillTreeNode node) {
-        final NodeState nodeState = nodeStates.get(node);
+        final var nodeState = nodeStates.get(node);
 
-        // Check node state
+        // Node is maxed out
+        //if (getNodeLevel(node) >= node.getMaxLevel()) return NodeIncrementResult.MAX_LEVEL_REACHED;
+        if (nodeState == NodeState.MAXED_OUT) return NodeIncrementResult.MAX_LEVEL_REACHED;
+
+        // Node is not ACCESSIBLE yet
         if (nodeState != NodeState.UNLOCKED && nodeState != NodeState.UNLOCKABLE)
             return NodeIncrementResult.LOCKED_NODE;
 
         // Check permission
         if (!node.hasPermissionRequirement(this)) return NodeIncrementResult.PERMISSION_DENIED;
-
-        // Max node level
-        if (getNodeLevel(node) >= node.getMaxLevel()) return NodeIncrementResult.MAX_LEVEL_REACHED;
 
         final int skillTreePoints = this.skillTreePoints.getOrDefault(node.getTree().getId(), 0) + this.skillTreePoints.getOrDefault("global", 0);
         if (skillTreePoints < node.getPointConsumption()) return NodeIncrementResult.NOT_ENOUGH_POINTS;
@@ -352,7 +353,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         node.updateAdvancement(this, newLevel); // Claim the node exp table
 
         // Update node state
-        nodeStates.compute(node, (key, status) -> status == NodeState.UNLOCKABLE ? NodeState.UNLOCKED : status);
+        // TODO check/remove: USELESS LINE? since node states are updated afterwards
+        // nodeStates.compute(node, (key, status) -> status == NodeState.UNLOCKABLE ? NodeState.UNLOCKED : status);
 
         // Consume skill tree points
         final AtomicInteger cost = new AtomicInteger(node.getPointConsumption());

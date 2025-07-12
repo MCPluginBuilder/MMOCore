@@ -446,7 +446,7 @@ public class SkillTreeViewer extends EditableInventory {
             final int y = container.get(new NamespacedKey(MMOCore.plugin, "coordinates.y"), PersistentDataType.INTEGER);
             if (!inv.skillTree.isNode(new IntegerCoordinates(x, y))) return;
 
-            // Maximum amount of skill points spent in node
+            // Higher number of points spent in SKILL TREE (not node)
             final SkillTreeNode node = inv.skillTree.getNode(new IntegerCoordinates(x, y));
             if (inv.playerData.getPointsSpent(inv.skillTree) >= inv.skillTree.getMaxPointSpent()) {
                 ConfigMessage.fromKey("max-points-reached").send(inv.playerData);
@@ -475,6 +475,7 @@ public class SkillTreeViewer extends EditableInventory {
                     break;
                 }
 
+                // Max number of points spent in that NODE (not skill tree)
                 case MAX_LEVEL_REACHED: {
                     ConfigMessage.fromKey("skill-node-max-level-hit").send(inv.playerData);
                     MMOCore.plugin.soundManager.getSound(SoundEvent.NOT_ENOUGH_POINTS).playTo(inv.getPlayer());

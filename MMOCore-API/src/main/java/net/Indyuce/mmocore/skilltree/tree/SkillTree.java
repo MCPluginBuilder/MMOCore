@@ -32,7 +32,6 @@ import java.util.logging.Level;
  * - extra attribute pts
  * - particle or potion effects
  *
- * @author Ka0rX
  * @see SkillTreeNode
  */
 public abstract class SkillTree implements RegisteredObject {
@@ -99,14 +98,22 @@ public abstract class SkillTree implements RegisteredObject {
                 }
 
         // Loads all the nodeDisplayInfo
-        for (NodeState status : NodeState.values())
-            for (NodeType nodeType : NodeType.values())
+        for (var status : NodeState.values()) {
+            final var anyType = config.get("display.nodes." + MMOCoreUtils.ymlName(status.name()));
+
+            // Does not depend on node type.
+            if (anyType != null) for (var nodeType : NodeType.values())
+                icons.put(new NodeDisplayInfo(nodeType, status), Icon.from(anyType));
+
+                // Depends on node type
+            else for (var nodeType : NodeType.values())
                 try {
-                    final String configPath = "display.nodes." + MMOCoreUtils.ymlName(status.name()) + "." + MMOCoreUtils.ymlName(nodeType.name());
+                    final var configPath = "display.nodes." + MMOCoreUtils.ymlName(status.name()) + "." + MMOCoreUtils.ymlName(nodeType.name());
                     icons.put(new NodeDisplayInfo(nodeType, status), Icon.from(config.get(configPath)));
                 } catch (Exception exception) {
                     // Ignore
                 }
+        }
 
         // Setup children and parents for each node
         for (SkillTreeNode node : nodes.values())
@@ -229,6 +236,8 @@ public abstract class SkillTree implements RegisteredObject {
         // PASS 3
         //
         // Propagate unreachability in O(V * C * P)
+        // Unreachability is transitive, if one node is unreachable, all subsequent
+        // child nodes are all unreachable.
         while (!unreachable.empty()) {
             final SkillTreeNode node = unreachable.pop();
 
@@ -276,6 +285,14 @@ public abstract class SkillTree implements RegisteredObject {
             // At least one soft parent!
             if (!hasSoft || soft) playerData.setNodeState(node, NodeState.UNLOCKABLE);
         }
+
+        // PASS 5
+        //
+        // I'm not sure this is the best place to do that but it works just fine.
+        // Mark unlocked nodes as maxed out if maximum number of points spent
+        for (var node : nodes.values())
+            if (playerData.getNodeState(node) == NodeState.UNLOCKED && playerData.getNodeLevel(node) >= node.getMaxLevel())
+                playerData.setNodeState(node, NodeState.MAXED_OUT);
     }
 
     private boolean isUnreachable(@NotNull SkillTreeNode node, @NotNull PlayerData playerData) {
