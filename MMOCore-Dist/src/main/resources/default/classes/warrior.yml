@@ -28,7 +28,16 @@ display:
     - '&7  Max Rage: &c20 &7(+&c1&7)'
     - '&7  Health Regen: &90.1 &7(+&90&7)'
     - '&7  Rage Degeneration: &9-0.5&7/s'
-    item: IRON_SWORD:0 # Supports custom model data/texture by durability
+
+    # Change class icon here
+    item: 'IRON_SWORD:0' # Syntax: '<ITEM>:<custom_model_data_int>'
+    # Alternate syntax for custom model data, item model....
+    #item:
+    #    item: IRON_SWORD
+    #    custom-model-data: 10
+    #    custom-model-data-string: 'whatever'
+    #    item-model: 'minecraft:dirt'
+    #    texture: '' # Skull texture (set 'item' to 'PLAYER_HEAD')
 
 # Must match an existing exp curve filename from the 'expcurves' folder
 exp-curve: levels

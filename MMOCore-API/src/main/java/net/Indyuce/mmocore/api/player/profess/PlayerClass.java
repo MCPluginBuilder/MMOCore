@@ -4,6 +4,7 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.MMOLineConfig;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
+import io.lumine.mythic.lib.gui.util.IconOptions;
 import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.script.Script;
@@ -33,15 +34,12 @@ import net.Indyuce.mmocore.skill.ClassSkill;
 import net.Indyuce.mmocore.skill.RegisteredSkill;
 import net.Indyuce.mmocore.skill.binding.SkillSlot;
 import net.Indyuce.mmocore.skill.cast.ComboMap;
-import net.Indyuce.mmocore.util.Icon;
 import net.Indyuce.mmocore.skilltree.tree.SkillTree;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,7 +49,7 @@ import java.util.logging.Level;
 public class PlayerClass implements ExperienceObject, PreloadedObject {
     private final String name, id, actionBarFormat;
     private final List<String> description = new ArrayList<>(), attrDescription = new ArrayList<>();
-    private final ItemStack icon;
+    private final IconOptions icon;
     private final Map<ClassOption, Boolean> options = new HashMap<>();
     private final int maxLevel, displayOrder;
 
@@ -101,13 +99,7 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
         this.id = UtilityMethods.enumName(id);
 
         name = MythicLib.plugin.parseColors(config.getString("display.name", "INVALID DISPLAY NAME"));
-        icon = Icon.from(config.get("display.item", "BARRIER")).toItem();
-
-        if (config.contains("display.texture") && icon.getType() == Material.PLAYER_HEAD) {
-            ItemMeta meta = icon.getItemMeta();
-            UtilityMethods.setTextureValue((SkullMeta) meta, config.getString("display.texture"));
-            icon.setItemMeta(meta);
-        }
+        icon = IconOptions.from(config.get("display.item"));
 
         for (String string : config.getStringList("display.lore"))
             description.add(ChatColor.GRAY + MythicLib.plugin.parseColors(string));
@@ -141,7 +133,7 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
                 try {
                     skillTrees.add(MMOCore.plugin.skillTreeManager.get(str));
                 } catch (Exception e) {
-                    MMOCore.log(Level.WARNING, "Could not find skill tree with ID: " + str);
+                    MMOCore.log(Level.WARNING, "Skill tree '" + str + "' not found for player class " + getId());
                 }
 
         // Class-specific scripts
@@ -276,7 +268,7 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
         comboMap = null;
         castParticle = new CastingParticle(VParticle.INSTANT_EFFECT.get());
         actionBarFormat = "";
-        this.icon = new ItemStack(material);
+        this.icon = new IconOptions(material);
         setOption(ClassOption.DISPLAY, false);
         setOption(ClassOption.DEFAULT, false);
         for (PlayerResource resource : PlayerResource.values())
@@ -336,8 +328,14 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
         return expTable != null;
     }
 
+    @NotNull
+    public IconOptions getRawIcon() {
+        return icon;
+    }
+
+    @Deprecated
     public ItemStack getIcon() {
-        return icon.clone();
+        return icon.toItemStack();
     }
 
     @Nullable

@@ -55,8 +55,8 @@ public abstract class AbstractClassSelect extends EditableInventory {
         }
 
         @Override
-        public ItemStack getDisplayedItem(T inv, int n) {
-            ItemOptions options = n == 0 ? ItemOptions.item(n, playerClass.getIcon()) : ItemOptions.index(n);
+        public ItemStack getDisplayedItem(@NotNull T inv, int n) {
+            ItemOptions options = n == 0 ? new ItemOptions(n, playerClass.getRawIcon()) : ItemOptions.index(n);
             return super.getDisplayedItem(inv, options);
         }
 

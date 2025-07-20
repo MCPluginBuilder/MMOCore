@@ -2,15 +2,12 @@ package net.Indyuce.mmocore.skilltree.tree;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.gui.util.IconOptions;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import net.Indyuce.mmocore.manager.registry.RegisteredObject;
 import net.Indyuce.mmocore.skilltree.*;
-import net.Indyuce.mmocore.skilltree.display.DisplayInfo;
-import net.Indyuce.mmocore.skilltree.display.NodeDisplayInfo;
-import net.Indyuce.mmocore.skilltree.display.PathDisplayInfo;
-import net.Indyuce.mmocore.util.Icon;
+import net.Indyuce.mmocore.skilltree.display.DisplayMap;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -42,7 +39,7 @@ public abstract class SkillTree implements RegisteredObject {
     protected final Map<String, SkillTreeNode> nodes = new HashMap<>();
     protected final int maxPointSpent;
     protected final List<SkillTreeNode> roots = new ArrayList<>();
-    protected final Map<DisplayInfo, Icon> icons = new HashMap<>();
+    protected final DisplayMap icons;
 
     protected final Map<IntegerCoordinates, SkillTreeNode> coordNodes = new HashMap<>();
     protected final Map<IntegerCoordinates, SkillTreePath> coordPaths = new HashMap<>();
@@ -87,33 +84,8 @@ public abstract class SkillTree implements RegisteredObject {
             }
         }
 
-        // Loads all the pathDisplayInfo
-        for (NodeState status : NodeState.values())
-            for (PathType pathType : PathType.values())
-                try {
-                    final String configPath = "display.paths." + MMOCoreUtils.ymlName(status.name()) + "." + MMOCoreUtils.ymlName(pathType.name());
-                    icons.put(new PathDisplayInfo(pathType, status), Icon.from(config.get(configPath)));
-                } catch (Exception exception) {
-                    // Ignore
-                }
-
-        // Loads all the nodeDisplayInfo
-        for (var status : NodeState.values()) {
-            final var anyType = config.get("display.nodes." + MMOCoreUtils.ymlName(status.name()));
-
-            // Does not depend on node type.
-            if (anyType != null) for (var nodeType : NodeType.values())
-                icons.put(new NodeDisplayInfo(nodeType, status), Icon.from(anyType));
-
-                // Depends on node type
-            else for (var nodeType : NodeType.values())
-                try {
-                    final var configPath = "display.nodes." + MMOCoreUtils.ymlName(status.name()) + "." + MMOCoreUtils.ymlName(nodeType.name());
-                    icons.put(new NodeDisplayInfo(nodeType, status), Icon.from(config.get(configPath)));
-                } catch (Exception exception) {
-                    // Ignore
-                }
-        }
+        // Load icons
+        this.icons = DisplayMap.from(config.getConfigurationSection("display"));
 
         // Setup children and parents for each node
         for (SkillTreeNode node : nodes.values())
@@ -147,11 +119,6 @@ public abstract class SkillTree implements RegisteredObject {
 
     public int getCustomModelData() {
         return customModelData;
-    }
-
-    @Deprecated
-    public static SkillTree loadSkillTree(ConfigurationSection config) {
-        return MMOCore.plugin.skillTreeManager.loadSkillTree(config);
     }
 
     public void addRoot(@NotNull SkillTreeNode node) {
@@ -366,12 +333,9 @@ public abstract class SkillTree implements RegisteredObject {
         return Objects.requireNonNull(nodes.get(name), "Could not find node in tree '" + id + "' with name '" + name + "'");
     }
 
-    public boolean hasIcon(DisplayInfo displayInfo) {
-        return icons.containsKey(displayInfo);
-    }
-
-    public Icon getIcon(DisplayInfo displayInfo) {
-        return icons.get(displayInfo);
+    @NotNull
+    public DisplayMap getIcons() {
+        return icons;
     }
 
     public boolean isNode(String name) {
@@ -390,4 +354,23 @@ public abstract class SkillTree implements RegisteredObject {
     public int hashCode() {
         return Objects.hash(id);
     }
+
+    //region Deprecated
+
+    @Deprecated
+    public static SkillTree loadSkillTree(ConfigurationSection config) {
+        return MMOCore.plugin.skillTreeManager.loadSkillTree(config);
+    }
+
+    @Deprecated
+    public boolean hasIcon(Object displayInfo) {
+        return DisplayMap.getIcon(displayInfo, icons) != null;
+    }
+
+    @Deprecated
+    public IconOptions getIcon(Object displayInfo) {
+        return DisplayMap.getIcon(displayInfo, icons);
+    }
+
+    //endregion
 }

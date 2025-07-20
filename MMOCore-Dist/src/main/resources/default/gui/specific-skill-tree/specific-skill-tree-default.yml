@@ -81,7 +81,15 @@ status-names:
   locked: 'Locked'
   fully-locked: 'Fully Locked'
 
-
+# This section is to change display options for nodes and paths depending on:
+# - their shape: each path has a shape given its neighboring connections (left + up, )... kind of like a vanilla redstone wire.
+# - their state: is the node/path unlocked, locked, maxed out... ?
+#
+# All of this is to "hide" the grid pattern of the chest inventory UI and give the
+# impression of a clean 2D skill tree UI.
+#
+# Please refer to skill-tree/combat.yml for syntax examples.
+#####################
 display:
   paths:
     unlocked:

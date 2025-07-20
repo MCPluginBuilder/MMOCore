@@ -2,12 +2,12 @@ package net.Indyuce.mmocore.skill;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.gui.util.IconOptions;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.formula.BooleanExpression;
 import net.Indyuce.mmocore.api.util.math.formula.IntegerLinearValue;
 import net.Indyuce.mmocore.api.util.math.formula.LinearValue;
-import net.Indyuce.mmocore.util.Icon;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +23,7 @@ public class RegisteredSkill {
 
     private final Map<String, DecimalFormat> parameterDecimalFormats = new HashMap<>();
 
-    private final Icon icon;
+    private final IconOptions icon;
     private final List<String> lore;
     private final List<String> categories;
     private final TriggerType triggerType;
@@ -32,7 +32,7 @@ public class RegisteredSkill {
         this.handler = handler;
 
         name = Objects.requireNonNull(config.getString("name"), "Could not find skill name");
-        icon = Icon.from(config.get("material"));
+        icon = IconOptions.from(config.get("material"));
         lore = Objects.requireNonNull(config.getStringList("lore"), "Could not find skill lore");
 
         // Trigger type
@@ -45,7 +45,6 @@ public class RegisteredSkill {
             categories.add("PASSIVE");
         else
             categories.add("ACTIVE");
-
 
         // Load default modifier formulas
         for (String param : handler.getParameters()) {
@@ -62,13 +61,18 @@ public class RegisteredSkill {
         defaultParameters.put("level", new IntegerLinearValue(0, 1));
     }
 
-    public RegisteredSkill(SkillHandler<?> handler, String name, ItemStack icon, List<String> lore, @Nullable TriggerType triggerType) {
+    public RegisteredSkill(SkillHandler<?> handler, String name, IconOptions icon, List<String> lore, @Nullable TriggerType triggerType) {
         this.handler = handler;
         this.name = name;
-        this.icon = Icon.fromItem(icon);
+        this.icon = IconOptions.from(icon);
         this.lore = lore;
         this.triggerType = triggerType;
         this.categories = new ArrayList<>();
+    }
+
+    @Deprecated
+    public RegisteredSkill(SkillHandler<?> handler, String name, ItemStack icon, List<String> lore, @Nullable TriggerType triggerType) {
+        this(handler, name, IconOptions.from(icon), lore, triggerType);
     }
 
     public SkillHandler<?> getHandler() {
@@ -89,11 +93,11 @@ public class RegisteredSkill {
 
     @Deprecated
     public ItemStack getIcon() {
-        return icon.toItem();
+        return icon.toItemStack();
     }
 
     @NotNull
-    public Icon getRawIcon() {
+    public IconOptions getRawIcon() {
         return icon;
     }
 

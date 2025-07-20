@@ -9,18 +9,19 @@ import io.lumine.mythic.lib.gui.editable.item.ItemOptions;
 import io.lumine.mythic.lib.gui.editable.item.PhysicalItem;
 import io.lumine.mythic.lib.gui.editable.item.SimpleItem;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
+import io.lumine.mythic.lib.gui.util.IconOptions;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.SoundEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import net.Indyuce.mmocore.api.util.MMOCoreUtils;
-import net.Indyuce.mmocore.skilltree.*;
-import net.Indyuce.mmocore.skilltree.display.DisplayInfo;
+import net.Indyuce.mmocore.skilltree.IntegerCoordinates;
+import net.Indyuce.mmocore.skilltree.NodeState;
+import net.Indyuce.mmocore.skilltree.ParentType;
+import net.Indyuce.mmocore.skilltree.SkillTreeNode;
+import net.Indyuce.mmocore.skilltree.display.DisplayMap;
 import net.Indyuce.mmocore.skilltree.display.NodeDisplayInfo;
 import net.Indyuce.mmocore.skilltree.display.PathDisplayInfo;
 import net.Indyuce.mmocore.skilltree.tree.SkillTree;
-import net.Indyuce.mmocore.util.Icon;
-import org.apache.commons.lang.Validate;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -37,10 +38,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.logging.Level;
 
 public class SkillTreeViewer extends EditableInventory {
-    protected final Map<DisplayInfo, Icon> icons = new HashMap<>();
+    protected DisplayMap icons;
     protected final Map<NodeState, String> statusNames = new HashMap<>();
 
     /**
@@ -64,31 +64,11 @@ public class SkillTreeViewer extends EditableInventory {
     public void reload(@NotNull JavaPlugin plugin, @NotNull ConfigurationSection config) {
         super.reload(plugin, config);
 
-        if (config.contains("status-names"))
-            for (NodeState nodeState : NodeState.values())
-                statusNames.put(nodeState, config.getString("status-names." + UtilityMethods.ymlName(nodeState.name()), nodeState.name()));
+        if (config.contains("status-names")) for (NodeState nodeState : NodeState.values())
+            statusNames.put(nodeState, config.getString("status-names." + UtilityMethods.ymlName(nodeState.name()), nodeState.name()));
 
-        // Loads all the pathDisplayInfo
-        for (NodeState status : NodeState.values())
-            for (PathType pathType : PathType.values()) {
-                final String configPath = "display.paths." + MMOCoreUtils.ymlName(status.name()) + "." + MMOCoreUtils.ymlName(pathType.name());
-                if (!config.contains(configPath)) {
-                    MMOCore.log(Level.WARNING, "An error occurred while loading skill tree GUI: Missing path type: " + MMOCoreUtils.ymlName(pathType.name()) + " for status: " + MMOCoreUtils.ymlName(status.name()));
-                    continue;
-                }
-                icons.put(new PathDisplayInfo(pathType, status), Icon.from(config.get(configPath)));
-            }
-
-        // Loads all the nodeDisplayInfo
-        for (NodeState status : NodeState.values())
-            for (NodeType nodeType : NodeType.values()) {
-                final String configPath = "display.nodes." + MMOCoreUtils.ymlName(status.name()) + "." + MMOCoreUtils.ymlName(nodeType.name());
-                if (!config.contains(configPath)) {
-                    MMOCore.log(Level.WARNING, "An error occurred while loading skill tree GUI: Missing node type: " + MMOCoreUtils.ymlName(nodeType.name()) + " for status: " + MMOCoreUtils.ymlName(status.name()));
-                    continue;
-                }
-                icons.put(new NodeDisplayInfo(nodeType, status), Icon.from(config.get(configPath)));
-            }
+        // Loads display info
+        icons = DisplayMap.from(config.getConfigurationSection("display"));
     }
 
     @Override
@@ -268,8 +248,7 @@ public class SkillTreeViewer extends EditableInventory {
 
         @Override
         public void onClick(@NotNull SkillTreeInventory inv, @NotNull InventoryClickEvent event) {
-            String id = event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(
-                    new NamespacedKey(MMOCore.plugin, "skill-tree-id"), PersistentDataType.STRING);
+            String id = event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(MMOCore.plugin, "skill-tree-id"), PersistentDataType.STRING);
             MMOCore.plugin.soundManager.getSound(SoundEvent.CHANGE_SKILL_TREE).playTo(inv.getPlayer());
             inv.skillTree = MMOCore.plugin.skillTreeManager.get(id);
             inv.open();
@@ -317,8 +296,7 @@ public class SkillTreeViewer extends EditableInventory {
         public SkillTreeNodeItem(ConfigurationSection config) {
             super(config);
 
-            if (config.isList("path-lore"))
-                pathLore.addAll(config.getStringList("path-lore"));
+            if (config.isList("path-lore")) pathLore.addAll(config.getStringList("path-lore"));
         }
 
         @Override
@@ -373,8 +351,8 @@ public class SkillTreeViewer extends EditableInventory {
             IntegerCoordinates coordinates = inv.getCoordinates(n);
             if (!inv.getSkillTree().isPathOrNode(coordinates)) return new ItemStack(Material.AIR);
 
-            Icon icon = inv.getIcon(coordinates);
-            ItemStack item = super.getDisplayedItem(inv, icon.toItemOptions(n));
+            IconOptions icon = inv.getIcon(coordinates);
+            ItemStack item = super.getDisplayedItem(inv, new ItemOptions(n, icon));
             ItemMeta meta = item.getItemMeta();
 
             // Make sure name is not null
@@ -513,17 +491,14 @@ public class SkillTreeViewer extends EditableInventory {
             this.skillTree = skillTree == null ? skillTrees.get(0) : skillTree;
             if (skillTree == null)
                 maxTreeListPage = (skillTrees.size() - 1) / SkillTreeViewer.this.getByFunction("skill-tree").getSlots().size();
-            else
-                maxTreeListPage = 0;
+            else maxTreeListPage = 0;
             //We get the width and height of the GUI(corresponding to the slots given)
             slots = SkillTreeViewer.this.getByFunction("skill-tree-node").getSlots();
             minSlot = 64;
             maxSlot = 0;
             for (int slot : slots) {
-                if (slot < minSlot)
-                    minSlot = slot;
-                if (slot > maxSlot)
-                    maxSlot = slot;
+                if (slot < minSlot) minSlot = slot;
+                if (slot > maxSlot) maxSlot = slot;
             }
             width = (maxSlot - minSlot) % 9;
             height = (maxSlot - minSlot) / 9;
@@ -551,32 +526,30 @@ public class SkillTreeViewer extends EditableInventory {
             return playerData;
         }
 
-        public Icon getIcon(IntegerCoordinates coordinates) {
+        public IconOptions getIcon(@NotNull IntegerCoordinates coordinates) {
             if (skillTree.isNode(coordinates)) {
-                SkillTreeNode node = skillTree.getNode(coordinates);
-                NodeType nodeType = node.getNodeType();
-                NodeState nodeState = playerData.getNodeState(node);
-                //If the node has its own display, it will be shown.
-                if (node.hasIcon(nodeState))
-                    return node.getIcon(nodeState);
-                DisplayInfo displayInfo = new NodeDisplayInfo(nodeType, nodeState);
-                //Takes the display defined in the skill tree config if it exists.
-                if (skillTree.hasIcon(displayInfo))
-                    return skillTree.getIcon(displayInfo);
+                var node = skillTree.getNode(coordinates);
+                var nodeShape = node.getNodeType();
+                var nodeState = playerData.getNodeState(node);
+                var displayInfo = new NodeDisplayInfo(nodeShape, nodeState);
 
-                Icon icon = icons.get(displayInfo);
-                Validate.notNull(icon, "The node " + node.getFullId() + " has no icon for the type " + nodeType + " and the status " + nodeState);
+                // Node > skill tree > skill tree UI
+                var icon = DisplayMap.getIcon(displayInfo, node.getIcons(), skillTree.getIcons(), icons);
+                if (icon == null) icon = DisplayMap.DEFAULT_ICON;
+                //Validate.notNull(icon, "Node " + node.getFullId() + " has no icon for shape " + nodeShape + " and state " + nodeState);
+
                 return icon;
             } else {
-                SkillTreePath path = skillTree.getPath(coordinates);
-                PathType pathType = path.getPathType();
-                NodeState pathStatus = path.getStatus(playerData);
-                DisplayInfo displayInfo = new PathDisplayInfo(pathType, pathStatus);
-                //Takes the display defined in the skill tree config if it exists.
-                if (skillTree.hasIcon(displayInfo))
-                    return skillTree.getIcon(displayInfo);
-                Icon icon = icons.get(displayInfo);
-                Validate.notNull(icon, "There is no icon for the path type " + pathType + " and the status " + pathStatus);
+                var path = skillTree.getPath(coordinates);
+                var pathShape = path.getPathType();
+                var pathStatus = path.getStatus(playerData);
+                var displayInfo = new PathDisplayInfo(pathShape, pathStatus);
+
+                // Skill tree > Skill tree UI
+                var icon = DisplayMap.getIcon(displayInfo, skillTree.getIcons(), icons);
+                if (icon == null) icon = DisplayMap.DEFAULT_ICON;
+                //Validate.notNull(icon, "No icon for path shape " + pathShape + " and state " + pathStatus);
+
                 return icon;
             }
         }

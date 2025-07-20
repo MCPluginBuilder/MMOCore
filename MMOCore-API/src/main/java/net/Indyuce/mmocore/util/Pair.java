@@ -5,6 +5,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
+/**
+ * @param <L> Left-hand side type
+ * @param <R> Right-hand side type
+ * @see io.lumine.mythic.lib.util.Pair
+ * @deprecated
+ */
+@Deprecated
 public class Pair<L, R> {
     private final L left;
     private final R right;

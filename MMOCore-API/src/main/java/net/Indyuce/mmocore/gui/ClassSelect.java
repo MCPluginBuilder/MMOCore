@@ -1,5 +1,6 @@
 package net.Indyuce.mmocore.gui;
 
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.gui.Navigator;
 import io.lumine.mythic.lib.gui.editable.item.InventoryItem;
 import net.Indyuce.mmocore.MMOCore;
@@ -63,7 +64,7 @@ public class ClassSelect extends AbstractClassSelect {
 
             inv.getNavigator().unblockClosing();
             final PlayerClass playerClass = findDeepestSubclass(inv.playerData, this.playerClass);
-            InventoryManager.CLASS_CONFIRM.get(MMOCoreUtils.ymlName(playerClass.getId())).newInventory(inv, inv.profileCallback != null).open();
+            InventoryManager.CLASS_CONFIRM.get(UtilityMethods.kebabCase(playerClass.getId())).newInventory(inv, inv.profileCallback != null).open();
         }
     }
 

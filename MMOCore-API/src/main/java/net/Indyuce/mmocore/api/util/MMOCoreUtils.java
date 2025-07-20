@@ -61,7 +61,7 @@ public class MMOCoreUtils {
      * @param current Current value of resource
      * @param maxStat Maximum value of resource
      * @return Clamped resource value. If the provided current value is 0,
-     *         this function will return the maximum resource value.
+     * this function will return the maximum resource value.
      */
     public static double fixResource(double current, double maxStat) {
         return current == 0 ? maxStat : Math.max(0, Math.min(current, maxStat));
@@ -82,6 +82,11 @@ public class MMOCoreUtils {
         return builder.toString();
     }
 
+    /**
+     * @see UtilityMethods#kebabCase(Enum)
+     * @see UtilityMethods#kebabCase(String)
+     */
+    @Deprecated
     public static String ymlName(String str) {
         return str.toLowerCase().replace("_", "-").replace(" ", "-");
     }

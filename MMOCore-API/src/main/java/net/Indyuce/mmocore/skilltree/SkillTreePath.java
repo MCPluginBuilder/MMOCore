@@ -1,6 +1,7 @@
 package net.Indyuce.mmocore.skilltree;
 
 import net.Indyuce.mmocore.api.player.PlayerData;
+import net.Indyuce.mmocore.skilltree.display.PathShape;
 import net.Indyuce.mmocore.skilltree.tree.SkillTree;
 
 public class SkillTreePath {
@@ -20,25 +21,25 @@ public class SkillTreePath {
      * Defines the status of a path between two nodes, which is determined
      * by the pair of states of the two nodes.
      */
-    public NodeState getStatus(PlayerData playerData) {
+    public PathState getStatus(PlayerData playerData) {
         var from = playerData.getNodeState(this.from);
         var to = playerData.getNodeState(this.to);
 
         // Either one is fully locked => gray out path
-        if (from == NodeState.FULLY_LOCKED || to == NodeState.FULLY_LOCKED) return NodeState.FULLY_LOCKED;
+        if (from == NodeState.FULLY_LOCKED || to == NodeState.FULLY_LOCKED) return PathState.FULLY_LOCKED;
 
         // Both are unlocked => path is taken, unlocked
-        if (from.isUnlocked() && to.isUnlocked()) return NodeState.UNLOCKED;
+        if (from.isUnlocked() && to.isUnlocked()) return PathState.UNLOCKED;
 
         // One of them is unlocked, other one is unlockable => path is not taken yet, but can be
         if ((from == NodeState.UNLOCKABLE && to.isUnlocked()) || (from.isUnlocked() && to == NodeState.UNLOCKABLE))
-            return NodeState.UNLOCKABLE;
+            return PathState.UNLOCKABLE;
 
         // Otherwise, locked path
-        return NodeState.LOCKED;
+        return PathState.LOCKED;
     }
 
-    public PathType getPathType() {
+    public PathShape getPathType() {
         IntegerCoordinates upCoor = new IntegerCoordinates(coordinates.getX(), coordinates.getY() - 1);
         IntegerCoordinates downCoor = new IntegerCoordinates(coordinates.getX(), coordinates.getY() + 1);
         IntegerCoordinates rightCoor = new IntegerCoordinates(coordinates.getX() + 1, coordinates.getY());
@@ -49,18 +50,18 @@ public class SkillTreePath {
         boolean hasLeft = tree.isPath(leftCoor) || leftCoor.equals(from.getCoordinates()) || leftCoor.equals(to.getCoordinates());
 
         if ((hasUp || hasDown) && !hasLeft && !hasRight) {
-            return PathType.UP;
+            return PathShape.UP;
         } else if ((hasRight || hasLeft) && !hasUp && !hasDown) {
-            return PathType.RIGHT;
+            return PathShape.RIGHT;
         } else if (hasUp && hasRight) {
-            return PathType.UP_RIGHT;
+            return PathShape.UP_RIGHT;
         } else if (hasUp && hasLeft) {
-            return PathType.UP_LEFT;
+            return PathShape.UP_LEFT;
         } else if (hasDown && hasRight) {
-            return PathType.DOWN_RIGHT;
+            return PathShape.DOWN_RIGHT;
         } else if (hasDown && hasLeft) {
-            return PathType.DOWN_LEFT;
+            return PathShape.DOWN_LEFT;
         }
-        return PathType.DEFAULT;
+        return PathShape.DEFAULT;
     }
 }

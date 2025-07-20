@@ -23,7 +23,17 @@ display:
     - '&7  Max Mana: &920 &7(+&90&7)'
     - '&7  Health Regen: &90.1 &7(+&90&7)'
     - '&7  Mana Regen: &90.166 &7(+&90&7)'
+
     item: BOW
+    # Alternate syntax for custom model data
+    #item: 'BOW:10'
+    # Alternate syntax for custom model data, item model....
+    #item:
+    #    item: BOW
+    #    custom-model-data: 10
+    #    custom-model-data-string: 'whatever'
+    #    item-model: 'minecraft:dirt'
+    #    texture: '' # Skull texture (set 'item' to 'PLAYER_HEAD')
 
 # Must match an existing exp curve filename from the 'expcurves' folder
 exp-curve: levels

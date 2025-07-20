@@ -1,22 +1,27 @@
 package net.Indyuce.mmocore.skilltree.display;
 
-import net.Indyuce.mmocore.skilltree.NodeType;
 import net.Indyuce.mmocore.skilltree.NodeState;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-public class NodeDisplayInfo extends DisplayInfo {
-    private final NodeType type;
+public class NodeDisplayInfo {
+    private final NodeShape shape;
+    private final NodeState state;
 
-    public NodeDisplayInfo(@NotNull NodeType type, @NotNull NodeState status) {
-        super(status);
-
-        this.type = type;
+    public NodeDisplayInfo(@NotNull NodeShape shape, @NotNull NodeState status) {
+        this.state = status;
+        this.shape = shape;
     }
 
-    public NodeType getType() {
-        return type;
+    @NotNull
+    public NodeState getStatus() {
+        return state;
+    }
+
+    @NotNull
+    public NodeShape getShape() {
+        return shape;
     }
 
     @Override
@@ -24,16 +29,16 @@ public class NodeDisplayInfo extends DisplayInfo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         NodeDisplayInfo that = (NodeDisplayInfo) o;
-        return state == that.state && type == that.type;
+        return state == that.state && shape == that.shape;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(state, type);
+        return Objects.hash(state, shape);
     }
 
     @Override
     public String toString() {
-        return "NodeDisplayInfo{" + "status=" + state + ", type=" + type + '}';
+        return "NodeDisplayInfo{" + "status=" + state + ", type=" + shape + '}';
     }
 }

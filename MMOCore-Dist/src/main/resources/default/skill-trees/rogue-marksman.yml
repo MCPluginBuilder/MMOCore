@@ -422,3 +422,23 @@ nodes:
         - "&eAdditional skill/weapon projectile damage +%6"
       1:
         - "&eAdditional skill/weapon projectile damage +%6"
+
+# This section is to change display options for nodes and paths depending on:
+# - their shape: each path has a shape given its neighboring connections (left + up, )... kind of like a vanilla redstone wire.
+# - their state: is the node/path unlocked, locked, maxed out... ?
+#
+# All of this is to "hide" the grid pattern of the chest inventory UI and give the
+# impression of a clean 2D skill tree UI.
+#
+# This config section is optional; if you do not provide it the one provided in the skill tree CUSTOM GUI CONFIG will be used.
+#
+# Please refer to the default config file 'combat.yml' for syntax examples and explanations.
+#########################
+#display:
+#  paths:
+#    unlocked:
+#      up: 'WHITE_DYE:0'
+#      ....
+#    ...
+#  nodes:
+#    ....

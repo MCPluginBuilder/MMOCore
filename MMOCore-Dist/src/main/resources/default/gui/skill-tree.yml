@@ -210,54 +210,22 @@ display:
         custom-model-data: 0
   nodes:
     unlocked:
-      up-right-down-left:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      up-right-down:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      up-right-left:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      up-down-left:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      down-right-left:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      up-right:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      up-down:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      up-left:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      down-right:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      down-left:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      right-left:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      right:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      left:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      up:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      down:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      no-path:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
+      up-right-down-left: "WHITE_CONCRETE:0"
+      up-right-down: "WHITE_CONCRETE:0"
+      up-right-left: "WHITE_CONCRETE:0"
+      up-down-left: "WHITE_CONCRETE:0"
+      down-right-left: "WHITE_CONCRETE:0"
+      up-right: "WHITE_CONCRETE:0"
+      up-down: "WHITE_CONCRETE:0"
+      up-left: "WHITE_CONCRETE:0"
+      down-right: "WHITE_CONCRETE:0"
+      down-left: "WHITE_CONCRETE:0"
+      right-left: "WHITE_CONCRETE:0"
+      right: "WHITE_CONCRETE:0"
+      left: "WHITE_CONCRETE:0"
+      up: "WHITE_CONCRETE:0"
+      down: "WHITE_CONCRETE:0"
+      no-path: "WHITE_CONCRETE:0"
     locked:
       up-right-down-left:
         item: "GRAY_CONCRETE"

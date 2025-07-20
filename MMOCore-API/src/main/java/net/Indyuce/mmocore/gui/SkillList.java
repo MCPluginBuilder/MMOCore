@@ -150,7 +150,7 @@ public class SkillList extends EditableInventory {
         public ItemStack getDisplayedItem(SkillViewerInventory inv, int n) {
             if (inv.selected == null) return new ItemStack(Material.AIR);
 
-            return getDisplayedItem(inv, inv.selected.getSkill().getRawIcon().toItemOptions(n));
+            return getDisplayedItem(inv, new ItemOptions(n, inv.selected.getSkill().getRawIcon()));
         }
 
         @Override
@@ -269,7 +269,7 @@ public class SkillList extends EditableInventory {
             if (skillSlot == null || !inv.playerData.hasUnlocked(skillSlot)) return new ItemStack(Material.AIR);
 
             final @Nullable ClassSkill boundSkill = inv.playerData.getBoundSkill(n + 1);
-            final ItemOptions options = boundSkill == null ? ItemOptions.index(n) : filledItem == null ? boundSkill.getSkill().getRawIcon().toItemOptions(n) : ItemOptions.model(n, filledItem, filledCMD);
+            final ItemOptions options = boundSkill == null ? ItemOptions.index(n) : filledItem == null ? new ItemOptions(n, boundSkill.getSkill().getRawIcon()) : ItemOptions.model(n, filledItem, filledCMD);
             return super.getDisplayedItem(inv, options);
         }
 
@@ -395,7 +395,7 @@ public class SkillList extends EditableInventory {
             if (index >= inv.skills.size()) return new ItemStack(Material.AIR);
 
             ClassSkill skill = inv.skills.get(index);
-            return getDisplayedItem(inv, skill.getSkill().getRawIcon().toItemOptions(n));
+            return getDisplayedItem(inv, new ItemOptions(n, skill.getSkill().getRawIcon()));
         }
 
         @Override

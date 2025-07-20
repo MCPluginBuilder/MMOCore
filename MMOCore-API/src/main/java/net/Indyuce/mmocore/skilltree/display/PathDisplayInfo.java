@@ -1,30 +1,32 @@
 package net.Indyuce.mmocore.skilltree.display;
 
-import net.Indyuce.mmocore.skilltree.PathType;
-import net.Indyuce.mmocore.skilltree.NodeState;
+import net.Indyuce.mmocore.skilltree.PathState;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-public class PathDisplayInfo extends DisplayInfo {
-    private final PathType type;
+public class PathDisplayInfo {
+    private final PathShape shape;
+    private final PathState state;
 
-    public PathDisplayInfo(PathType type, NodeState status) {
-        super(status);
-
-        this.type = type;
+    public PathDisplayInfo(@NotNull PathShape shape, @NotNull PathState status) {
+        this.state = status;
+        this.shape = shape;
     }
 
-    public PathType getType() {
-        return type;
-    }
-
-    public NodeState getStatus() {
+    @NotNull
+    public PathState getStatus() {
         return state;
+    }
+
+    @NotNull
+    public PathShape getShape() {
+        return shape;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, state);
+        return Objects.hash(shape, state);
     }
 
     @Override
@@ -32,11 +34,11 @@ public class PathDisplayInfo extends DisplayInfo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PathDisplayInfo that = (PathDisplayInfo) o;
-        return type == that.type && state == that.state;
+        return shape == that.shape && state == that.state;
     }
 
     @Override
     public String toString() {
-        return "PathDisplayInfo{" + "type=" + type + ", status=" + state + '}';
+        return "PathDisplayInfo{" + "type=" + shape + ", status=" + state + '}';
     }
 }

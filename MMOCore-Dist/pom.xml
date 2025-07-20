@@ -13,6 +13,8 @@
 
     <build>
 
+        <finalName>MMOCore-${project.version}</finalName>
+
         <!--
         Includes default files in the Bukkit module
         -->
@@ -34,7 +36,6 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.1.0</version>
                 <configuration>
-                    <finalName>MMOCore-${project.version}</finalName>
                     <outputDirectory>../target/</outputDirectory>
                 </configuration>
             </plugin>

@@ -1,11 +1,11 @@
-package net.Indyuce.mmocore.skilltree;
+package net.Indyuce.mmocore.skilltree.display;
 
 /**
  * These are the different textures that a path between
  * two nodes can have, just like a redstone wire which can take
  * turns, go straight, or be a one node path on its own.
  */
-public enum PathType {
+public enum PathShape {
 
     /**
      * │ up, down

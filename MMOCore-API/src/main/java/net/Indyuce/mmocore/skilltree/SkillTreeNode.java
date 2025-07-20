@@ -2,14 +2,16 @@ package net.Indyuce.mmocore.skilltree;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
+import io.lumine.mythic.lib.gui.util.IconOptions;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import net.Indyuce.mmocore.experience.EXPSource;
 import net.Indyuce.mmocore.experience.ExpCurve;
 import net.Indyuce.mmocore.experience.ExperienceObject;
 import net.Indyuce.mmocore.experience.droptable.ExperienceTable;
-import net.Indyuce.mmocore.util.Icon;
+import net.Indyuce.mmocore.skilltree.display.DisplayMap;
+import net.Indyuce.mmocore.skilltree.display.NodeDisplayInfo;
+import net.Indyuce.mmocore.skilltree.display.NodeShape;
 import net.Indyuce.mmocore.skilltree.tree.SkillTree;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
@@ -26,7 +28,7 @@ public class SkillTreeNode implements ExperienceObject {
     private final String name, id;
     private final String permissionRequired;
     private final int pointConsumption;
-    private final Map<NodeState, Icon> icons = new HashMap<>();
+    private final DisplayMap icons;
     private final IntegerCoordinates coordinates;
     private final int maxLevel, maxChildren;
     private final ExperienceTable experienceTable;
@@ -42,13 +44,7 @@ public class SkillTreeNode implements ExperienceObject {
         this.tree = tree;
 
         // Load icons for node states
-        if (config.isConfigurationSection("display")) for (NodeState state : NodeState.values()) {
-            final String ymlStatus = MMOCoreUtils.ymlName(state.name());
-            if (config.isConfigurationSection("display." + ymlStatus))
-                icons.put(state, Icon.from(config.get("display." + MMOCoreUtils.ymlName(state.name()))));
-            else
-                MMOCore.log("Could not find node display for state " + ymlStatus + " of node " + id + " in tree " + tree.getId() + ". Using default display.");
-        }
+        this.icons = DisplayMap.from(config.getConfigurationSection("display"));
 
         name = Objects.requireNonNull(config.getString("name"), "Could not find node name");
         root = config.getBoolean("root", config.getBoolean("is-root")); // backwards compatibility
@@ -79,14 +75,6 @@ public class SkillTreeNode implements ExperienceObject {
 
     public SkillTree getTree() {
         return tree;
-    }
-
-    public boolean hasIcon(NodeState status) {
-        return icons.containsKey(status);
-    }
-
-    public Icon getIcon(NodeState status) {
-        return icons.get(status);
     }
 
     public boolean isRoot() {
@@ -167,7 +155,7 @@ public class SkillTreeNode implements ExperienceObject {
 
     /**
      * @return Full node identifier, containing both the node identifier AND
-     *         the skill tree identifier, like "combat_extra_strength"
+     * the skill tree identifier, like "combat_extra_strength"
      */
     @NotNull
     public String getFullId() {
@@ -182,6 +170,11 @@ public class SkillTreeNode implements ExperienceObject {
     @NotNull
     public IntegerCoordinates getCoordinates() {
         return coordinates;
+    }
+
+    @NotNull
+    public DisplayMap getIcons() {
+        return icons;
     }
 
     public static final String KEY_PREFIX = "node";
@@ -202,28 +195,28 @@ public class SkillTreeNode implements ExperienceObject {
         return experienceTable != null;
     }
 
-    public NodeType getNodeType() {
+    public NodeShape getNodeType() {
         boolean up = tree.isPathOrNode(new IntegerCoordinates(coordinates.getX(), coordinates.getY() - 1));
         boolean down = tree.isPathOrNode(new IntegerCoordinates(coordinates.getX(), coordinates.getY() + 1));
         boolean right = tree.isPathOrNode(new IntegerCoordinates(coordinates.getX() + 1, coordinates.getY()));
         boolean left = tree.isPathOrNode(new IntegerCoordinates(coordinates.getX() - 1, coordinates.getY()));
 
-        if (up && right && down && left) return NodeType.UP_RIGHT_DOWN_LEFT;
-        else if (up && right && down) return NodeType.UP_RIGHT_DOWN;
-        else if (up && right && left) return NodeType.UP_RIGHT_LEFT;
-        else if (up && down && left) return NodeType.UP_DOWN_LEFT;
-        else if (down && right && left) return NodeType.DOWN_RIGHT_LEFT;
-        else if (up && right) return NodeType.UP_RIGHT;
-        else if (up && down) return NodeType.UP_DOWN;
-        else if (up && left) return NodeType.UP_LEFT;
-        else if (down && right) return NodeType.DOWN_RIGHT;
-        else if (down && left) return NodeType.DOWN_LEFT;
-        else if (right && left) return NodeType.RIGHT_LEFT;
-        else if (up) return NodeType.UP;
-        else if (down) return NodeType.DOWN;
-        else if (right) return NodeType.RIGHT;
-        else if (left) return NodeType.LEFT;
-        return NodeType.NO_PATH;
+        if (up && right && down && left) return NodeShape.UP_RIGHT_DOWN_LEFT;
+        else if (up && right && down) return NodeShape.UP_RIGHT_DOWN;
+        else if (up && right && left) return NodeShape.UP_RIGHT_LEFT;
+        else if (up && down && left) return NodeShape.UP_DOWN_LEFT;
+        else if (down && right && left) return NodeShape.DOWN_RIGHT_LEFT;
+        else if (up && right) return NodeShape.UP_RIGHT;
+        else if (up && down) return NodeShape.UP_DOWN;
+        else if (up && left) return NodeShape.UP_LEFT;
+        else if (down && right) return NodeShape.DOWN_RIGHT;
+        else if (down && left) return NodeShape.DOWN_LEFT;
+        else if (right && left) return NodeShape.RIGHT_LEFT;
+        else if (up) return NodeShape.UP;
+        else if (down) return NodeShape.DOWN;
+        else if (right) return NodeShape.RIGHT;
+        else if (left) return NodeShape.LEFT;
+        return NodeShape.NO_PATH;
     }
 
     @Override
@@ -281,4 +274,23 @@ public class SkillTreeNode implements ExperienceObject {
     public ExpCurve getExpCurve() {
         throw new RuntimeException("Skill trees don't have experience");
     }
+
+    //region Deprecated
+
+    @Deprecated
+    public boolean hasIcon(NodeState status) {
+        return getIcon(status) != null;
+    }
+
+    @Deprecated
+    @Nullable
+    public IconOptions getIcon(NodeState status) {
+        for (var shape : NodeShape.values()) {
+            var found = DisplayMap.getIcon(new NodeDisplayInfo(shape, status), icons);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    //endregion
 }

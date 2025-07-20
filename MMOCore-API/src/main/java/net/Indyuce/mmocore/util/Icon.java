@@ -14,7 +14,11 @@ import java.util.Objects;
 
 /**
  * The material and custom model-data of a node
+ *
+ * @see io.lumine.mythic.lib.gui.util.IconOptions
+ * @deprecated
  */
+@Deprecated
 public class Icon {
     private final Material material;
     private final int modelData;
@@ -77,7 +81,7 @@ public class Icon {
 
         if (object instanceof ConfigurationSection) {
             final ConfigurationSection config = (ConfigurationSection) object;
-            final Material material = Material.valueOf(UtilityMethods.enumName(((ConfigurationSection) object).getString("item")));
+            final Material material = Material.valueOf(UtilityMethods.enumName(((ConfigurationSection) object).getString("item", "none")));
             final int modelData = config.getInt("model-data", config.getInt("custom-model-data")); // Backwards compatibility
             return new Icon(material, modelData);
         }

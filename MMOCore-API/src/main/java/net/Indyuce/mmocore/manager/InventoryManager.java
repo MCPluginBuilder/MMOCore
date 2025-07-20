@@ -69,7 +69,12 @@ public class InventoryManager {
                 final var specificUi = invType.provider.apply(id, !configFile.exists());
 
                 ((Map) invType.inventories).put(formattedId, specificUi);
-                specificUi.reload(MMOCore.plugin, new ConfigFile("/gui/" + invType.name, specificUi.getId()).getConfig());
+
+              //  try {
+                    specificUi.reload(MMOCore.plugin, new ConfigFile("/gui/" + invType.name, specificUi.getId()).getConfig());
+               /* } catch (Exception exception) {
+                    MMOCore.log(Level.WARNING, "Could not load inventory 'gui/" + invType.name + "/" + invType.name + "-default" + "': " + exception.getMessage());
+                } */
             }
         }
 

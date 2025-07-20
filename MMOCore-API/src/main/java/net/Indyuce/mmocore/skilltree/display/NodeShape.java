@@ -1,9 +1,9 @@
-package net.Indyuce.mmocore.skilltree;
+package net.Indyuce.mmocore.skilltree.display;
 
 /**
  * TODO docs
  */
-public enum NodeType {
+public enum NodeShape {
     UP_RIGHT_DOWN_LEFT,
     UP_RIGHT_DOWN,
     UP_RIGHT_LEFT,
