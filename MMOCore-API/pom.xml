@@ -175,7 +175,7 @@
         <dependency>
             <groupId>fr.phoenixdevt</groupId>
             <artifactId>Profile-API</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>1.1</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -183,7 +183,7 @@
         <dependency>
             <groupId>me.clip</groupId>
             <artifactId>placeholderapi</artifactId>
-            <version>2.9.2</version>
+            <version>2.11.6</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
