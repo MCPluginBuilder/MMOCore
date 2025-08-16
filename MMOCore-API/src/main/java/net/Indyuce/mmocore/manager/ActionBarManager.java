@@ -12,6 +12,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.scheduler.BukkitRunnable;
 
+// TODO extends Manager and not bukkit runnable for clarity.
 public class ActionBarManager extends BukkitRunnable {
     private int updateTicks, timeOut;
     private String barFormat;

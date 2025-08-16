@@ -109,7 +109,7 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
                 : ManaDisplayOptions.DEFAULT;
         maxLevel = config.getInt("max-level");
         displayOrder = config.getInt("display.order");
-        actionBarFormat = config.contains("action-bar", true) ? config.getString("action-bar") : null;
+        actionBarFormat = config.contains("action-bar") ? config.getString("action-bar") : null;
 
         // Exp curve
         expCurve = config.contains("exp-curve")
@@ -267,7 +267,7 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
         expTable = null;
         comboMap = null;
         castParticle = new CastingParticle(VParticle.INSTANT_EFFECT.get());
-        actionBarFormat = "";
+        actionBarFormat = null;
         this.icon = new IconOptions(material);
         setOption(ClassOption.DISPLAY, false);
         setOption(ClassOption.DEFAULT, false);

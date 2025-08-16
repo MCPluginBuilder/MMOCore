@@ -329,8 +329,7 @@ public class MMOCore extends MMOPlugin {
         //Needs to be loaded after the class manager.
         InventoryManager.load();
 
-        if (getConfig().isConfigurationSection("action-bar"))
-            actionBarManager.reload(getConfig().getConfigurationSection("action-bar"));
+        actionBarManager.reload(getConfig().getConfigurationSection("action-bar"));
 
         if (clearBefore)
             PlayerData.getAll().forEach(PlayerData::reload);
