@@ -4,9 +4,9 @@
 display:
     name: 'Human'
 
-    # No need for an item since the default class is not displayed
-    # anywhere by default.
-    #item: LEATHER_CHESTPLATE
+    # Icon used when displaying the class in the UI. By default,
+    # the default class is not displayed, making this option useless
+    item: LEATHER_CHESTPLATE
 
 # This is the default class granted to players when joining the server.
 # They may level it up, but they cannot choose this class again

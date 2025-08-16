@@ -99,7 +99,7 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
         this.id = UtilityMethods.enumName(id);
 
         name = MythicLib.plugin.parseColors(config.getString("display.name", "INVALID DISPLAY NAME"));
-        icon = IconOptions.from(config.get("display.item"));
+        icon = IconOptions.from(config.get("display.item", "GRASS_BLOCK"));
 
         for (String string : config.getStringList("display.lore"))
             description.add(ChatColor.GRAY + MythicLib.plugin.parseColors(string));
@@ -142,8 +142,8 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
                 try {
                     final TriggerType trigger = TriggerType.valueOf(UtilityMethods.enumName(key));
                     final Script script = MythicLib.plugin.getSkills().loadScript(config.getConfigurationSection("scripts." + key));
-                    final Skill castSkill = new SimpleSkill(trigger, new MythicLibSkillHandler(script));
-                    final PassiveSkill skill = new PassiveSkill("MMOCoreClassScript", castSkill, EquipmentSlot.OTHER, ModifierSource.OTHER);
+                    final Skill castSkill = new SimpleSkill(new MythicLibSkillHandler(script));
+                    final PassiveSkill skill = new PassiveSkill("MMOCoreClassScript", trigger, castSkill, EquipmentSlot.OTHER, ModifierSource.OTHER);
                     classScripts.add(skill);
                 } catch (IllegalArgumentException exception) {
                     MMOCore.plugin.getLogger().log(Level.WARNING, "Could not load script '" + key + "' from class '" + id + "': " + exception.getMessage());
