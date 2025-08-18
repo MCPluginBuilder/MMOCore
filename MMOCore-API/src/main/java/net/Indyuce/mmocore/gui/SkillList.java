@@ -297,7 +297,10 @@ public class SkillList extends EditableInventory {
 
             // Select if the player is doing Shift Left Click
             if (event.getClick() == ClickType.SHIFT_LEFT) {
-                if (inv.playerData.hasSkillBound(index)) inv.selected = inv.playerData.getBoundSkill(index);
+                if (inv.playerData.hasSkillBound(index)){
+                    inv.selected = inv.playerData.getBoundSkill(index);
+                    inv.open();
+                }
                 return;
             }
 

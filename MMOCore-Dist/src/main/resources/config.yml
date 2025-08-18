@@ -132,10 +132,6 @@ action-bar:
   # (This doesn't change any other action bars provided by MMOCore.)
   enabled: true
 
-  # The amount of ticks the bar will be
-  # faded out when displaying other action bars.
-  time-out: 60
-
   # The amount of ticks before updating the info
   ticks-to-update: 5
 
@@ -172,13 +168,12 @@ party:
   # This prevents low level players from joining
   # high level players and earning tons of EXP.
   #
-  # Set to the max level possible if you want to disable
-  # that feature.
+  # Set to -1 to disable.
   max-level-difference: 3
 
   # Exp won't be split if players are too far apart.
   #
-  # Set to 0 to disable
+  # Set to -1 to disable.
   max-exp-split-range: 48
 
   # When enabled, being in a party splits class exp

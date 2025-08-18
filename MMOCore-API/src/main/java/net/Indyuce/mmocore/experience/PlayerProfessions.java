@@ -24,10 +24,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Level;
 
 public class PlayerProfessions {
     private final Map<String, Double> exp = new HashMap<>();
@@ -174,11 +172,10 @@ public class PlayerProfessions {
         // Splitting exp through party members
         AbstractParty party;
         if (splitExp && (party = playerData.getParty()) != null && MMOCore.plugin.configManager.splitProfessionExp) {
-            List<PlayerData> onlineMembers = party.getOnlineMembers();
-            value /= onlineMembers.size();
-            for (PlayerData member : onlineMembers)
-                if (!member.equals(playerData))
-                    member.getCollectionSkills().giveExperience(profession, value, source, null, false);
+            var nearbyMembers = party.findPlayersForExp(getPlayerData());
+            value /= (nearbyMembers.size() + 1); // Share exp
+            for (PlayerData member : nearbyMembers)
+                member.getCollectionSkills().giveExperience(profession, value, source, null, false);
         }
 
         // Apply buffs AFTER splitting exp

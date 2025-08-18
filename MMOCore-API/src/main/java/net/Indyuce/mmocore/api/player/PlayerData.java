@@ -3,6 +3,7 @@ package net.Indyuce.mmocore.api.player;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
+import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import io.lumine.mythic.lib.player.cooldown.CooldownMap;
 import io.lumine.mythic.lib.util.Closeable;
 import io.lumine.mythic.lib.version.Attributes;
@@ -52,8 +53,6 @@ import net.Indyuce.mmocore.skilltree.SkillTreeNode;
 import net.Indyuce.mmocore.skilltree.tree.SkillTree;
 import net.Indyuce.mmocore.waypoint.Waypoint;
 import net.Indyuce.mmocore.waypoint.WaypointOption;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.Validate;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
@@ -927,14 +926,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         // Splitting exp through party members
         final AbstractParty party;
         if (splitExp && (party = getParty()) != null && MMOCore.plugin.configManager.splitMainExp) {
-            final List<PlayerData> nearbyMembers = party.getOnlineMembers().stream().filter(pd -> {
-                if (equals(pd) || pd.hasReachedMaxLevel() || Math.abs(pd.getLevel() - getLevel()) > MMOCore.plugin.configManager.maxPartyLevelDifference)
-                    return false;
-
-                final double maxDis = MMOCore.plugin.configManager.partyMaxExpSplitRange;
-                return maxDis <= 0 || (pd.getPlayer().getWorld().equals(getPlayer().getWorld()) && pd.getPlayer().getLocation().distanceSquared(getPlayer().getLocation()) < maxDis * maxDis);
-            }).collect(Collectors.toList());
-            value /= (nearbyMembers.size() + 1);
+            var nearbyMembers = party.findPlayersForExp(this);
+            value /= (nearbyMembers.size() + 1); // Share exp
             for (PlayerData member : nearbyMembers)
                 member.giveExperience(value, source, null, false);
         }
@@ -1177,7 +1170,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
         skillCasting.close();
         this.skillCasting = null;
-        setLastActivity(PlayerActivity.ACTION_BAR_MESSAGE, 0); // Reset action bar
+        getMMOPlayerData().getActionBar().reset(ActionBarPriority.NORMAL);
         return true;
     }
 
@@ -1190,9 +1183,14 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         // TODO add an option to disable action-bar properly in all casting modes
         if (ChatColor.stripColor(message).isEmpty()) return;
 
-        setLastActivity(PlayerActivity.ACTION_BAR_MESSAGE);
-        if (raw) MythicLib.plugin.getVersion().getWrapper().sendActionBarRaw(getPlayer(), message);
-        else getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
+        // TODO move raw/not raw decision to MythicLib
+        var handler = getMMOPlayerData().getActionBar();
+        if (!raw) handler.show(ActionBarPriority.NORMAL, message);
+        else {
+            if (!handler.canShow(ActionBarPriority.NORMAL)) return;
+            handler.show(ActionBarPriority.NORMAL, "");
+            MythicLib.plugin.getVersion().getWrapper().sendActionBarRaw(getPlayer(), message);
+        }
     }
 
     @Deprecated

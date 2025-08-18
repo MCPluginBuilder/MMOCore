@@ -3,24 +3,21 @@ package net.Indyuce.mmocore.manager;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import io.lumine.mythic.lib.manager.StatManager;
+import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import io.lumine.mythic.lib.version.Attributes;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.player.PlayerActivity;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.scheduler.BukkitRunnable;
 
 // TODO extends Manager and not bukkit runnable for clarity.
 public class ActionBarManager extends BukkitRunnable {
-    private int updateTicks, timeOut;
+    private int updateTicks;
     private String barFormat;
     private boolean enabled, scheduled;
 
     public void reload(ConfigurationSection config) {
         enabled = config.getBoolean("enabled", false);
-        timeOut = config.getInt("time-out", 60);
         updateTicks = config.getInt("ticks-to-update", 5);
         barFormat = config.getString("format", "<No Action Bar Format Found>");
 
@@ -33,18 +30,22 @@ public class ActionBarManager extends BukkitRunnable {
         }
     }
 
-    public long getTimeOut() {
-        return timeOut;
-    }
-
     @Override
     public void run() {
-        for (PlayerData data : PlayerData.getAll())
-            if (data.isOnline() && !data.getPlayer().isDead() && !data.isCasting() && data.getActivityTimeOut(PlayerActivity.ACTION_BAR_MESSAGE) == 0) {
-                Placeholders holders = getActionBarPlaceholders(data);
-                data.getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(
-                        holders.apply(data.getPlayer(), data.getProfess().hasActionBar() ? data.getProfess().getActionBar() : barFormat)));
-            }
+        for (var player : PlayerData.getAll()) {
+
+            // Basic checks
+            if (!player.isOnline() || player.getPlayer().isDead()) continue;
+
+            // Check if action bar resource is free (small perf optimisation)
+            var handler = player.getMMOPlayerData().getActionBar();
+            if (!handler.canShow(ActionBarPriority.LOW)) continue;
+
+            // Send
+            var placeholders = getActionBarPlaceholders(player);
+            var rawMessage = player.getProfess().hasActionBar() ? player.getProfess().getActionBar() : barFormat;
+            handler.show(ActionBarPriority.LOW, placeholders.apply(player.getPlayer(), rawMessage));
+        }
     }
 
     public Placeholders getActionBarPlaceholders(PlayerData data) {

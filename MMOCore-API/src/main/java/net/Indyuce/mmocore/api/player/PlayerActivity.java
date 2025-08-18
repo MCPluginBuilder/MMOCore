@@ -17,8 +17,6 @@ public enum PlayerActivity {
 
     FRIEND_REQUEST(() -> 1000 * 60 * 2L),
 
-    ACTION_BAR_MESSAGE(() -> MMOCore.plugin.actionBarManager.getTimeOut() * 50),
-
     LOOT_CHEST_SPAWN(() -> MMOCore.plugin.configManager.lootChestPlayerCooldown),
 
     CAST_SKILL(() -> MMOCore.plugin.configManager.globalSkillCooldown),
