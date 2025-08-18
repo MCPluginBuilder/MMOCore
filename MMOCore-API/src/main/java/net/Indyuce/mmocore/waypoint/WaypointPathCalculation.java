@@ -57,7 +57,7 @@ public class WaypointPathCalculation {
         if (source != null) init(queue, source, 0); // !! After dynamic waypoints !!
 
         // Run Dijkstra
-        do {
+        while (!queue.isEmpty()) {
             final Waypoint currentNode = queue.remove().getLeft();
 
             // Mark as visited
@@ -84,8 +84,7 @@ public class WaypointPathCalculation {
                 // Push to queue
                 if (!visited.contains(adjacentNode)) queue.add(Pair.of(adjacentNode, edgeWeight));
             }
-
-        } while (!queue.isEmpty());
+        }
     }
 
     private void init(@NotNull PriorityQueue<Pair<Waypoint, Double>> queue, @NotNull Waypoint waypoint, double cost) {
