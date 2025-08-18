@@ -120,7 +120,7 @@ public class SQLDataHandler extends SQLSynchronizedDataHandler<PlayerData, Offli
         updater.addJSONObject("times_claimed", data.getItemClaims().entrySet());
         updater.addJSONObject("skill_tree_points", data.mapSkillTreePoints().entrySet());
         updater.addJSONObject("skill_tree_levels", data.getNodeLevelsEntrySet());
-        updater.addData("attributes", data.getAttributes().toJsonString());
+        updater.addData("attributes", data.getAttributes().toJson().toString());
         updater.addData("professions", data.getCollectionSkills().toJsonString());
         updater.addData("quests", data.getQuestData().toJsonString());
         updater.addData("class_info", createClassInfoData(data).toString());

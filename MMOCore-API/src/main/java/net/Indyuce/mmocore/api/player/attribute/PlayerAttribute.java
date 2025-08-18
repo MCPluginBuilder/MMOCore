@@ -23,6 +23,7 @@ public class PlayerAttribute implements ExperienceObject {
     private final String id, name;
     private final int max;
     private final ExperienceTable expTable;
+    private final boolean save;
 
     /**
      * All buffs granted by an attribute. These are normalized and
@@ -36,6 +37,7 @@ public class PlayerAttribute implements ExperienceObject {
 
         name = MythicLib.plugin.parseColors(config.getString("name", "MyAttribute"));
         max = config.contains("max-points") ? Math.max(1, config.getInt("max-points")) : 0;
+        save = config.getBoolean("save-to-player-data", true);
 
         if (config.contains("buff"))
             for (String key : config.getConfigurationSection("buff").getKeys(false))
@@ -71,6 +73,10 @@ public class PlayerAttribute implements ExperienceObject {
 
     public int getMax() {
         return max;
+    }
+
+    public boolean isSaved() {
+        return save;
     }
 
     public Set<StatModifier> getBuffs() {

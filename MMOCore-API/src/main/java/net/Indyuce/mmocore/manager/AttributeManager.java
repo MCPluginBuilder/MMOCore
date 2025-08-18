@@ -22,6 +22,14 @@ public class AttributeManager implements MMOCoreManager {
         return map.get(id);
     }
 
+    @NotNull
+    public PlayerAttribute getOrThrow(String id) {
+        final var found = map.get(id);
+        if (found == null)
+            throw new IllegalArgumentException(String.format("Could not find attribute with ID '%s'", found));
+        return found;
+    }
+
     public boolean has(String id) {
         return map.containsKey(id);
     }

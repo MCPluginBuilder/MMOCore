@@ -9,6 +9,7 @@ import io.lumine.mythic.lib.gson.JsonObject;
 import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.modifier.ModifierType;
 import io.lumine.mythic.lib.util.Closeable;
+import io.lumine.mythic.lib.util.Lazy;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import org.apache.commons.lang.Validate;
@@ -30,36 +31,72 @@ public class PlayerAttributes {
         this.data = data;
     }
 
-    public void load(ConfigurationSection config) {
-        for (String key : config.getKeys(false))
-            try {
-                final String id = key.toLowerCase().replace("_", "-").replace(" ", "-");
-                Validate.isTrue(MMOCore.plugin.attributeManager.has(id), "Could not find attribute called '" + id + "'");
-                final AttributeInstance ins = new AttributeInstance(id);
-                ins.setBase(config.getInt(key));
-                instances.put(id, ins);
-            } catch (IllegalArgumentException exception) {
-                data.log(Level.WARNING, exception.getMessage());
-            }
+    /**
+     * When plugin is reloaded. Live references must be flushed
+     */
+    public void reload() {
+        instances.values().forEach(ins -> ins.attribute.flush());
     }
 
-    public void save(ConfigurationSection config) {
-        instances.values().forEach(ins -> config.set(ins.id, ins.getBase()));
+    /**
+     * Save to YAML
+     *
+     * @param config Where to save the player attributes
+     */
+    public void save(@NotNull ConfigurationSection config) {
+        for (var instance : instances.values()) {
+
+            // Check if attribute is saved
+            var attribute = instance.attribute.get();
+            if (!attribute.isSaved()) continue;
+
+            // Save to config
+            config.set(instance.getId(), instance.getBase());
+        }
     }
 
+    /**
+     * Save player attribute data to JSON
+     *
+     * @return JSON object
+     */
+    @NotNull
+    public JsonObject toJson() {
+        var json = new JsonObject();
+
+        for (var instance : instances.values()) {
+
+            // Check if attribute is saved
+            var attribute = instance.attribute.get();
+            if (!attribute.isSaved()) continue;
+
+            json.addProperty(instance.getId(), instance.getBase());
+        }
+
+        return json;
+    }
+
+    @Deprecated
     public String toJsonString() {
-        JsonObject json = new JsonObject();
-        for (AttributeInstance ins : instances.values())
-            json.addProperty(ins.getId(), ins.getBase());
-        return json.toString();
+        return toJson().toString();
     }
 
-    public void load(String json) {
+    /**
+     * Load from JSON
+     *
+     * @param json String JSON object
+     */
+    public void load(@NotNull String json) {
         JsonObject jo = MythicLib.plugin.getGson().fromJson(json, JsonObject.class);
         for (Entry<String, JsonElement> entry : jo.entrySet()) {
             try {
                 final String id = entry.getKey().toLowerCase().replace("_", "-").replace(" ", "-");
-                Validate.isTrue(MMOCore.plugin.attributeManager.has(id), "Could not find attribute called '" + id + "'");
+                final var attribute = MMOCore.plugin.attributeManager.get(id);
+                Validate.notNull(attribute, "Could not find attribute called '" + id + "'");
+
+                // [Backwards compatibility] Failsafe, ignore attributes that are not saved
+                if (!attribute.isSaved()) continue;
+
                 final AttributeInstance ins = new AttributeInstance(id);
                 ins.setBase(entry.getValue().getAsInt());
                 instances.put(id, ins);
@@ -67,6 +104,30 @@ public class PlayerAttributes {
                 data.log(Level.WARNING, exception.getMessage());
             }
         }
+    }
+
+    /**
+     * Load from YAML config section
+     *
+     * @param config YAML config section to load from
+     */
+    public void load(@NotNull ConfigurationSection config) {
+
+        for (String key : config.getKeys(false))
+            try {
+                final String id = key.toLowerCase().replace("_", "-").replace(" ", "-");
+                final var attribute = MMOCore.plugin.attributeManager.get(id);
+                Validate.notNull(attribute, "Could not find attribute called '" + id + "'");
+
+                // [Backwards compatibility] Failsafe, ignore attributes that are not saved
+                if (!attribute.isSaved()) continue;
+
+                final var ins = new AttributeInstance(id);
+                ins.setBase(config.getInt(key));
+                instances.put(id, ins);
+            } catch (IllegalArgumentException exception) {
+                data.log(Level.WARNING, exception.getMessage());
+            }
     }
 
     public PlayerData getData() {
@@ -109,16 +170,33 @@ public class PlayerAttributes {
         return n;
     }
 
-    // TODO have it extend ModifiedInstance
+    // TODO have it extend ModifiedInstance?
+    // TODO not do that before the general "archetype" MMOCore update
     public class AttributeInstance {
         private int spent;
 
         private final String id, enumName;
+
+        /**
+         * Using a lazy value allows to flush values. When MMOCore
+         * is reloaded, references to dead instances of player attributes
+         * remain in attribute instances and need to be flushed.
+         */
+        private final Lazy<PlayerAttribute> attribute;
+
         private final Map<String, AttributeModifier> map = new HashMap<>();
 
-        public AttributeInstance(@NotNull String id) {
-            this.id = id;
+        public AttributeInstance(@NotNull String attributeId) {
+            this.id = attributeId;
             this.enumName = UtilityMethods.enumName(this.id);
+            this.attribute = Lazy.of(() -> MMOCore.plugin.attributeManager.get(this.id));
+        }
+
+        /**
+         * @return ID of corresponding attribute
+         */
+        public String getId() {
+            return id;
         }
 
         public int getBase() {
@@ -218,10 +296,6 @@ public class PlayerAttributes {
 
             // Register new stat modifiers
             attr.getBuffs().forEach(buff -> buff.multiply(total).register(data.getMMOPlayerData()));
-        }
-
-        public String getId() {
-            return id;
         }
     }
 

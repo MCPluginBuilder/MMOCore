@@ -63,6 +63,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import org.jetbrains.annotations.Nullable;
+
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -77,6 +78,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
      * NEVER access the player class using this field, you must
      * use the {@link #getProfess()} method instead
      */
+    // TODO convert to live reference
     @Nullable
     private PlayerClass profess;
     private int level, classPoints, skillPoints, attributePoints, attributeReallocationPoints, skillTreeReallocationPoints, skillReallocationPoints;
@@ -168,10 +170,10 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         } catch (NullPointerException exception) {
             MMOCore.log(Level.SEVERE, "[Userdata] Could not find class " + getProfess().getId() + " while refreshing player data.");
         }
-        final Iterator<Map.Entry<Integer, BoundSkillInfo>> ite = new HashMap(boundSkills).entrySet().iterator();
-        while (ite.hasNext())
+
+        // Update references to dead skills in bound skills
+        for (var entry : new HashMap<>(boundSkills).entrySet())
             try {
-                final Map.Entry<Integer, BoundSkillInfo> entry = ite.next();
                 final @Nullable SkillSlot skillSlot = getProfess().getSkillSlot(entry.getKey());
                 final String skillId = entry.getValue().getClassSkill().getSkill().getHandler().getId();
                 final @Nullable ClassSkill classSkill = getProfess().getSkill(skillId);
@@ -191,6 +193,9 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         setupSkillTrees();
         applyTemporaryTriggers();
         getStats().updateStats();
+
+        // Flush references to dead attributes
+        attributes.reload();
     }
 
     @Deprecated
@@ -449,7 +454,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     /**
      * @return If the item is unlocked by the player
-     *         This is used for skills that can be locked & unlocked.
+     * This is used for skills that can be locked & unlocked.
      */
     public boolean hasUnlocked(Unlockable unlockable) {
         return unlockable.isUnlockedByDefault() || unlockedItems.contains(unlockable.getUnlockNamespacedKey());
@@ -628,7 +633,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     /**
      * @param key The identifier of an exp table item.
      * @return Amount of times an item has been claimed
-     *         inside an experience table.
+     * inside an experience table.
      */
     public int getClaims(@NotNull String key) {
         return tableItemClaims.getOrDefault(key, 0);
@@ -1132,7 +1137,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     /**
      * @return If the PlayerEnterCastingModeEvent successfully put the player
-     *         into casting mode, otherwise if the event is cancelled, returns false.
+     * into casting mode, otherwise if the event is cancelled, returns false.
      */
     public boolean setSkillCasting() {
         Validate.isTrue(!isCasting(), "Player already in casting mode");
@@ -1151,7 +1156,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     /**
      * @return If player successfully left skill casting i.e the Bukkit
-     *         event has not been cancelled
+     * event has not been cancelled
      */
     public boolean leaveSkillCasting() {
         return leaveSkillCasting(false);
@@ -1160,7 +1165,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     /**
      * @param skipEvent Skip firing the exit event
      * @return If player successfully left skill casting i.e the Bukkit
-     *         event has not been cancelled
+     * event has not been cancelled
      */
     public boolean leaveSkillCasting(boolean skipEvent) {
         Validate.isTrue(isCasting(), "Player not in casting mode");
@@ -1363,7 +1368,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
      * checks if they could potentially upgrade to one of these
      *
      * @return If the player can change its current class to
-     *         a subclass
+     * a subclass
      */
     @Deprecated
     public boolean canChooseSubclass() {
