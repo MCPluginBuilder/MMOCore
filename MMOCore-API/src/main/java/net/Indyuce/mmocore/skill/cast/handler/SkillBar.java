@@ -44,7 +44,7 @@ public class SkillBar extends SkillCastingHandler {
     }
 
     @Override
-    public void onSkillBound(@NotNull PlayerData player) {
+    public void onSkillBindChange(@NotNull PlayerData player) {
 
         // Lowest indices = start at slot 1 and increase
         if (lowestKeybinds) {

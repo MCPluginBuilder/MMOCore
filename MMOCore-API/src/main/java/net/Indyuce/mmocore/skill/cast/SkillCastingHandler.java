@@ -30,7 +30,7 @@ public abstract class SkillCastingHandler implements Listener {
     @NotNull
     public abstract SkillCastingInstance newInstance(@NotNull PlayerData player);
 
-    public void onSkillBound(@NotNull PlayerData player) {
+    public void onSkillBindChange(@NotNull PlayerData player) {
         // Nothing by default
     }
 }

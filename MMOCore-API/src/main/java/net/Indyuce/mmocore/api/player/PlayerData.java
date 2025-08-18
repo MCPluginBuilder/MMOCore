@@ -1327,13 +1327,16 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         unbindSkill(slot);
         final SkillSlot skillSlot = getProfess().getSkillSlot(slot);
         boundSkills.put(slot, new BoundSkillInfo(skillSlot, skill, this));
-        SkillCastingMode.getInstance().onSkillBound(this);
+        SkillCastingMode.getInstance().onSkillBindChange(this);
     }
 
     @Nullable
     public BoundSkillInfo unbindSkill(int slot) {
         final @Nullable BoundSkillInfo boundSkillInfo = boundSkills.remove(slot);
-        if (boundSkillInfo != null) boundSkillInfo.close();
+        if (boundSkillInfo != null) {
+            boundSkillInfo.close();
+            SkillCastingMode.getInstance().onSkillBindChange(this);
+        }
         return boundSkillInfo;
     }
 
