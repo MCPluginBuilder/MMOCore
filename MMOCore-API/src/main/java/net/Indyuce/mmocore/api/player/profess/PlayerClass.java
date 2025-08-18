@@ -141,7 +141,7 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
             for (String key : config.getConfigurationSection("scripts").getKeys(false))
                 try {
                     final TriggerType trigger = TriggerType.valueOf(UtilityMethods.enumName(key));
-                    final Script script = MythicLib.plugin.getSkills().loadScript(config.getConfigurationSection("scripts." + key));
+                    final Script script = MythicLib.plugin.getSkills().loadScript(config.get("scripts." + key));
                     final Skill castSkill = new SimpleSkill(new MythicLibSkillHandler(script));
                     final PassiveSkill skill = new PassiveSkill("MMOCoreClassScript", trigger, castSkill, EquipmentSlot.OTHER, ModifierSource.OTHER);
                     classScripts.add(skill);
