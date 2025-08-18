@@ -1,17 +1,15 @@
 package net.Indyuce.mmocore.guild.provided;
 
+import net.Indyuce.mmocore.MMOCore;
+import net.Indyuce.mmocore.api.ConfigFile;
+import net.Indyuce.mmocore.manager.data.GuildDataManager;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import net.Indyuce.mmocore.MMOCore;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-
-import net.Indyuce.mmocore.api.ConfigFile;
-import net.Indyuce.mmocore.guild.provided.Guild;
-import net.Indyuce.mmocore.manager.data.GuildDataManager;
 
 public class YAMLGuildDataManager extends GuildDataManager {
 	@Override

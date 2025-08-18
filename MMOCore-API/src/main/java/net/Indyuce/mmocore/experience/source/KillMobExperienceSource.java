@@ -18,8 +18,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.persistence.PersistentDataType;
-
 import org.jetbrains.annotations.Nullable;
+
 import java.util.UUID;
 
 public class KillMobExperienceSource extends SpecificExperienceSource<Entity> {

@@ -4,7 +4,6 @@ import io.lumine.mythic.lib.api.MMOLineConfig;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.entity.Entity;
 
 public class DistanceCondition extends Condition {
     private final Location location;

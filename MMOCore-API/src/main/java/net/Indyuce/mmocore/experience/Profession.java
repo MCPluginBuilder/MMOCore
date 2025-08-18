@@ -5,12 +5,11 @@ import io.lumine.mythic.lib.util.PostLoadAction;
 import io.lumine.mythic.lib.util.PreloadedObject;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import net.Indyuce.mmocore.api.util.math.formula.LinearValue;
 import net.Indyuce.mmocore.experience.droptable.ExperienceTable;
+import net.Indyuce.mmocore.util.formula.ScalingFormula;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,7 +29,7 @@ public class Profession implements ExperienceObject, PreloadedObject {
      * Experience given to the main player level
      * whenever he levels up this profession
      */
-    private final LinearValue experience;
+    private final ScalingFormula experience;
 
     private final PostLoadAction postLoadAction = new PostLoadAction(config -> {
 
@@ -48,7 +47,7 @@ public class Profession implements ExperienceObject, PreloadedObject {
         expCurve = config.contains("exp-curve")
                 ? MMOCore.plugin.experience.getCurveOrThrow(config.get("exp-curve").toString().toLowerCase().replace("_", "-").replace(" ", "-"))
                 : ExpCurve.DEFAULT;
-        experience = new LinearValue(config.getConfigurationSection("experience"));
+        experience = ScalingFormula.fromConfig(config.get("experience"));
 
         ExperienceTable expTable = null;
         if (config.contains("exp-table"))
@@ -117,7 +116,7 @@ public class Profession implements ExperienceObject, PreloadedObject {
         return maxLevel > 0;
     }
 
-    public LinearValue getExperience() {
+    public ScalingFormula getExperience() {
         return experience;
     }
 

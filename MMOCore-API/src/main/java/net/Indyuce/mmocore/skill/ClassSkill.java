@@ -7,20 +7,22 @@ import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import net.Indyuce.mmocore.api.util.math.formula.IntegerLinearValue;
 import net.Indyuce.mmocore.api.util.math.formula.LinearValue;
 import net.Indyuce.mmocore.player.Unlockable;
+import net.Indyuce.mmocore.util.formula.FormulaFailsafeException;
+import net.Indyuce.mmocore.util.formula.ScalingFormula;
 import org.apache.commons.lang.Validate;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.logging.Level;
 
 public class ClassSkill implements CooldownObject, Unlockable {
     private final RegisteredSkill skill;
     private final int unlockLevel, maxSkillLevel;
     private final boolean unlockedByDefault, permanent, upgradable;
-    private final Map<String, LinearValue> parameters = new HashMap<>();
+    private final Map<String, ScalingFormula> parameters = new HashMap<>();
 
     public ClassSkill(RegisteredSkill skill, int unlockLevel, int maxSkillLevel) {
         this(skill, unlockLevel, maxSkillLevel, true);
@@ -50,6 +52,7 @@ public class ClassSkill implements CooldownObject, Unlockable {
         this.unlockedByDefault = unlockedByDefault;
         this.permanent = !needsBinding && skill.getTrigger().isPassive();
         this.upgradable = upgradable;
+
         for (String param : skill.getHandler().getParameters())
             this.parameters.put(param, skill.getParameterInfo(param));
     }
@@ -61,9 +64,12 @@ public class ClassSkill implements CooldownObject, Unlockable {
         unlockedByDefault = config.getBoolean("unlocked-by-default", true);
         permanent = !config.getBoolean("needs-bound", MMOCore.plugin.configManager.passiveSkillsNeedBinding) && skill.getTrigger().isPassive();
         upgradable = config.getBoolean("upgradable", true);
+
         for (String param : skill.getHandler().getParameters()) {
-            LinearValue defaultValue = skill.getParameterInfo(param);
-            this.parameters.put(param, config.isConfigurationSection(param) ? readLinearValue(defaultValue, config.getConfigurationSection(param)) : defaultValue);
+            var fallback = skill.getParameterInfo(param);
+            var formulaConfig = config.get(param);
+            var formula = formulaConfig == null ? fallback : ScalingFormula.fromConfig(formulaConfig, fallback);
+            this.parameters.put(param, formula);
         }
     }
 
@@ -91,11 +97,6 @@ public class ClassSkill implements CooldownObject, Unlockable {
     @Override
     public boolean isUnlockedByDefault() {
         return unlockedByDefault;
-    }
-
-    @Deprecated
-    public boolean needsBound() {
-        return getSkill().getTrigger().isPassive() && !isPermanent();
     }
 
     /**
@@ -132,50 +133,53 @@ public class ClassSkill implements CooldownObject, Unlockable {
         if (isPermanent()) playerData.getStats().updateStats();
     }
 
-
-    /**
-     * Skill modifiers are now called parameters.
-     */
-    @Deprecated
-    public void addModifier(String modifier, LinearValue linear) {
-        addParameter(modifier, linear);
-    }
-
     /**
      * This method can only override default parameters and
-     * will throw an error when trying to define non existing modifiers
+     * will throw an error when trying to define non-existing modifiers
      */
-    public void addParameter(String parameter, LinearValue linear) {
-        Validate.isTrue(parameters.containsKey(parameter), "Could not find parameter '" + parameter + "'");
-        parameters.put(parameter, linear);
+    public void addParameter(@NotNull String parameter, @NotNull ScalingFormula formula) {
+        Validate.isTrue(parameters.containsKey(parameter), "Could not find parameter called '" + parameter + "'");
+        parameters.put(parameter, formula);
     }
 
-    /**
-     * Skill modifiers are now called parameters.
-     */
-    @Deprecated
-    public double getModifier(String modifier, int level) {
-        return getParameter(modifier, level);
+    @NotNull
+    public ScalingFormula getParameterFormula(@NotNull String parameter) {
+        return Objects.requireNonNull(parameters.get(parameter), "Could not find parameter called '" + parameter + "'");
     }
 
-    public double getParameter(String parameter, int level) {
-        return Objects.requireNonNull(parameters.get(parameter), "Could not find parameter '" + parameter + "'").calculate(level);
+    public double getParameter(@NotNull String parameter, int level, @NotNull PlayerData caster) {
+        try {
+            return getParameterFormula(parameter).evaluate(level, caster);
+        } catch (FormulaFailsafeException exception) {
+            exception.log("Could not evaluate parameter '%s' of skill '%s'", parameter, getSkill().getHandler().getId());
+            return exception.getFailsafe();
+        }
     }
 
+    public double getParameter(@NotNull String parameter, @NotNull PlayerData caster) {
+        return getParameter(parameter, caster.getSkillLevel(this.skill), caster);
+    }
+
+    @NotNull
     public List<String> calculateLore(PlayerData data) {
         return calculateLore(data, data.getSkillLevel(skill));
     }
 
+    @NotNull
     public List<String> calculateLore(PlayerData data, int x) {
 
         // Calculate placeholders
-        Placeholders placeholders = new Placeholders();
-        parameters.keySet()
-                .forEach(param -> placeholders.register(param, skill.getDecimalFormat(param).format(data
-                        .getMMOPlayerData()
-                        .getSkillModifierMap()
-                        .calculateValue(skill.getHandler(), parameters.get(param).calculate(x), param)))
-                );
+        var placeholders = new Placeholders();
+
+        // Skill parameters
+        for (var param : parameters.keySet()) {
+            var baseValue = getParameter(param, data);
+            var modifiedValue = data.getMMOPlayerData().getSkillModifierMap().calculateValue(skill.getHandler(), baseValue, param);
+            var formatted = skill.getDecimalFormat(param).format(modifiedValue);
+
+            placeholders.register(param, formatted);
+        }
+
         placeholders.register("mana_name", data.getProfess().getManaDisplay().getName());
         placeholders.register("mana_color", data.getProfess().getManaDisplay().getFull().toString());
 
@@ -186,10 +190,7 @@ public class ClassSkill implements CooldownObject, Unlockable {
         return list;
     }
 
-    private LinearValue readLinearValue(LinearValue current, ConfigurationSection config) {
-        return current instanceof IntegerLinearValue ? new IntegerLinearValue(config) : new LinearValue(config);
-    }
-
+    @NotNull
     public CastableSkill toCastable(PlayerData caster) {
         return new CastableSkill(this, caster);
     }
@@ -202,11 +203,54 @@ public class ClassSkill implements CooldownObject, Unlockable {
     @NotNull
     public PassiveSkill toPassive(PlayerData caster) {
         Validate.isTrue(skill.getTrigger().isPassive(), "Skill is active");
-        return new PassiveSkill("MMOCore" + (permanent ? "Permanent" : "Passive") + "Skill", toCastable(caster), EquipmentSlot.OTHER, ModifierSource.OTHER);
+        return new PassiveSkill("MMOCore" + (permanent ? "Permanent" : "Passive") + "Skill", skill.getTrigger(), toCastable(caster), EquipmentSlot.OTHER, ModifierSource.OTHER);
     }
 
     @Override
     public String getCooldownPath() {
         return "skill_" + skill.getHandler().getId();
     }
+
+    //region Deprecated
+
+    /**
+     * @see #getParameterFormula(String)
+     * Skill modifiers are now called parameters.
+     */
+    @Deprecated
+    public double getModifier(String modifier, int level) {
+        return getParameter(modifier, level, null);
+    }
+
+    /**
+     * Skill modifiers are now called parameters.
+     */
+    @Deprecated
+    public void addModifier(String modifier, LinearValue linear) {
+        addParameter(modifier, linear.adapt());
+    }
+
+    @Deprecated
+    public boolean needsBound() {
+        return getSkill().getTrigger().isPassive() && !isPermanent();
+    }
+
+    /**
+     * This method can only override default parameters and
+     * will throw an error when trying to define non-existing modifiers
+     *
+     * @see #addParameter(String, ScalingFormula)
+     * @deprecated
+     */
+    @Deprecated
+    public void addParameter(String parameter, LinearValue linear) {
+        addParameter(parameter, linear.adapt());
+    }
+
+    @Deprecated
+    public double getParameter(String parameter, int level) {
+        return getParameter(parameter, level, null);
+    }
+
+    //endregion
 }

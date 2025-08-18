@@ -1,9 +1,9 @@
 package net.Indyuce.mmocore.manager;
 
-import net.Indyuce.mmocore.api.util.math.formula.LinearValue;
+import net.Indyuce.mmocore.api.ConfigFile;
 import net.Indyuce.mmocore.experience.Profession;
 import net.Indyuce.mmocore.player.stats.StatInfo;
-import net.Indyuce.mmocore.api.ConfigFile;
+import net.Indyuce.mmocore.util.formula.ScalingFormula;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -24,7 +24,7 @@ public class StatManager implements MMOCoreManager {
         // Read default formulas
         FileConfiguration config = new ConfigFile("stats").getConfig();
         for (String key : config.getConfigurationSection("default").getKeys(false))
-            registerDefaultFormula(key, new LinearValue(config.getConfigurationSection("default." + key)));
+            registerDefaultFormula(key, ScalingFormula.fromConfig(config.get("default." + key)));
     }
 
     public Collection<StatInfo> getLoaded() {
@@ -57,7 +57,7 @@ public class StatManager implements MMOCoreManager {
         compute(stat).profession = profession;
     }
 
-    public void registerDefaultFormula(String stat, LinearValue defaultFormula) {
+    public void registerDefaultFormula(String stat, ScalingFormula defaultFormula) {
         compute(stat).defaultInfo = defaultFormula;
         usedStats.add(stat);
     }

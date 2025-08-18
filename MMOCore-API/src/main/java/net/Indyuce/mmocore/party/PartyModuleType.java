@@ -1,8 +1,8 @@
 package net.Indyuce.mmocore.party;
 
 import net.Indyuce.mmocore.party.compat.*;
-import net.Indyuce.mmocore.party.provided.NonePartyModule;
 import net.Indyuce.mmocore.party.provided.MMOCorePartyModule;
+import net.Indyuce.mmocore.party.provided.NonePartyModule;
 import org.bukkit.Bukkit;
 
 import javax.inject.Provider;

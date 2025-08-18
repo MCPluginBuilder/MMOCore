@@ -1,7 +1,5 @@
 package net.Indyuce.mmocore.loot.chest.particle;
 
-import java.util.function.Consumer;
-
 import io.lumine.mythic.lib.version.VParticle;
 import net.Indyuce.mmocore.MMOCore;
 import org.bukkit.Color;
@@ -9,6 +7,8 @@ import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+
+import java.util.function.Consumer;
 
 public class ParabolicProjectile extends BukkitRunnable {
 	private final Location target;

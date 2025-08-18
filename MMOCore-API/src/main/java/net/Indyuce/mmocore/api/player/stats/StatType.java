@@ -1,8 +1,8 @@
 package net.Indyuce.mmocore.api.player.stats;
 
-import net.Indyuce.mmocore.api.util.math.formula.LinearValue;
 import net.Indyuce.mmocore.experience.Profession;
 import net.Indyuce.mmocore.player.stats.StatInfo;
+import net.Indyuce.mmocore.util.formula.ScalingFormula;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -132,7 +132,7 @@ public enum StatType {
 
     @Deprecated
     @NotNull
-    public LinearValue getDefault() {
+    public ScalingFormula getDefault() {
         return StatInfo.valueOf(name()).getDefaultFormula();
     }
 

@@ -1,6 +1,8 @@
 package net.Indyuce.mmocore.command.rpg.admin;
 
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.command.api.CommandTreeNode;
+import io.lumine.mythic.lib.command.api.Parameter;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.experience.Profession;
@@ -8,9 +10,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
 
 public class InfoCommandTreeNode extends CommandTreeNode {
 	public InfoCommandTreeNode(CommandTreeNode parent) {

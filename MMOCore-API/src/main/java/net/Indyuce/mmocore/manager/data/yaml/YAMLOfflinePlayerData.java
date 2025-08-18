@@ -1,13 +1,13 @@
 package net.Indyuce.mmocore.manager.data.yaml;
 
-import java.util.List;
-import java.util.UUID;
-
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.player.profess.PlayerClass;
 import net.Indyuce.mmocore.api.ConfigFile;
+import net.Indyuce.mmocore.api.player.profess.PlayerClass;
 import net.Indyuce.mmocore.manager.data.OfflinePlayerData;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @deprecated Not implemented yet

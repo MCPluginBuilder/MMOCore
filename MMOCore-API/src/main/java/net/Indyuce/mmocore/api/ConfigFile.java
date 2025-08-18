@@ -1,16 +1,16 @@
 package net.Indyuce.mmocore.api;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.UUID;
-import java.util.logging.Level;
-
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.guild.provided.Guild;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.UUID;
+import java.util.logging.Level;
 
 public class ConfigFile {
 	private final File file;

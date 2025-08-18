@@ -1,8 +1,8 @@
 package net.Indyuce.mmocore.api.quest;
 
+import io.lumine.mythic.lib.MythicLib;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.quest.objective.Objective;
-import io.lumine.mythic.lib.MythicLib;
 
 public class QuestProgress {
     private final Quest quest;

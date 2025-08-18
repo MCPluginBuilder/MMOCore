@@ -14,18 +14,20 @@ import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import net.Indyuce.mmocore.loot.chest.particle.SmallParticleEffect;
 import net.Indyuce.mmocore.party.AbstractParty;
+import net.Indyuce.mmocore.util.formula.FormulaFailsafeException;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
-
 import org.jetbrains.annotations.Nullable;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 
 public class PlayerProfessions {
     private final Map<String, Double> exp = new HashMap<>();
@@ -182,10 +184,9 @@ public class PlayerProfessions {
         // Apply buffs AFTER splitting exp
         value *= (1 + playerData.getStats().getStat("ADDITIONAL_EXPERIENCE_" + UtilityMethods.enumName(profession.getId())) / 100) * MMOCore.plugin.boosterManager.getMultiplier(profession);
 
-        PlayerExperienceGainEvent event = new PlayerExperienceGainEvent(playerData, profession, value, source);
+        var event = new PlayerExperienceGainEvent(playerData, profession, value, source);
         Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled())
-            return;
+        if (event.isCancelled()) return;
 
         // Display hologram
         if (hologramLocation != null && profession.getOption(Profession.ProfessionOption.EXP_HOLOGRAMS))
@@ -210,7 +211,14 @@ public class PlayerProfessions {
             this.exp.put(profession.getId(), exp - needed);
             this.level.put(profession.getId(), level + 1);
             check = true;
-            playerData.giveExperience(profession.getExperience().calculate(level), null);
+
+            // Give main class exp
+            try {
+                var mainExpGiven = profession.getExperience().evaluate(level, playerData);
+                playerData.giveExperience(mainExpGiven, null);
+            } catch (FormulaFailsafeException exception) {
+                exception.log("Could not evaluate profession level-up exp for %s", profession.getId());
+            }
 
             // Apply profession experience table
             profession.updateAdvancement(playerData, level);

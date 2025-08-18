@@ -6,7 +6,6 @@ import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.quest.trigger.api.Removable;
 import net.Indyuce.mmocore.skill.ClassSkill;
 import net.Indyuce.mmocore.skill.RegisteredSkill;
-
 import org.jetbrains.annotations.Nullable;
 
 public class UnlockSkillTrigger extends Trigger implements Removable {

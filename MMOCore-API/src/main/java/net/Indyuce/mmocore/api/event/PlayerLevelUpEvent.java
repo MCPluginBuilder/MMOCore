@@ -3,7 +3,6 @@ package net.Indyuce.mmocore.api.event;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.experience.Profession;
 import org.bukkit.event.HandlerList;
-
 import org.jetbrains.annotations.Nullable;
 
 public class PlayerLevelUpEvent extends PlayerDataEvent {

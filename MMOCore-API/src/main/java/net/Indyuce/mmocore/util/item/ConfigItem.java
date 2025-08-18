@@ -4,8 +4,8 @@ import io.lumine.mythic.lib.UtilityMethods;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-
 import org.jetbrains.annotations.Nullable;
+
 import java.util.List;
 import java.util.Objects;
 

@@ -1,8 +1,10 @@
 package net.Indyuce.mmocore.command.rpg.booster;
 
-import java.util.Arrays;
-
+import io.lumine.mythic.lib.command.api.CommandTreeNode;
+import io.lumine.mythic.lib.command.api.Parameter;
 import net.Indyuce.mmocore.MMOCore;
+import net.Indyuce.mmocore.api.ConfigMessage;
+import net.Indyuce.mmocore.command.MMOCoreCommandTreeRoot;
 import net.Indyuce.mmocore.experience.Booster;
 import net.Indyuce.mmocore.experience.Profession;
 import org.bukkit.Bukkit;
@@ -10,10 +12,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 
-import net.Indyuce.mmocore.api.ConfigMessage;
-import net.Indyuce.mmocore.command.MMOCoreCommandTreeRoot;
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
+import java.util.Arrays;
 
 public class CreateCommandTreeNode extends CommandTreeNode {
 	public CreateCommandTreeNode(CommandTreeNode parent) {

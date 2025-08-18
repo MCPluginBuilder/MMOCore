@@ -2,7 +2,6 @@ package net.Indyuce.mmocore.api.player.attribute;
 
 import io.lumine.mythic.lib.api.stat.StatInstance;
 import io.lumine.mythic.lib.api.stat.handler.StatHandler;
-import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import org.bukkit.configuration.ConfigurationSection;
 

@@ -3,7 +3,6 @@ package net.Indyuce.mmocore.loot.chest.particle;
 import io.lumine.mythic.lib.version.VParticle;
 import net.Indyuce.mmocore.MMOCore;
 import org.bukkit.Color;
-import org.bukkit.Particle;
 import org.bukkit.entity.ThrownPotion;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.scheduler.BukkitRunnable;

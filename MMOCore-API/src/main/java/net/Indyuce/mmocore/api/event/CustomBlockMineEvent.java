@@ -1,7 +1,7 @@
 package net.Indyuce.mmocore.api.event;
 
-import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.block.BlockInfo;
+import net.Indyuce.mmocore.api.player.PlayerData;
 import org.bukkit.block.Block;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;

@@ -1,6 +1,5 @@
 package net.Indyuce.mmocore.party.provided;
 
-import io.lumine.mythic.lib.gui.Navigator;
 import io.lumine.mythic.lib.gui.PluginInventory;
 import io.lumine.mythic.lib.version.VInventoryView;
 import io.lumine.mythic.lib.version.VersionUtils;

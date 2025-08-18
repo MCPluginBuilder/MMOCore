@@ -1,37 +1,109 @@
-name: Fireball
+
+
+
+#####################
+# GENERAL OPTIONS
+#####################
+
+
+
+# Item name in the skill UI
+name: 'Fireball'
+
+# Item lore in the skill UI
 lore:
-- Casts a deadly fireball onto your
-- target, dealing &c{damage} &7damage upon contact
-- and igniting it for &c{ignite} &7seconds.
+- 'Casts a deadly fireball onto your'
+- 'target, dealing &c{damage} &7damage upon contact'
+- 'and igniting it for &c{ignite} &7seconds.'
 - ''
-- Shatters into 3 blazing hot shards which stick
-- to walls and explode 3 seconds later, dealing
+- 'Shatters into 3 blazing hot shards which stick'
+- 'to walls and explode 3 seconds later, dealing'
 - '&c{ratio}% &7of the initial spell damage.'
+- ''
+- 'Shards deal more damage the more health the'
+- 'player is missing, up to 50% missing health.'
 - ''
 - '&e{cooldown}s Cooldown'
 - '&9Costs {mana} {mana_name}'
-material: FIRE_CHARGE
+
+# Item/icon in the skill UI
+material:
+  item: EMERALD
+  #custom-model-data: 10
+  #custom-model-data-string: 'icon_fireball'
+  #item-model: 'minecraft:dirt'
+  #texture: 'xxxxxxxxxxx' # Skull textures only
+
+
+
+#####################
+# SKILL PARAMETERS
+#####################
+
+
+
+###########################################################
+# Damage dealt by the fireball when hitting an enemy
+###########################################################
+#
+# 5 Base Damage + 3 Dmg per skill Level
 damage:
   base: 5.0
   per-level: 3.0
   #Optional: The decimal format used for this skill parameter.
   decimal-format: '0.#'
-ignite:
-  base: 2.0
-  per-level: 1.1
-mana:
-  base: 15.0
-  per-level: 1.0
+
+###########################################################
+# For how long (seconds) the fireball ignites the enemy hit
+###########################################################
+#
+# 2 Seconds + 1.1 Sec per skill level
+# Capped at 10 seconds
+ignite: 'min(2 + 1.1 * {level}, 10)'
+
+# How much mana spent by the skill
+#
+# 15 base Mana + 1 Mana Pt per skill level
+mana: '15 + 1.0 * {level}'
+
+###########################################################
+# How much stamina spent by the skill
+###########################################################
+#
+# 2 Base Stamina + 1 Stamina Pt per skill level
+# Capped at 5
 stamina:
   base: 2.0
   per-level: 1.0
-  max: 0.0
-  min: 0.0
+  max: 5
+
+###########################################################
+# Skill cooldown (how many seconds to wait before
+# being able to cast the same skill again)
+###########################################################
+#
+# 9 Base Seconds, -0.1 Sec per skill level
+# Minimum cooldown of 3 seconds
 cooldown:
   base: 9.0
   per-level: -0.1
-  max: 5.0
-  min: 1.0
+  min: 3.0
+
+# ANOTHER EXAMPLE
+# Base Cooldown of 9 Seconds, -0.1 Sec per skill level
+# Minimum value of 4 Sec
+#cooldown: 'max(   4, 9 - 0.1 * {level})'
+
+###########################################################
+# Ratio of additional fireball shards damage,
+# relative to the initial fireball damage.
+###########################################################
+#
+# 50% Base + 30% extra depending on missing health.
+# Maximum at 50% missing health (half empty health bar).
+#
+# If any error happens such as PAPI not installed
+# or missing PAPI extension, MMOCore will use 50% (failsafe)
 ratio:
-  base: 50.0
-  per-level: 3.0
+  formula: '50 + min( 0.5, 1 - (%mmocore_health% / %mmocore_max_health%)) * 30 * 2'
+  failsafe: 50.0

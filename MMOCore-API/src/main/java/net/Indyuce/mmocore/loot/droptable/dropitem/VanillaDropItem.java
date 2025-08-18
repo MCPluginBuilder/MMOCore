@@ -1,10 +1,9 @@
 package net.Indyuce.mmocore.loot.droptable.dropitem;
 
+import io.lumine.mythic.lib.api.MMOLineConfig;
+import net.Indyuce.mmocore.loot.LootBuilder;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
-
-import net.Indyuce.mmocore.loot.LootBuilder;
-import io.lumine.mythic.lib.api.MMOLineConfig;
 
 public class VanillaDropItem extends DropItem {
 	private final Material material;

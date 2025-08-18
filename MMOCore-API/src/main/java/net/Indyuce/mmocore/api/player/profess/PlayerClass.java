@@ -35,6 +35,8 @@ import net.Indyuce.mmocore.skill.RegisteredSkill;
 import net.Indyuce.mmocore.skill.binding.SkillSlot;
 import net.Indyuce.mmocore.skill.cast.ComboMap;
 import net.Indyuce.mmocore.skilltree.tree.SkillTree;
+import net.Indyuce.mmocore.util.formula.FormulaFailsafeException;
+import net.Indyuce.mmocore.util.formula.ScalingFormula;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -68,16 +70,13 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
     private final List<SkillSlot> skillSlots = new ArrayList<>();
     private final List<SkillTree> skillTrees = new ArrayList<>();
     private final List<PassiveSkill> classScripts = new ArrayList<>();
-    private final Map<String, LinearValue> stats = new HashMap<>();
+    private final Map<String, ScalingFormula> stats = new HashMap<>();
     private final Map<String, ClassSkill> skills = new LinkedHashMap<>();
     private final List<Subclass> subclasses = new ArrayList<>();
     private final Map<PlayerResource, ResourceRegeneration> resourceHandlers = new HashMap<>();
 
     @Nullable
     private final ComboMap comboMap;
-
-    @Deprecated
-    private final Map<String, EventTrigger> eventTriggers = new HashMap<>();
 
     private final PostLoadAction postLoadAction = new PostLoadAction(config -> {
         if (config.contains("subclasses"))
@@ -173,8 +172,7 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
         if (config.contains("attributes"))
             for (String key : config.getConfigurationSection("attributes").getKeys(false))
                 try {
-                    stats.put(UtilityMethods.enumName(key),
-                            new LinearValue(config.getConfigurationSection("attributes." + key)));
+                    stats.put(UtilityMethods.enumName(key), ScalingFormula.fromConfig(config.get("attributes." + key)));
                 } catch (IllegalArgumentException exception) {
                     MMOCore.plugin.getLogger().log(Level.WARNING, "Could not load stat info '" + key + "' from class '"
                             + id + "': " + exception.getMessage());
@@ -333,11 +331,6 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
         return icon;
     }
 
-    @Deprecated
-    public ItemStack getIcon() {
-        return icon.toItemStack();
-    }
-
     @Nullable
     public CastingParticle getCastParticle() {
         return castParticle;
@@ -381,27 +374,17 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
         return classScripts;
     }
 
-    @Deprecated
-    public Set<String> getEventTriggers() {
-        return eventTriggers.keySet();
+    public void setDefaultStatFormula(String type, ScalingFormula formula) {
+        stats.put(UtilityMethods.enumName(type), formula);
     }
 
-    @Deprecated
-    public boolean hasEventTriggers(String name) {
-        return eventTriggers.containsKey(name);
-    }
-
-    @Deprecated
-    public EventTrigger getEventTriggers(String name) {
-        return eventTriggers.get(name);
-    }
-
-    public void setDefaultStatFormula(String type, LinearValue value) {
-        stats.put(UtilityMethods.enumName(type), value);
-    }
-
-    public double calculateStat(String stat, int level) {
-        return getStatInfo(stat).calculate(level);
+    public double calculateBaseStat(@NotNull String stat, int level, @NotNull PlayerData player) {
+        try {
+            return getStatInfo(stat).evaluate(level, player);
+        } catch (FormulaFailsafeException exception) {
+            exception.log("Could not evaluate base stat %s for class %s", stat, getId());
+            return exception.getFailsafe();
+        }
     }
 
     public List<Subclass> getSubclasses() {
@@ -420,16 +403,6 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
             if (sub.getProfess().equals(profess) || sub.getProfess().hasSubclass(profess))
                 return true;
         return false;
-    }
-
-    @Deprecated
-    public boolean hasSkill(RegisteredSkill skill) {
-        return hasSkill(skill.getHandler().getId());
-    }
-
-    @Deprecated
-    public boolean hasSkill(String id) {
-        return skills.containsKey(id);
     }
 
     public boolean hasSlot(int slot) {
@@ -460,11 +433,6 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
         return skills.get(id);
     }
 
-    @Deprecated
-    public Collection<ClassSkill> getSkills() {
-        return skills.values();
-    }
-
     public Set<String> getStats() {
         return stats.keySet();
     }
@@ -475,8 +443,8 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
     }
 
     @NotNull
-    private LinearValue getStatInfo(String stat) {
-        LinearValue found = stats.get(stat);
+    private ScalingFormula getStatInfo(String stat) {
+        var found = stats.get(stat);
         return found == null ? StatInfo.valueOf(stat).getDefaultFormula() : found;
     }
 
@@ -493,4 +461,56 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
     public boolean hasActionBar() {
         return actionBarFormat != null;
     }
+
+    //region Deprecated
+
+    @Deprecated
+    public double calculateBaseStat(String stat, int level) {
+        return calculateBaseStat(stat, level, null);
+    }
+
+    @Deprecated
+    public Collection<ClassSkill> getSkills() {
+        return skills.values();
+    }
+
+    @Deprecated
+    public ItemStack getIcon() {
+        return icon.toItemStack();
+    }
+
+    @Deprecated
+    private final Map<String, EventTrigger> eventTriggers = new HashMap<>();
+
+    @Deprecated
+    public void setDefaultStatFormula(String type, LinearValue formula) {
+        setDefaultStatFormula(UtilityMethods.enumName(type), formula.adapt());
+    }
+
+    @Deprecated
+    public Set<String> getEventTriggers() {
+        return eventTriggers.keySet();
+    }
+
+    @Deprecated
+    public boolean hasEventTriggers(String name) {
+        return eventTriggers.containsKey(name);
+    }
+
+    @Deprecated
+    public EventTrigger getEventTriggers(String name) {
+        return eventTriggers.get(name);
+    }
+
+    @Deprecated
+    public boolean hasSkill(RegisteredSkill skill) {
+        return hasSkill(skill.getHandler().getId());
+    }
+
+    @Deprecated
+    public boolean hasSkill(String id) {
+        return skills.containsKey(id);
+    }
+
+    //endregion
 }

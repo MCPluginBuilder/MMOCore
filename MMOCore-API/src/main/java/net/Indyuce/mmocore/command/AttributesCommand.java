@@ -1,10 +1,10 @@
 package net.Indyuce.mmocore.command;
 
+import net.Indyuce.mmocore.api.event.MMOCommandEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.command.api.RegisteredCommand;
 import net.Indyuce.mmocore.command.api.ToggleableCommand;
 import net.Indyuce.mmocore.manager.InventoryManager;
-import net.Indyuce.mmocore.api.event.MMOCommandEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;

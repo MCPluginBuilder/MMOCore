@@ -6,8 +6,9 @@ import io.lumine.mythic.lib.gui.util.IconOptions;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.formula.BooleanExpression;
-import net.Indyuce.mmocore.api.util.math.formula.IntegerLinearValue;
 import net.Indyuce.mmocore.api.util.math.formula.LinearValue;
+import net.Indyuce.mmocore.util.formula.LinearScalingFormula;
+import net.Indyuce.mmocore.util.formula.ScalingFormula;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -19,7 +20,7 @@ import java.util.*;
 public class RegisteredSkill {
     private final SkillHandler<?> handler;
     private final String name;
-    private final Map<String, LinearValue> defaultParameters = new HashMap<>();
+    private final Map<String, ScalingFormula> defaultParameters = new HashMap<>();
 
     private final Map<String, DecimalFormat> parameterDecimalFormats = new HashMap<>();
 
@@ -38,27 +39,23 @@ public class RegisteredSkill {
         // Trigger type
         triggerType = getHandler().isTriggerable() ? (config.contains("passive-type") ? TriggerType.valueOf(UtilityMethods.enumName(config.getString("passive-type"))) : TriggerType.CAST) : TriggerType.API;
 
-        // Categories
+        // Basic Categories
         categories = config.getStringList("categories");
         categories.add(getHandler().getId());
-        if (triggerType.isPassive())
-            categories.add("PASSIVE");
-        else
-            categories.add("ACTIVE");
+        categories.add(triggerType.isPassive() ? "PASSIVE" : "ACTIVE");
 
-        // Load default modifier formulas
+        // Load default modifier formulas and decimal formats.
         for (String param : handler.getParameters()) {
             if (config.contains(param + ".decimal-format"))
                 parameterDecimalFormats.put(param, new DecimalFormat(config.getString(param + ".decimal-format")));
-            defaultParameters.put(param, config.contains(param) ? new LinearValue(config.getConfigurationSection(param)) : LinearValue.ZERO);
-
+            defaultParameters.put(param, ScalingFormula.fromConfig(config.get(param), null));
         }
 
         /*
          * This is so that SkillAPI skill level matches the MMOCore skill level
          * https://gitlab.com/phoenix-dvpmt/mmocore/-/issues/531
          */
-        defaultParameters.put("level", new IntegerLinearValue(0, 1));
+        defaultParameters.put("level", new LinearScalingFormula(0, 1));
     }
 
     public RegisteredSkill(SkillHandler<?> handler, String name, IconOptions icon, List<String> lore, @Nullable TriggerType triggerType) {
@@ -68,11 +65,6 @@ public class RegisteredSkill {
         this.lore = lore;
         this.triggerType = triggerType;
         this.categories = new ArrayList<>();
-    }
-
-    @Deprecated
-    public RegisteredSkill(SkillHandler<?> handler, String name, ItemStack icon, List<String> lore, @Nullable TriggerType triggerType) {
-        this(handler, name, IconOptions.from(icon), lore, triggerType);
     }
 
     public SkillHandler<?> getHandler() {
@@ -91,26 +83,13 @@ public class RegisteredSkill {
         return categories;
     }
 
-    @Deprecated
-    public ItemStack getIcon() {
-        return icon.toItemStack();
-    }
-
     @NotNull
     public IconOptions getRawIcon() {
         return icon;
     }
 
-    public boolean hasParameter(String parameter) {
+    public boolean hasParameter(@NotNull String parameter) {
         return defaultParameters.containsKey(parameter);
-    }
-
-    /**
-     * Skills modifiers are now called parameters.
-     */
-    @Deprecated
-    public boolean hasModifier(String modifier) {
-        return defaultParameters.containsKey(modifier);
     }
 
     @NotNull
@@ -118,49 +97,22 @@ public class RegisteredSkill {
         return Objects.requireNonNull(triggerType, "Skill has no trigger");
     }
 
-    /**
-     * Skill modifiers are now called parameters.
-     */
-    @Deprecated
-    public void addModifier(String modifier, LinearValue linear) {
-        defaultParameters.put(modifier, linear);
+    public void addParameter(@NotNull String parameter, @NotNull ScalingFormula formula) {
+        defaultParameters.put(parameter, formula);
     }
 
-    public void addParameter(String parameter, LinearValue linear) {
-        defaultParameters.put(parameter, linear);
-    }
-
+    @NotNull
     public DecimalFormat getDecimalFormat(String parameter) {
         return parameterDecimalFormats.getOrDefault(parameter, MythicLib.plugin.getMMOConfig().decimal);
     }
 
-
-    @Deprecated
-    public void addModifierIfNone(String mod, LinearValue defaultValue) {
-        if (!hasParameter(mod))
-            addParameter(mod, defaultValue);
-    }
-
-
-    /**
-     * Skill modifiers are now called parameters.
-     */
-    @Deprecated
-    public LinearValue getModifierInfo(String modifier) {
-        return defaultParameters.get(modifier);
-    }
-
     /**
      * @return Modifier formula.
-     *         Not null as long as the modifier is well defined
+     * Not null as long as the modifier is well-defined
      */
     @NotNull
-    public LinearValue getParameterInfo(String parameter) {
+    public ScalingFormula getParameterInfo(String parameter) {
         return defaultParameters.get(parameter);
-    }
-
-    public double getModifier(String modifier, int level) {
-        return defaultParameters.get(modifier).calculate(level);
     }
 
     public boolean matchesFormula(String formula) {
@@ -183,4 +135,53 @@ public class RegisteredSkill {
     public int hashCode() {
         return Objects.hash(handler, triggerType);
     }
+
+    //region Deprecated
+
+    @Deprecated
+    public RegisteredSkill(SkillHandler<?> handler, String name, ItemStack icon, List<String> lore, @Nullable TriggerType triggerType) {
+        this(handler, name, IconOptions.from(icon), lore, triggerType);
+    }
+
+    @Deprecated
+    public ItemStack getIcon() {
+        return icon.toItemStack();
+    }
+
+    /**
+     * Skills modifiers are now called parameters.
+     *
+     * @see #hasParameter(String)
+     */
+    @Deprecated
+    public boolean hasModifier(String modifier) {
+        return defaultParameters.containsKey(modifier);
+    }
+
+    /**
+     * Skill modifiers are now called parameters.
+     *
+     * @see #addParameter(String, ScalingFormula)
+     */
+    @Deprecated
+    public void addModifier(String modifier, LinearValue linear) {
+        defaultParameters.put(modifier, linear.adapt());
+    }
+
+    /**
+     * Skill modifiers are now called parameters.
+     *
+     * @see #getParameterInfo(String)
+     */
+    @Deprecated
+    public ScalingFormula getModifierInfo(String modifier) {
+        return defaultParameters.get(modifier);
+    }
+
+    @Deprecated
+    public void addModifierIfNone(String mod, LinearValue defaultValue) {
+        if (!hasParameter(mod)) addModifier(mod, defaultValue);
+    }
+
+    //endregion
 }

@@ -1,14 +1,13 @@
 package net.Indyuce.mmocore.command.rpg.waypoint;
 
+import io.lumine.mythic.lib.command.api.CommandTreeNode;
+import io.lumine.mythic.lib.command.api.Parameter;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.manager.InventoryManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
 
 public class OpenCommandTreeNode extends CommandTreeNode {
 	public OpenCommandTreeNode(CommandTreeNode parent) {

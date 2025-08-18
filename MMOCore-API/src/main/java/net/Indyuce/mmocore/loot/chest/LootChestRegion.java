@@ -1,11 +1,11 @@
 package net.Indyuce.mmocore.loot.chest;
 
 import net.Indyuce.mmocore.MMOCore;
+import net.Indyuce.mmocore.api.event.LootChestSpawnEvent;
 import net.Indyuce.mmocore.api.player.PlayerActivity;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import net.Indyuce.mmocore.loot.RandomWeightedRoll;
-import net.Indyuce.mmocore.api.event.LootChestSpawnEvent;
 import net.Indyuce.mmocore.loot.LootBuilder;
+import net.Indyuce.mmocore.loot.RandomWeightedRoll;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

@@ -1,10 +1,9 @@
 package net.Indyuce.mmocore.command.rpg;
 
+import io.lumine.mythic.lib.command.api.CommandTreeNode;
 import net.Indyuce.mmocore.MMOCore;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
-
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
 
 public class ReloadCommandTreeNode extends CommandTreeNode {
 	public ReloadCommandTreeNode(CommandTreeNode parent) {

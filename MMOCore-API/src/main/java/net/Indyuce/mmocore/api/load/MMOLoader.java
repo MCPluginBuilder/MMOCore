@@ -1,13 +1,13 @@
 package net.Indyuce.mmocore.api.load;
 
 import io.lumine.mythic.lib.api.MMOLineConfig;
+import net.Indyuce.mmocore.api.block.BlockType;
 import net.Indyuce.mmocore.api.quest.objective.Objective;
 import net.Indyuce.mmocore.api.quest.trigger.Trigger;
 import net.Indyuce.mmocore.experience.dispenser.ExperienceDispenser;
 import net.Indyuce.mmocore.experience.source.type.ExperienceSource;
 import net.Indyuce.mmocore.loot.chest.condition.Condition;
 import net.Indyuce.mmocore.loot.droptable.dropitem.DropItem;
-import net.Indyuce.mmocore.api.block.BlockType;
 import org.bukkit.configuration.ConfigurationSection;
 
 /**

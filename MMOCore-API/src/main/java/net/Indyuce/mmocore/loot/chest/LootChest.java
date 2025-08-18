@@ -13,7 +13,6 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-
 import org.jetbrains.annotations.Nullable;
 
 public class LootChest {

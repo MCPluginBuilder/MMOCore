@@ -1,9 +1,7 @@
 package net.Indyuce.mmocore.api.quest.trigger;
 
 import io.lumine.mythic.lib.api.MMOLineConfig;
-import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import net.Indyuce.mmocore.skill.binding.SkillSlot;
 import net.Indyuce.mmocore.api.quest.trigger.api.Removable;
 import org.apache.commons.lang.Validate;
 

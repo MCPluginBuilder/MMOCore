@@ -1,7 +1,5 @@
 package net.Indyuce.mmocore.loot.chest;
 
-import java.util.stream.Stream;
-
 import net.Indyuce.mmocore.api.player.PlayerData;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
@@ -9,6 +7,8 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+
+import java.util.stream.Stream;
 
 public class RegionBounds {
 	private final World world;

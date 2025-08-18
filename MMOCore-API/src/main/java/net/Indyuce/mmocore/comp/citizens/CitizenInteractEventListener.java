@@ -1,12 +1,11 @@
 package net.Indyuce.mmocore.comp.citizens;
 
+import net.citizensnpcs.api.CitizensAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
-
-import net.citizensnpcs.api.CitizensAPI;
 
 public class CitizenInteractEventListener implements Listener {
 

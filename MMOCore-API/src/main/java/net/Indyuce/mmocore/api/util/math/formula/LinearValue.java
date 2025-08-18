@@ -1,14 +1,18 @@
 package net.Indyuce.mmocore.api.util.math.formula;
 
 import io.lumine.mythic.lib.MythicLib;
+import net.Indyuce.mmocore.util.formula.LinearScalingFormula;
 import org.bukkit.configuration.ConfigurationSection;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Bounded linear formula.
  *
  * @author Jules
+ * @deprecated
+ * @see net.Indyuce.mmocore.util.formula.ScalingFormula
+ * @see LinearScalingFormula
  */
+@Deprecated
 public class LinearValue {
     private final double base, perLevel, min, max;
     private final boolean hasMin, hasMax;
@@ -103,7 +107,7 @@ public class LinearValue {
         return hasMin;
     }
 
-    @NotNull
+    @Deprecated
     public String getDisplay(int level) {
         return MythicLib.plugin.getMMOConfig().decimals.format(calculate(level));
     }
@@ -116,6 +120,11 @@ public class LinearValue {
         if (hasMax) value = Math.min(max, value);
 
         return value;
+    }
+
+    @Deprecated
+    public LinearScalingFormula adapt() {
+        return new LinearScalingFormula(this.base, this.perLevel, this.min, this.max);
     }
 
     @Override

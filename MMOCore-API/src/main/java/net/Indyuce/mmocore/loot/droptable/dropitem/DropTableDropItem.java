@@ -3,9 +3,9 @@ package net.Indyuce.mmocore.loot.droptable.dropitem;
 import io.lumine.mythic.lib.api.MMOLineConfig;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import net.Indyuce.mmocore.loot.droptable.DropTable;
-import net.Indyuce.mmocore.loot.chest.condition.ConditionInstance;
 import net.Indyuce.mmocore.loot.LootBuilder;
+import net.Indyuce.mmocore.loot.chest.condition.ConditionInstance;
+import net.Indyuce.mmocore.loot.droptable.DropTable;
 import org.apache.commons.lang.Validate;
 
 public class DropTableDropItem extends DropItem {

@@ -1,15 +1,14 @@
 package net.Indyuce.mmocore.command.rpg.booster;
 
-import java.util.Iterator;
-import java.util.UUID;
-
+import io.lumine.mythic.lib.command.api.CommandTreeNode;
+import io.lumine.mythic.lib.command.api.Parameter;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.experience.Booster;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
+import java.util.Iterator;
+import java.util.UUID;
 
 public class RemoveCommandTreeNode extends CommandTreeNode {
 	public RemoveCommandTreeNode(CommandTreeNode parent) {

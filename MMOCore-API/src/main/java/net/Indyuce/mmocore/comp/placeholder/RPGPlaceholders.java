@@ -22,11 +22,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-
 import org.jetbrains.annotations.Nullable;
+
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class RPGPlaceholders extends PlaceholderExpansion {

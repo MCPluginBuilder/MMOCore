@@ -1,7 +1,8 @@
 package net.Indyuce.mmocore.api.player.profess.resource;
 
 import net.Indyuce.mmocore.api.player.PlayerData;
-import net.Indyuce.mmocore.api.util.math.formula.LinearValue;
+import net.Indyuce.mmocore.util.formula.FormulaFailsafeException;
+import net.Indyuce.mmocore.util.formula.ScalingFormula;
 import org.apache.commons.lang.Validate;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -17,7 +18,7 @@ public class ResourceRegeneration {
     /**
      * Percentage of scaling which the player regenerates every second
      */
-    private final LinearValue scalar;
+    private final ScalingFormula scalar;
 
     /**
      * Whether the resource regeneration scales on missing or max resource. if
@@ -37,14 +38,14 @@ public class ResourceRegeneration {
         this.resource = resource;
         offCombatOnly = config.getBoolean("off-combat");
 
-        Validate.isTrue(config.contains("type"), "Could not find resource regen scaling type");
+        Validate.isTrue(config.contains("type"), "Could not find scaling type");
         type = HandlerType.valueOf(config.getString("type").toUpperCase());
 
-        Validate.notNull(config.getConfigurationSection("value"), "Could not find resource regen value config section");
-        scalar = new LinearValue(config.getConfigurationSection("value"));
+        Validate.notNull(config.get("value"), "Could not find regen value");
+        scalar = ScalingFormula.fromConfig(config.get("value"));
     }
 
-    public ResourceRegeneration(PlayerResource resource, HandlerType type, LinearValue scalar, boolean offCombatOnly) {
+    public ResourceRegeneration(PlayerResource resource, HandlerType type, ScalingFormula scalar, boolean offCombatOnly) {
         this.resource = resource;
         this.type = type;
         this.scalar = scalar;
@@ -72,8 +73,11 @@ public class ResourceRegeneration {
         }
 
         // Special resource regeneration
-        if (type != null && (!player.isInCombat() || !offCombatOnly))
-            d += this.scalar.calculate(player.getLevel()) / 100 * type.getScaling(player, resource);
+        if (type != null && (!player.isInCombat() || !offCombatOnly)) try {
+            d += this.scalar.evaluate(player.getLevel(), player) / 100 * type.getScaling(player, resource);
+        } catch (FormulaFailsafeException exception) {
+            exception.log("Could not evaluate special resource %s regen value for class %s", resource.name(), player.getProfess().getId());
+        }
 
         return d;
     }

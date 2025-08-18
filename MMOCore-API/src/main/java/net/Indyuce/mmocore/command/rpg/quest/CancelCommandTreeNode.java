@@ -1,14 +1,13 @@
 package net.Indyuce.mmocore.command.rpg.quest;
 
+import io.lumine.mythic.lib.command.api.CommandTreeNode;
+import io.lumine.mythic.lib.command.api.Parameter;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.quest.PlayerQuests;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
 
 public class CancelCommandTreeNode extends CommandTreeNode {
 	public CancelCommandTreeNode(CommandTreeNode parent) {

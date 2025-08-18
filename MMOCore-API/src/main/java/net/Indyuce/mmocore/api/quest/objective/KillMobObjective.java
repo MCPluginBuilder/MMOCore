@@ -1,5 +1,6 @@
 package net.Indyuce.mmocore.api.quest.objective;
 
+import io.lumine.mythic.lib.api.MMOLineConfig;
 import io.lumine.mythic.lib.api.event.PlayerKillEntityEvent;
 import net.Indyuce.mmocore.api.quest.ObjectiveProgress;
 import net.Indyuce.mmocore.api.quest.QuestProgress;
@@ -7,8 +8,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-
-import io.lumine.mythic.lib.api.MMOLineConfig;
 
 public class KillMobObjective extends Objective {
 	private final EntityType type;

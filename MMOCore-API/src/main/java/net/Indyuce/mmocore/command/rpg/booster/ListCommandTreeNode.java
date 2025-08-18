@@ -1,14 +1,13 @@
 package net.Indyuce.mmocore.command.rpg.booster;
 
+import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.command.api.CommandTreeNode;
 import net.Indyuce.mmocore.MMOCore;
+import net.Indyuce.mmocore.api.util.math.format.DelayFormat;
 import net.Indyuce.mmocore.experience.Booster;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import net.Indyuce.mmocore.api.util.math.format.DelayFormat;
-import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
 
 public class ListCommandTreeNode extends CommandTreeNode {
 	public ListCommandTreeNode(CommandTreeNode parent) {

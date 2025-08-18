@@ -1,17 +1,15 @@
 package net.Indyuce.mmocore.manager.data;
 
+import net.Indyuce.mmocore.api.ConfigFile;
+import net.Indyuce.mmocore.guild.provided.Guild;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
-
-import net.Indyuce.mmocore.api.ConfigFile;
-import net.Indyuce.mmocore.guild.provided.Guild;
-
-import org.jetbrains.annotations.Nullable;
 
 public abstract class GuildDataManager {
     protected final Map<String, Guild> guilds = new HashMap<>();

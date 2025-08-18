@@ -1,22 +1,21 @@
 package net.Indyuce.mmocore.command.rpg.admin;
 
-import java.util.function.BiConsumer;
-
+import io.lumine.mythic.lib.command.api.CommandTreeNode;
+import io.lumine.mythic.lib.command.api.Parameter;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
+import net.Indyuce.mmocore.command.MMOCoreCommandTreeRoot;
+import net.Indyuce.mmocore.command.api.CommandVerbose;
 import net.Indyuce.mmocore.experience.EXPSource;
 import net.Indyuce.mmocore.experience.PlayerProfessions;
 import net.Indyuce.mmocore.experience.Profession;
-import net.Indyuce.mmocore.command.api.CommandVerbose;
 import net.Indyuce.mmocore.util.TriConsumer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import net.Indyuce.mmocore.command.MMOCoreCommandTreeRoot;
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
+import java.util.function.BiConsumer;
 
 public class LevelCommandTreeNode extends CommandTreeNode {
 	public LevelCommandTreeNode(CommandTreeNode parent) {

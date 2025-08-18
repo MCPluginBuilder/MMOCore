@@ -1,0 +1,76 @@
+package net.Indyuce.mmocore.util.formula;
+
+import net.Indyuce.mmocore.api.player.PlayerData;
+import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.Nullable;
+
+public class LinearScalingFormula implements ScalingFormula {
+    private final double base, perLevel, min, max;
+    private final boolean hasMin, hasMax, integer;
+
+    /**
+     * A number formula which depends on the player level. It can be used
+     * to handle skill modifiers so that the ability gets better with the
+     * skill level, or as an attribute value to make them scale with the class level.
+     *
+     * @param base     Base value
+     * @param perLevel Every level, final value is increased by X
+     */
+    public LinearScalingFormula(double base, double perLevel) {
+        this.base = base;
+        this.perLevel = perLevel;
+        hasMin = false;
+        hasMax = false;
+        min = 0;
+        max = 0;
+        this.integer = false;
+    }
+
+    /**
+     * A number formula which depends on the player level. It can be used
+     * to handle skill modifiers so that the ability gets better with the
+     * skill level, or as an attribute value to make them scale with the class level.
+     *
+     * @param base     Base value
+     * @param perLevel Every level, final value is increased by X
+     * @param min      Minimum final value
+     * @param max      Maximum final value
+     */
+    public LinearScalingFormula(double base, double perLevel, double min, double max) {
+        this.base = base;
+        this.perLevel = perLevel;
+        hasMin = true;
+        hasMax = true;
+        this.min = min;
+        this.max = max;
+        this.integer = false;
+    }
+
+    /**
+     * Loads a linear formula from a config section
+     *
+     * @param config Config to load the formula from
+     */
+    public LinearScalingFormula(ConfigurationSection config) {
+        base = config.getDouble("base");
+        perLevel = config.getDouble("per-level");
+        hasMin = config.contains("min");
+        hasMax = config.contains("max");
+        min = hasMin ? config.getDouble("min") : 0;
+        max = hasMax ? config.getDouble("max") : 0;
+        integer = config.getBoolean("int");
+    }
+
+    @Override
+    public double evaluate(int skillLevel, @Nullable PlayerData playerData) {
+        double value = base + perLevel * (skillLevel - 1);
+        if (hasMin) value = Math.max(min, value);
+        if (hasMax) value = Math.min(max, value);
+        return value;
+    }
+
+    @Override
+    public boolean isInteger() {
+        return integer;
+    }
+}

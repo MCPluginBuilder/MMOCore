@@ -9,7 +9,6 @@ import net.Indyuce.mmocore.api.quest.objective.Objective;
 import net.Indyuce.mmocore.experience.Profession;
 import org.apache.commons.lang.Validate;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;

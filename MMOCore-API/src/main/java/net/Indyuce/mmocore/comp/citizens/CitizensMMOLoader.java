@@ -1,10 +1,9 @@
 package net.Indyuce.mmocore.comp.citizens;
 
-import org.bukkit.configuration.ConfigurationSection;
-
+import io.lumine.mythic.lib.api.MMOLineConfig;
 import net.Indyuce.mmocore.api.load.MMOLoader;
 import net.Indyuce.mmocore.api.quest.objective.Objective;
-import io.lumine.mythic.lib.api.MMOLineConfig;
+import org.bukkit.configuration.ConfigurationSection;
 
 public class CitizensMMOLoader extends MMOLoader {
 

@@ -1,10 +1,10 @@
 package net.Indyuce.mmocore.comp.vault;
 
+import io.lumine.mythic.lib.api.MMOLineConfig;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import net.Indyuce.mmocore.api.util.math.formula.RandomAmount;
 import net.Indyuce.mmocore.api.quest.trigger.Trigger;
-import io.lumine.mythic.lib.api.MMOLineConfig;
+import net.Indyuce.mmocore.api.util.math.formula.RandomAmount;
 
 public class MoneyTrigger extends Trigger {
 	private final RandomAmount amount;

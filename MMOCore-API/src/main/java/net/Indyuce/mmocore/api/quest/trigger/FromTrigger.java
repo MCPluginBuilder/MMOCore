@@ -2,8 +2,8 @@ package net.Indyuce.mmocore.api.quest.trigger;
 
 import io.lumine.mythic.lib.api.MMOLineConfig;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.ConfigFile;
+import net.Indyuce.mmocore.api.player.PlayerData;
 import org.apache.commons.lang.Validate;
 
 import java.util.ArrayList;

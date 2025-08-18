@@ -1,12 +1,11 @@
 package net.Indyuce.mmocore.api.quest.trigger;
 
+import io.lumine.mythic.lib.api.MMOLineConfig;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-
-import io.lumine.mythic.lib.api.MMOLineConfig;
 
 public class CommandTrigger extends Trigger {
 	private final String command;

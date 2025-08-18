@@ -64,7 +64,7 @@ public class PlayerStats {
      */
     public double getBase(String stat) {
         final Profession profession = StatInfo.valueOf(stat).profession;
-        return data.getProfess().calculateStat(stat, profession == null ? data.getLevel() : data.getCollectionSkills().getLevel(profession));
+        return data.getProfess().calculateBaseStat(stat, profession == null ? data.getLevel() : data.getCollectionSkills().getLevel(profession), data);
     }
 
     public void updateStats() {

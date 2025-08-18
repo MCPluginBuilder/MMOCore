@@ -1,9 +1,9 @@
 package net.Indyuce.mmocore.loot.chest.condition;
 
+import io.lumine.mythic.lib.api.MMOLineConfig;
+
 import java.util.Arrays;
 import java.util.List;
-
-import io.lumine.mythic.lib.api.MMOLineConfig;
 
 public class WorldCondition extends Condition {
 	private final List<String> names;

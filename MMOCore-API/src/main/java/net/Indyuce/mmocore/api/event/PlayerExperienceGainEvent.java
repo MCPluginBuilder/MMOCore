@@ -5,7 +5,6 @@ import net.Indyuce.mmocore.experience.EXPSource;
 import net.Indyuce.mmocore.experience.Profession;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
-
 import org.jetbrains.annotations.Nullable;
 
 public class PlayerExperienceGainEvent extends PlayerDataEvent implements Cancellable {

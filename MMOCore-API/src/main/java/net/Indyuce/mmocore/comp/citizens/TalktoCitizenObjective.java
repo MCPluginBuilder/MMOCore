@@ -1,13 +1,12 @@
 package net.Indyuce.mmocore.comp.citizens;
 
+import io.lumine.mythic.lib.api.MMOLineConfig;
 import net.Indyuce.mmocore.api.quest.ObjectiveProgress;
+import net.Indyuce.mmocore.api.quest.QuestProgress;
+import net.Indyuce.mmocore.api.quest.objective.Objective;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-
-import net.Indyuce.mmocore.api.quest.QuestProgress;
-import net.Indyuce.mmocore.api.quest.objective.Objective;
-import io.lumine.mythic.lib.api.MMOLineConfig;
 
 public class TalktoCitizenObjective extends Objective {
 	private final int id;

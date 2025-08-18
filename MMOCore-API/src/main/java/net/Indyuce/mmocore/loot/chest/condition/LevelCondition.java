@@ -1,7 +1,7 @@
 package net.Indyuce.mmocore.loot.chest.condition;
 
-import net.Indyuce.mmocore.api.player.PlayerData;
 import io.lumine.mythic.lib.api.MMOLineConfig;
+import net.Indyuce.mmocore.api.player.PlayerData;
 import org.bukkit.entity.Player;
 
 public class LevelCondition extends Condition {

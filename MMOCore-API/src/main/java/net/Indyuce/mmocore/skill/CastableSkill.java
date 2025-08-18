@@ -11,6 +11,7 @@ import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.event.PlayerResourceUpdateEvent;
 import net.Indyuce.mmocore.api.player.PlayerActivity;
 import net.Indyuce.mmocore.api.player.PlayerData;
+import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Provider;
 
@@ -18,22 +19,31 @@ public class CastableSkill extends Skill {
     private final ClassSkill skill;
 
     /**
-     * Now uses a provider since 1.12 because the skill level can CHANGE
-     * with time, and such instance of CastableSkill is
+     * This fixes a bug where the CastableSkill instance is created
+     * before a skill level change happens (due to player level up)
      */
     private final Provider<Integer> skillLevel;
 
+    private final PlayerData caster;
+
     @Deprecated
     public CastableSkill(ClassSkill skill, int fixedLevel) {
+        this(skill, fixedLevel, null);
+    }
+
+    public CastableSkill(@NotNull ClassSkill skill, int fixedLevel, @NotNull PlayerData caster) {
         this.skill = skill;
         this.skillLevel = () -> fixedLevel;
+        this.caster = caster;
     }
 
-    public CastableSkill(ClassSkill skill, PlayerData playerData) {
+    public CastableSkill(@NotNull ClassSkill skill, @NotNull PlayerData caster) {
         this.skill = skill;
-        this.skillLevel = () -> playerData.getSkillLevel(skill.getSkill());
+        this.caster = caster;
+        this.skillLevel = () -> this.caster.getSkillLevel(skill.getSkill());
     }
 
+    // TODO non conventional use of trigger
     @Override
     public TriggerType getTrigger() {
         return skill.getSkill().getTrigger();
@@ -103,10 +113,10 @@ public class CastableSkill extends Skill {
             casterData.giveStamina(-skillMeta.getParameter("stamina"), PlayerResourceUpdateEvent.UpdateReason.SKILL_COST);
         }
 
-        if (!getTrigger().isPassive())
-            casterData.setLastActivity(PlayerActivity.CAST_SKILL);
+        if (!getTrigger().isPassive()) casterData.setLastActivity(PlayerActivity.CAST_SKILL);
     }
 
+    @NotNull
     @Override
     public SkillHandler<?> getHandler() {
         return skill.getSkill().getHandler();
@@ -114,6 +124,6 @@ public class CastableSkill extends Skill {
 
     @Override
     public double getParameter(String mod) {
-        return skill.getParameter(mod, skillLevel.get());
+        return skill.getParameter(mod, this.skillLevel.get(), this.caster);
     }
 }

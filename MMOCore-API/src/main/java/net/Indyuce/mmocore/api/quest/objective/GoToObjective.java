@@ -1,5 +1,6 @@
 package net.Indyuce.mmocore.api.quest.objective;
 
+import io.lumine.mythic.lib.api.MMOLineConfig;
 import net.Indyuce.mmocore.api.quest.ObjectiveProgress;
 import net.Indyuce.mmocore.api.quest.QuestProgress;
 import org.apache.commons.lang.Validate;
@@ -11,8 +12,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
-
-import io.lumine.mythic.lib.api.MMOLineConfig;
 
 public class GoToObjective extends Objective {
 	private final Location loc;

@@ -1,9 +1,8 @@
 package net.Indyuce.mmocore.comp.placeholder;
 
+import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import org.bukkit.OfflinePlayer;
-
-import io.lumine.mythic.lib.MythicLib;
 
 public class DefaultParser implements PlaceholderParser {
 

@@ -1,12 +1,11 @@
 package net.Indyuce.mmocore.comp.region;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.bukkit.Location;
-
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.WorldGuard;
+import org.bukkit.Location;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class WorldGuardRegionHandler implements RegionHandler {
 

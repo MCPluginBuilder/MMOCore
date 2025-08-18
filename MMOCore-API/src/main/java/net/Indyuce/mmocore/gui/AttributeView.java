@@ -19,7 +19,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.w3c.dom.Attr;
 
 public class AttributeView extends EditableInventory {
     public AttributeView() {

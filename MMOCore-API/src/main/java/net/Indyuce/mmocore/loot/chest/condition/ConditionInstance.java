@@ -1,12 +1,12 @@
 package net.Indyuce.mmocore.loot.chest.condition;
 
-import java.util.List;
-import java.util.stream.Stream;
-
 import net.Indyuce.mmocore.MMOCore;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 public class ConditionInstance {
     private final Entity entity;

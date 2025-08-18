@@ -1,11 +1,11 @@
 package net.Indyuce.mmocore.loot.chest.particle;
 
-import java.util.function.BiConsumer;
-
 import net.Indyuce.mmocore.MMOCore;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.function.BiConsumer;
 
 public enum ChestParticleEffect {
 

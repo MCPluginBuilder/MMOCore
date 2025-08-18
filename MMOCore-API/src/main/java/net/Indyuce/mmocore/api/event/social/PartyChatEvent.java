@@ -1,8 +1,8 @@
 package net.Indyuce.mmocore.api.event.social;
 
+import net.Indyuce.mmocore.api.event.PlayerDataEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.party.provided.Party;
-import net.Indyuce.mmocore.api.event.PlayerDataEvent;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 

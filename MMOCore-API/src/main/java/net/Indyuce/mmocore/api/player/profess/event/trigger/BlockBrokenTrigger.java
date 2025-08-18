@@ -1,12 +1,11 @@
 package net.Indyuce.mmocore.api.player.profess.event.trigger;
 
 import io.lumine.mythic.lib.UtilityMethods;
+import net.Indyuce.mmocore.api.player.PlayerData;
+import net.Indyuce.mmocore.api.player.profess.event.EventTriggerHandler;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockBreakEvent;
-
-import net.Indyuce.mmocore.api.player.PlayerData;
-import net.Indyuce.mmocore.api.player.profess.event.EventTriggerHandler;
 
 @Deprecated
 public class BlockBrokenTrigger implements EventTriggerHandler {

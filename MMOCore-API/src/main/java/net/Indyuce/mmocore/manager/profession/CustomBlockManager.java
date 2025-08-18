@@ -1,23 +1,23 @@
 package net.Indyuce.mmocore.manager.profession;
 
+import io.lumine.mythic.lib.api.MMOLineConfig;
 import io.papermc.lib.PaperLib;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import net.Indyuce.mmocore.api.block.BlockInfo;
 import net.Indyuce.mmocore.api.block.BlockType;
 import net.Indyuce.mmocore.api.block.SkullBlockType;
 import net.Indyuce.mmocore.api.block.VanillaBlockType;
+import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import net.Indyuce.mmocore.loot.chest.condition.Condition;
 import net.Indyuce.mmocore.loot.chest.condition.ConditionInstance;
-import io.lumine.mythic.lib.api.MMOLineConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
-
 import org.jetbrains.annotations.Nullable;
+
 import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Level;

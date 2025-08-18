@@ -1,16 +1,15 @@
 package net.Indyuce.mmocore.command.rpg;
 
-import java.util.Arrays;
-
+import io.lumine.mythic.lib.api.util.SmartGive;
+import io.lumine.mythic.lib.command.api.CommandTreeNode;
+import io.lumine.mythic.lib.command.api.Parameter;
 import net.Indyuce.mmocore.util.item.CurrencyItemBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import io.lumine.mythic.lib.api.util.SmartGive;
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
+import java.util.Arrays;
 
 public class NoteCommandTreeNode extends CommandTreeNode {
 	public NoteCommandTreeNode(CommandTreeNode parent) {

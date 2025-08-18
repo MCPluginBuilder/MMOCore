@@ -1,10 +1,10 @@
 package net.Indyuce.mmocore.manager.data;
 
-import java.util.UUID;
-
 import io.lumine.mythic.lib.data.OfflineDataHolder;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.profess.PlayerClass;
+
+import java.util.UUID;
 
 public interface OfflinePlayerData extends OfflineDataHolder {
 

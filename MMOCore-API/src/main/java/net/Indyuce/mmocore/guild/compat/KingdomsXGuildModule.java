@@ -9,7 +9,6 @@ import org.jetbrains.annotations.NotNull;
 import org.kingdoms.constants.group.Kingdom;
 import org.kingdoms.constants.group.model.relationships.KingdomRelation;
 import org.kingdoms.constants.player.KingdomPlayer;
-import org.kingdoms.main.Kingdoms;
 
 import java.util.Objects;
 

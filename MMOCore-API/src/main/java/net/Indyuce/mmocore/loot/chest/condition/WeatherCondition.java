@@ -2,7 +2,6 @@ package net.Indyuce.mmocore.loot.chest.condition;
 
 import io.lumine.mythic.lib.api.MMOLineConfig;
 import org.apache.commons.lang.Validate;
-import org.bukkit.entity.Player;
 
 public class WeatherCondition extends Condition {
 

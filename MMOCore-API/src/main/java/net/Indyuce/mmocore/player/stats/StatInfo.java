@@ -2,8 +2,8 @@ package net.Indyuce.mmocore.player.stats;
 
 import io.lumine.mythic.lib.manager.StatManager;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.util.math.formula.LinearValue;
 import net.Indyuce.mmocore.experience.Profession;
+import net.Indyuce.mmocore.util.formula.ScalingFormula;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -27,7 +27,7 @@ public class StatInfo {
     /**
      * Default formula for the stat
      */
-    public LinearValue defaultInfo;
+    public ScalingFormula defaultInfo;
 
     public StatInfo(String name) {
         this.name = name;
@@ -40,8 +40,8 @@ public class StatInfo {
     }
 
     @NotNull
-    public LinearValue getDefaultFormula() {
-        return defaultInfo == null ? LinearValue.ZERO : defaultInfo;
+    public ScalingFormula getDefaultFormula() {
+        return defaultInfo == null ? ScalingFormula.ZERO : defaultInfo;
     }
 
     @NotNull
