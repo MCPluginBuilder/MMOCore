@@ -35,17 +35,20 @@ public class DungeonsXLPartyModule implements PartyModule, Listener {
     public void onPlayerJoin(GroupPlayerJoinEvent event) {
         //We add 1 because this returns the members of the group excluding the player that just joined.
         int membersSize = event.getGroup().getMembers().size() + 1;
-        PartyUtils.applyStatBonuses(PlayerData.get(event.getPlayer().getPlayer()), membersSize);
+        PartyUtils.updateStatBonuses(PlayerData.get(event.getPlayer().getPlayer()), membersSize);
         event.getGroup().getMembers().getOnlinePlayers()
-                .forEach(p -> PartyUtils.applyStatBonuses(PlayerData.get(p), membersSize));
+                .forEach(p -> PartyUtils.updateStatBonuses(PlayerData.get(p), membersSize));
     }
 
     @EventHandler
     public void onPlayerLeave(GroupPlayerLeaveEvent event) {
-        int membersSize = event.getGroup().getMembers().size();
-        PartyUtils.clearStatBonuses(PlayerData.get(event.getPlayer().getPlayer()));
+        var membersSize = event.getGroup().getMembers().size();
+
+        // Try to clear stat bonuses from player leaving
+        PartyUtils.clearStatBonuses(event.getPlayer().getUniqueId());
+
         event.getGroup().getMembers().getOnlinePlayers()
-                .forEach(p -> PartyUtils.applyStatBonuses(PlayerData.get(p), membersSize));
+                .forEach(p -> PartyUtils.updateStatBonuses(PlayerData.get(p), membersSize));
     }
 
     @EventHandler

@@ -33,11 +33,13 @@ public class SkillBar extends SkillCastingHandler {
         lowestKeybinds = config.getBoolean("use-lowest-keybinds");
     }
 
+    @NotNull
     @Override
     public SkillCastingInstance newInstance(@NotNull PlayerData player) {
         return new CustomSkillCastingInstance(player);
     }
 
+    @NotNull
     @Override
     public SkillCastingMode getCastingMode() {
         return SkillCastingMode.SKILL_BAR;

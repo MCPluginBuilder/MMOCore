@@ -71,11 +71,13 @@ public class KeyCombos extends SkillCastingHandler {
         ignoreSneak = config.getBoolean("ignore-sneak", false);
     }
 
+    @NotNull
     @Override
     public SkillCastingInstance newInstance(@NotNull PlayerData player) {
         return new CustomSkillCastingInstance(player);
     }
 
+    @NotNull
     @Override
     public SkillCastingMode getCastingMode() {
         return SkillCastingMode.KEY_COMBOS;

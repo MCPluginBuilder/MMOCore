@@ -12,11 +12,13 @@ public class SkillCastingDisabled extends SkillCastingHandler {
         super(config);
     }
 
+    @NotNull
     @Override
     public SkillCastingInstance newInstance(@NotNull PlayerData player) {
         throw new RuntimeException("Skill casting is disabled");
     }
 
+    @NotNull
     @Override
     public SkillCastingMode getCastingMode() {
         return SkillCastingMode.NONE;

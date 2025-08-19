@@ -109,7 +109,7 @@ public class Party implements AbstractParty {
 
         module.setParty(data, null);
         PartyUtils.clearStatBonuses(data);
-        members.forEach(member -> PartyUtils.applyStatBonuses(member, members.size()));
+        members.forEach(member -> PartyUtils.updateStatBonuses(member, members.size()));
         updateOpenInventories();
 
         // Disband the party if no member left
@@ -133,7 +133,7 @@ public class Party implements AbstractParty {
 
         module.setParty(data, this);
         members.add(data);
-        members.forEach(member -> PartyUtils.applyStatBonuses(member, members.size()));
+        members.forEach(member -> PartyUtils.updateStatBonuses(member, members.size()));
 
         updateOpenInventories();
     }

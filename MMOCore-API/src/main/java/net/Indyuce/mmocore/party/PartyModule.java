@@ -11,7 +11,7 @@ public interface PartyModule {
 
     @Deprecated
     default void applyStatBonuses(PlayerData player, int memberCount) {
-        PartyUtils.applyStatBonuses(player, memberCount);
+        PartyUtils.updateStatBonuses(player, memberCount);
     }
 
     @Deprecated

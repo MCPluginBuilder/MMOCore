@@ -35,20 +35,25 @@ public class PartiesPartyModule implements PartyModule, Listener {
         return party == null ? null : new CustomParty(party);
     }
 
-
     @EventHandler
     public void onPlayerJoin(BukkitPartiesPlayerPostJoinEvent event) {
         int membersSize = event.getParty().getMembers().size();
         event.getParty().getOnlineMembers()
-                .forEach(p -> PartyUtils.applyStatBonuses(PlayerData.get(p.getPlayerUUID()), membersSize));
+                .forEach(p -> PartyUtils.updateStatBonuses(PlayerData.get(p.getPlayerUUID()), membersSize));
     }
 
     @EventHandler
     public void onPlayerLeave(BukkitPartiesPlayerPreLeaveEvent event) {
-        int membersSize = event.getParty().getMembers().size();
-        PartyUtils.clearStatBonuses(PlayerData.get(event.getPartyPlayer().getPlayerUUID()));
+
+        // Subtract one since event happens before the player leaves
+        var memberCount = event.getParty().getMembers().size() - 1;
+
+        // Try to clear stat bonuses from leaving player
+        PartyUtils.clearStatBonuses(event.getPartyPlayer().getPlayerUUID());
+
+        // Update stats for online members
         event.getParty().getOnlineMembers()
-                .forEach(p -> PartyUtils.applyStatBonuses(PlayerData.get(p.getPlayerUUID()), membersSize));
+                .forEach(p -> PartyUtils.updateStatBonuses(PlayerData.get(p.getPlayerUUID()), memberCount));
     }
 
     private static class CustomParty implements AbstractParty {

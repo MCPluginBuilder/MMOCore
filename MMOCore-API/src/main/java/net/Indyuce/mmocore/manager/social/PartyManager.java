@@ -41,7 +41,7 @@ public class PartyManager implements MMOCoreManager {
         if (clearBefore)
             for (PlayerData playerData : PlayerData.getAll()) {
                 AbstractParty party = MMOCore.plugin.partyModule.getParty(playerData);
-                if (party != null) PartyUtils.applyStatBonuses(playerData, party.countMembers());
+                if (party != null) PartyUtils.updateStatBonuses(playerData, party.countMembers());
             }
     }
 }

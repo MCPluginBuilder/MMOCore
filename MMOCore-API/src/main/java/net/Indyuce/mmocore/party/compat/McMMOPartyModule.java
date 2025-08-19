@@ -44,19 +44,22 @@ public class McMMOPartyModule implements PartyModule, Listener {
                 int membersSize = party.getMembers().size();
                 if(membersSize!=1 || party.getOnlineMembers().get(0)!=event.getPlayer()) {
                     party.getOnlineMembers()
-                            .forEach(p -> PartyUtils.applyStatBonuses(PlayerData.get(p), membersSize+1));
-                    PartyUtils.applyStatBonuses(PlayerData.get(event.getPlayer()), membersSize+1);
+                            .forEach(p -> PartyUtils.updateStatBonuses(PlayerData.get(p), membersSize+1));
+                    PartyUtils.updateStatBonuses(PlayerData.get(event.getPlayer()), membersSize+1);
                 }
             }
         }
         if (event.getOldParty() != null) {
             Party party = PartyManager.getParty(event.getOldParty());
             if (party != null) {
+
                 //This is the size of the party before the player leaves=> we decrement it by 1.
                 int membersSize = party.getMembers().size() - 1;
                 party.getOnlineMembers()
-                        .forEach(p -> PartyUtils.applyStatBonuses(PlayerData.get(p), membersSize));
-                PartyUtils.clearStatBonuses(PlayerData.get(event.getPlayer().getPlayer()));
+                        .forEach(p -> PartyUtils.updateStatBonuses(PlayerData.get(p), membersSize));
+
+                // Try to clear stat bonuses from player leaving
+                PartyUtils.clearStatBonuses(event.getPlayer().getUniqueId());
             }
         }
     }

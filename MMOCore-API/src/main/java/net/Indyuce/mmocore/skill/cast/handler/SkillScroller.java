@@ -54,11 +54,13 @@ public class SkillScroller extends SkillCastingHandler {
         scrollBackKey = Keybind.fromConfig(config.get("scroll-back-key"));
     }
 
+    @NotNull
     @Override
     public SkillCastingInstance newInstance(@NotNull PlayerData player) {
         return new CustomSkillCastingInstance(player);
     }
 
+    @NotNull
     @Override
     public SkillCastingMode getCastingMode() {
         return SkillCastingMode.SKILL_SCROLLER;
