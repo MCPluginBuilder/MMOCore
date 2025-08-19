@@ -56,8 +56,7 @@ public class WaypointsListener implements Listener {
         if (Objects.equals(nbtItem.getString("MMOCoreItemId"), "WAYPOINT_BOOK")) {
             String waypointId = nbtItem.getString("WaypointBookId");
             Waypoint waypoint = MMOCore.plugin.waypointManager.get(waypointId);
-            if (waypoint == null)
-                return;
+            if (waypoint == null) return;
 
             PlayerData playerData = PlayerData.get(event.getPlayer());
             if (playerData.hasWaypoint(waypoint))

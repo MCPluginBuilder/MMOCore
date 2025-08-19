@@ -24,18 +24,18 @@ public class ItemCommandTreeNode extends CommandTreeNode {
         if (args.length < 4)
             return CommandResult.THROW_USAGE;
 
-        if (!MMOCore.plugin.waypointManager.has(args[2])) {
+        var waypoint = MMOCore.plugin.waypointManager.get(args[2]);
+        if (waypoint == null) {
             sender.sendMessage(ChatColor.RED + "Could not find waypoint " + args[2]);
             return CommandResult.FAILURE;
         }
 
-        Player player = Bukkit.getPlayer(args[3]);
+        var player = Bukkit.getPlayer(args[3]);
         if (player == null) {
             sender.sendMessage(ChatColor.RED + "Could not find player " + args[3]);
             return CommandResult.FAILURE;
         }
 
-        Waypoint waypoint = MMOCore.plugin.waypointManager.get(args[2]);
         new SmartGive(player).give(new WaypointBookBuilder(waypoint).build());
         sender.sendMessage(ChatColor.GOLD + "Gave " + player.getName() + ChatColor.YELLOW + " a waypoint book of " + ChatColor.GOLD + waypoint.getId()
                 + ChatColor.YELLOW + ".");

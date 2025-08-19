@@ -5,6 +5,7 @@ import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.waypoint.Waypoint;
 import org.apache.commons.lang.Validate;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -27,6 +28,14 @@ public class WaypointManager implements MMOCoreManager {
     @Nullable
     public Waypoint get(String id) {
         return waypoints.get(id);
+    }
+
+    @NotNull
+    public Waypoint getOrThrow(@NotNull String id) {
+        var found = waypoints.get(id);
+        if (found == null)
+            throw new IllegalArgumentException(String.format("Could not find waypoint with ID '%s'", id));
+        return found;
     }
 
     public void register(Waypoint waypoint) {

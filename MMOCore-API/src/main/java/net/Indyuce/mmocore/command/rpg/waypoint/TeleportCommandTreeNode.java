@@ -22,7 +22,8 @@ public class TeleportCommandTreeNode extends CommandTreeNode {
 		if (args.length < 4)
 			return CommandResult.THROW_USAGE;
 
-		if (!MMOCore.plugin.waypointManager.has(args[2])) {
+		Waypoint waypoint = MMOCore.plugin.waypointManager.get(args[2]);
+		if (waypoint == null) {
 			sender.sendMessage(ChatColor.RED + "Could not find waypoint " + args[2]);
 			return CommandResult.FAILURE;
 		}
@@ -33,7 +34,6 @@ public class TeleportCommandTreeNode extends CommandTreeNode {
 			return CommandResult.FAILURE;
 		}
 
-		Waypoint waypoint = MMOCore.plugin.waypointManager.get(args[2]);
 		player.teleport(waypoint.getLocation());
 		sender.sendMessage(ChatColor.YELLOW + "Successfully teleported " + ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " to "
 				+ ChatColor.GOLD + waypoint.getId() + ChatColor.YELLOW + ".");

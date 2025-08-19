@@ -25,7 +25,8 @@ public class LockCommandTreeNode extends CommandTreeNode {
         if (args.length < 4)
             return CommandResult.THROW_USAGE;
 
-        if (!MMOCore.plugin.waypointManager.has(args[2])) {
+        Waypoint waypoint = MMOCore.plugin.waypointManager.get(args[2]);
+        if (waypoint == null) {
             sender.sendMessage(ChatColor.RED + "Could not find waypoint " + args[2]);
             return CommandResult.FAILURE;
         }
@@ -36,14 +37,13 @@ public class LockCommandTreeNode extends CommandTreeNode {
             return CommandResult.FAILURE;
         }
         PlayerData playerData = PlayerData.get(player);
-        Waypoint waypoint = MMOCore.plugin.waypointManager.get(args[2]);
 
         if (!playerData.hasWaypoint(waypoint)) {
             sender.sendMessage(ChatColor.RED + "The waypoint " + args[2] + " is already locked.");
             return CommandResult.FAILURE;
         }
         PlayerData.get(player).lockWaypoint(waypoint);
-        CommandVerbose.verbose(sender,CommandVerbose.CommandType.WAYPOINT,ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " successfully locked " + ChatColor.GOLD + waypoint.getId()
+        CommandVerbose.verbose(sender, CommandVerbose.CommandType.WAYPOINT, ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " successfully locked " + ChatColor.GOLD + waypoint.getId()
                 + ChatColor.YELLOW + ".");
         return CommandResult.SUCCESS;
 

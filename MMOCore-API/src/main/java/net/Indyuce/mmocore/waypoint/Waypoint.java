@@ -45,7 +45,7 @@ public class Waypoint implements Unlockable, PreloadedObject {
         if (config.contains("linked")) {
             ConfigurationSection section = config.getConfigurationSection("linked");
             for (String key : section.getKeys(false))
-                destinations.put(MMOCore.plugin.waypointManager.get(key), section.getDouble(key));
+                destinations.put(MMOCore.plugin.waypointManager.getOrThrow(key), section.getDouble(key));
         }
 
         // Link reciprocity

@@ -118,7 +118,7 @@ public class WaypointViewer extends EditableInventory {
             if (tag.isEmpty()) return;
 
             // Locked waypoint?
-            final Waypoint waypoint = MMOCore.plugin.waypointManager.get(tag);
+            final Waypoint waypoint = MMOCore.plugin.waypointManager.getOrThrow(tag);
             if (!inv.playerData.hasWaypoint(waypoint)) {
                 ConfigMessage.fromKey("not-unlocked-waypoint").send(inv.playerData);
                 return;
