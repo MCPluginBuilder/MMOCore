@@ -17,6 +17,7 @@ public class ConfigFile {
 	private final String name;
 	private final FileConfiguration config;
 
+
 	public ConfigFile(Player player) {
 		this(player.getUniqueId());
 	}
