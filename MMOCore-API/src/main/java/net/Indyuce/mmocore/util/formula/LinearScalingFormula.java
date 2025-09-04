@@ -59,6 +59,8 @@ public class LinearScalingFormula implements ScalingFormula {
         min = hasMin ? config.getDouble("min") : 0;
         max = hasMax ? config.getDouble("max") : 0;
         integer = config.getBoolean("int");
+
+        if (hasMin && hasMax && min >= max) throw new IllegalArgumentException("Min is higher or equal to max value");
     }
 
     @Override
