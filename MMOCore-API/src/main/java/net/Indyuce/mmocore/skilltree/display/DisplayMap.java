@@ -10,7 +10,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,7 +17,7 @@ public class DisplayMap {
     public final Map<Object, IconOptions> icons = new HashMap<>();
 
     public static final IconOptions DEFAULT_ICON = new IconOptions(Material.BARRIER, 0);
-    public static final DisplayMap EMPTY = new DisplayMap(YamlConfiguration.loadConfiguration(new StringReader("")));
+    public static final DisplayMap EMPTY = new DisplayMap(new YamlConfiguration());
 
     private DisplayMap(@NotNull ConfigurationSection config) {
 
@@ -42,7 +41,7 @@ public class DisplayMap {
             if (statusConfig instanceof ConfigurationSection && UtilityMethods.containsOneKey((ConfigurationSection) statusConfig, NodeShape.values(), UtilityMethods::kebabCase))
                 for (var shape : NodeShape.values()) {
                     try {
-                        final var configPath = "nodes." + UtilityMethods.kebabCase(state.name() + "." + shape.name());
+                        final var configPath = UtilityMethods.kebabCase(state.name() + "." + shape.name());
                         icons.put(new NodeDisplayInfo(shape, state), IconOptions.from(nodeConfig.get(configPath)));
                     } catch (Exception exception) {
                         // Ignore
