@@ -1,5 +1,6 @@
 package net.Indyuce.mmocore.util.formula;
 
+import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.Nullable;
@@ -52,15 +53,22 @@ public class LinearScalingFormula implements ScalingFormula {
      * @param config Config to load the formula from
      */
     public LinearScalingFormula(ConfigurationSection config) {
+
+        // This fixes an issue with old, fucked up, skill configs
+        // bc they were not checked before being put in production
+        // Instead of sending a warning, just disable alltogether
+        @BackwardsCompatibility(version = "1.31.1-SNAPSHOT")
+        boolean safeguard = config.contains("min") && config.contains("max") && config.getDouble("min") >= config.getDouble("max");
+
         base = config.getDouble("base");
         perLevel = config.getDouble("per-level");
-        hasMin = config.contains("min");
-        hasMax = config.contains("max");
+        hasMin = !safeguard && config.contains("min");
+        hasMax = !safeguard && config.contains("max");
         min = hasMin ? config.getDouble("min") : 0;
         max = hasMax ? config.getDouble("max") : 0;
         integer = config.getBoolean("int");
 
-        if (hasMin && hasMax && min >= max) throw new IllegalArgumentException("Min is higher or equal to max value");
+        //if (hasMin && hasMax && min >= max) throw new IllegalArgumentException("Min is higher or equal to max value");
     }
 
     @Override
