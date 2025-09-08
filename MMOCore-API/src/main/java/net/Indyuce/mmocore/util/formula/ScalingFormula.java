@@ -27,7 +27,7 @@ public interface ScalingFormula {
         // null -> ZERO
         if (object == null) return ZERO;
 
-        if (object instanceof Number) return new NonScalingFormula((Double) object);
+        if (object instanceof Number) return new NonScalingFormula(((Number) object).doubleValue());
 
         if (object instanceof ConfigurationSection) {
             var config = (ConfigurationSection) object;
