@@ -6,35 +6,29 @@ lore:
 - '&e{cooldown}s Cooldown'
 - '&9Costs {mana} {mana_name}'
 material: IRON_SWORD
-timer:
-  base: 0
-  per-level: 0
-  min: 0
-  max: 0
-  #Optional: The decimal format used for this skill parameter.
-  decimal-format: '0.#'
-damage:
-  base: 2
-  per-level: 1
-delay:
-  base: 0
-  per-level: 0
-  min: 0
-  max: 0
-mana:
-  base: 2
-  per-level: 1
-stamina:
-  base: 2
-  per-level: 1
-  min: 0
-  max: 0
-cooldown:
-  base: 2
-  per-level: 1
-knockback:
-  base: 2
-  per-level: 1
-radius:
-  base: 3
-  per-level: 1
+
+parameters:
+  timer: 0
+  delay: 0
+  mana:
+    base: 2
+    per-level: 1
+  stamina:
+    base: 2
+    per-level: 1
+  cooldown:
+    base: 2
+    per-level: 1
+
+  # Damage dealt by the slash
+  damage:
+    base: 2
+    per-level: 1
+  # Knockback dealt by the slash
+  knockback:
+    base: 2
+    per-level: 1
+  # Radius of slash
+  radius:
+    base: 3
+    per-level: 1

@@ -1,40 +1,39 @@
 name: Corrupt
 lore:
-- Create a magical circle that 
-- inflicts ongoing damage to the target
+- Corrupts the target area, dealing &c{damage} &7instant
+- damage to enemies within &8{radius} &7blocks, and
+- inflicting Wither &c{amplifier}&7 for &8{duration} &7seconds.
 - ''
 - '&e{cooldown}s Cooldown'
 - '&9Costs {mana} {mana_name}'
 material: BOOK
-duration:
-  base: 4
-  per-level: 1
-  #Optional: The decimal format used for this skill parameter.
-  decimal-format: '0.#'
-timer:
-  base: 2
-  per-level: 1
-  min: 0
-  max: 0
-damage:
-  base: 2
-  per-level: 1
-delay:
-  base: 2
-  per-level: 1
-  min: 0
-  max: 0
-mana:
-  base: 2
-  per-level: 1
-stamina:
-  base: 2
-  per-level: 1
-  min: 0
-  max: 0
-cooldown:
-  base: 2
-  per-level: 1
-amplifier:
-  base: 2
-  per-level: 1
+
+parameters:
+  timer: 0
+  delay: 0
+  mana:
+    base: 2
+    per-level: 1
+  stamina:
+    base: 2
+    per-level: 1
+  cooldown:
+    base: 2
+    per-level: 1
+
+  # Radiuds of AoE damage
+  radius: 2.7
+  # Duration of wither effect in seconds
+  duration:
+    base: 4
+    per-level: 1
+    #Optional: The decimal format used for this skill parameter.
+    decimal-format: '0.#'
+  # Instant damage dealt on casting
+  damage:
+    base: 2
+    per-level: 1
+  # Wither effect level
+  amplifier:
+    base: 2
+    per-level: 1

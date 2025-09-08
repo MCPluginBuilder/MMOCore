@@ -44,11 +44,19 @@ public class RegisteredSkill {
         categories.add(getHandler().getId());
         categories.add(triggerType.isPassive() ? "PASSIVE" : "ACTIVE");
 
-        // Load default modifier formulas and decimal formats.
-        for (String param : handler.getParameters()) {
-            if (config.contains(param + ".decimal-format"))
-                parameterDecimalFormats.put(param, new DecimalFormat(config.getString(param + ".decimal-format")));
-            defaultParameters.put(param, ScalingFormula.fromConfig(config.get(param), null));
+        if (config.contains("parameters")) {
+
+            // Load default modifier formulas and decimal formats.
+            for (String param : handler.getParameters()) {
+                @Nullable var object = config.get("parameters." + param);
+                if (object == null) object = config.get(param); // [Backwards compatibility] Old syntax
+
+                defaultParameters.put(param, ScalingFormula.fromConfig(object, null));
+
+                // Decimal format
+                if (object instanceof ConfigurationSection && ((ConfigurationSection) object).contains("decimal-format"))
+                    parameterDecimalFormats.put(param, new DecimalFormat(((ConfigurationSection) object).getString("decimal-format")));
+            }
         }
 
         /*
@@ -108,11 +116,11 @@ public class RegisteredSkill {
 
     /**
      * @return Modifier formula.
-     * Not null as long as the modifier is well-defined
+     *         Not null as long as the modifier is well-defined
      */
     @NotNull
     public ScalingFormula getParameterInfo(String parameter) {
-        return defaultParameters.get(parameter);
+        return Objects.requireNonNull(defaultParameters.get(parameter), String.format("Could not find parameter %s", parameter));
     }
 
     public boolean matchesFormula(String formula) {
