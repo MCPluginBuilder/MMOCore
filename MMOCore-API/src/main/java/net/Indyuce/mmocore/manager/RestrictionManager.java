@@ -86,7 +86,7 @@ public class RestrictionManager implements MMOCoreManager {
      * @return If the block can be broken by a certain item
      */
     public boolean checkPermissions(ItemStack item, BlockType block) {
-        ToolPermissions perms = getPermissions(item);
+        final var perms = getPermissions(item);
         return perms != null && perms.canMine(block);
     }
 

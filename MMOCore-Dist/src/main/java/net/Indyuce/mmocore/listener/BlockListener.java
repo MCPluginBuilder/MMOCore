@@ -41,9 +41,8 @@ public class BlockListener implements Listener {
         Block block = event.getBlock();
 
         // Check for custom mining in the current region first.
-        boolean customMine = MMOCore.plugin.mineManager.isEnabled(player, block.getLocation());
-        if (!customMine)
-            return;
+        final var customMiningApplies = MMOCore.plugin.mineManager.isEnabled(player, block.getLocation());
+        if (!customMiningApplies) return;
 
         /*
          * If the block is a temporary block placed by block regen, immediately
@@ -57,14 +56,11 @@ public class BlockListener implements Listener {
             return;
         }
 
+        // Vanilla blocks = blocks with no configs provided.
         if (info == null) {
 
-            /*
-             * If players are prevented from breaking blocks in custom mining
-             * regions
-             */
-            if (MMOCore.plugin.mineManager.shouldProtect())
-                event.setCancelled(true);
+            // Are vanilla blocks protected?
+            if (MMOCore.plugin.mineManager.protectVanillaBlocks()) event.setCancelled(true);
 
             return;
         }
@@ -79,8 +75,7 @@ public class BlockListener implements Listener {
         if (UtilityMethods.isFake(event)) return;
 
         boolean canBreak = true;
-        ItemStack item = player.getInventory().getItemInMainHand();
-        if (!MMOCore.plugin.restrictionManager.checkPermissions(item, info.getBlock())) {
+        if (MMOCore.plugin.mineManager.hasToolRestrictions() && !MMOCore.plugin.restrictionManager.checkPermissions(player.getInventory().getItemInMainHand(), info.getBlock())) {
             ConfigMessage.fromKey("cannot-break").send(player);
             canBreak = false;
         }

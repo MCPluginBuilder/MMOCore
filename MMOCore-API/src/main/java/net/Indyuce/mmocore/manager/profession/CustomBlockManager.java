@@ -22,6 +22,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Level;
 
+// TODO move to standalone module class. merge with RestrictionManager. rename to CustomMiningModule and properly register/unregister listeners
 public class CustomBlockManager extends SpecificProfessionManager {
 
 	/**
@@ -46,7 +47,7 @@ public class CustomBlockManager extends SpecificProfessionManager {
 	 */
 	private final List<Function<Block, Optional<BlockType>>> blockTypes = new ArrayList<>();
 
-	private boolean protect;
+	private boolean enabled, protectVanillaBlocks, enableToolRestrictions;
 
 	public CustomBlockManager() {
 		super("on-mine");
@@ -65,29 +66,29 @@ public class CustomBlockManager extends SpecificProfessionManager {
 	/**
 	 * Checks if the behaviour of a block was changed by a specific profession
 	 * (different drop tables, block regen..)
-	 * 
-	 * @param  block Block to check
-	 * @return       The new block behaviour or null if no new behaviour
-	 */
-	public @Nullable BlockInfo getInfo(@NotNull Block block) {
-		return map.get(findBlockType(block));
-	}
+     *
+     * @param  block Block to check
+     * @return The new block behaviour or null if no new behaviour
+     */
+    @Nullable
+    public BlockInfo getInfo(@NotNull Block block) {
+        return map.get(findBlockType(block));
+    }
 
-	@NotNull
-	public BlockType findBlockType(Block block) {
-		for (Function<Block, Optional<BlockType>> blockType : blockTypes) {
-			Optional<BlockType> type = blockType.apply(block);
-			if (type.isPresent())
-				return type.get();
-		}
+    @NotNull
+    public BlockType findBlockType(Block block) {
+        for (Function<Block, Optional<BlockType>> blockType : blockTypes) {
+            Optional<BlockType> type = blockType.apply(block);
+            if (type.isPresent()) return type.get();
+        }
 
-		return new VanillaBlockType(block);
-	}
+        return new VanillaBlockType(block);
+    }
 
 	/**
 	 * Used when a block is being broken and MMOCore needs to regen it after X
 	 * seconds. Also places the temporary block at the block location
-	 * 
+	 *
 	 * @param info          Block info
 	 * @param scheduleRegen If block regeneration should be scheduled or not. If
 	 *                      the block broken is a temporary block and is part of
@@ -107,7 +108,7 @@ public class CustomBlockManager extends SpecificProfessionManager {
 	/**
 	 * Called when a block regens, either due to regen timer or because the
 	 * server shuts down.
-	 * 
+	 *
 	 * @param info     Block which must be regened
 	 * @param shutdown Must be set to true if the server is shutting down. When
 	 *                 the server shuts down, it iterates through active blocks.
@@ -151,20 +152,24 @@ public class CustomBlockManager extends SpecificProfessionManager {
 		return isEnabled(entity, entity.getLocation());
 	}
 
-	public boolean isEnabled(Entity entity, Location loc) {
-		if (customMineConditions.isEmpty())
-			return false;
+    public boolean isEnabled(Entity entity, Location loc) {
 
-		ConditionInstance conditionEntity = new ConditionInstance(entity, loc);
-		for (Condition condition : customMineConditions)
-			if (!condition.isMet(conditionEntity))
-				return false;
+        // Global enable/disable
+        if (!enabled) return false;
 
-		return true;
-	}
+        // Empty conditions => enabled server-wide
+        if (customMineConditions.isEmpty()) return true;
 
-	@Override
-	public void loadProfessionConfiguration(ConfigurationSection config) {
+        // Check conditions one-by-one
+        var conditionEntity = new ConditionInstance(entity, loc);
+        for (Condition condition : customMineConditions)
+            if (!condition.isMet(conditionEntity)) return false;
+
+        return true;
+    }
+
+    @Override
+    public void loadProfessionConfiguration(ConfigurationSection config) {
 		for (String key : config.getKeys(false))
 			try {
 				register(new BlockInfo(config.getConfigurationSection(key)));
@@ -173,12 +178,13 @@ public class CustomBlockManager extends SpecificProfessionManager {
 			}
 	}
 
-	/**
-	 * @return If block breaking should be denied in custom mining regions
-	 */
-	public boolean shouldProtect() {
-		return protect;
+	public boolean protectVanillaBlocks() {
+		return protectVanillaBlocks;
 	}
+
+    public boolean hasToolRestrictions() {
+        return enableToolRestrictions;
+    }
 
 	@Override
 	public void initialize(boolean clearBefore) {
@@ -187,13 +193,22 @@ public class CustomBlockManager extends SpecificProfessionManager {
 			map.clear();
 		}
 
-		this.protect = MMOCore.plugin.getConfig().getBoolean("protect-custom-mine");
+        final var config = MMOCore.plugin.getConfig().getConfigurationSection("custom-mining");
 
-		for (String key : MMOCore.plugin.getConfig().getStringList("custom-mine-conditions"))
-			try {
-				customMineConditions.add(MMOCore.plugin.loadManager.loadCondition(new MMOLineConfig(key)));
-			} catch (IllegalArgumentException exception) {
-				MMOCore.plugin.getLogger().log(Level.WARNING, "Could not load custom mining condition '" + key + "': " + exception.getMessage());
-			}
-	}
+        this.enabled = config.getBoolean("enable");
+        this.protectVanillaBlocks = config.getBoolean("protect-vanilla-blocks");
+        this.enableToolRestrictions = config.getBoolean("enable-tool-restrictions");
+
+        for (String key : config.getStringList("conditions"))
+            try {
+                customMineConditions.add(MMOCore.plugin.loadManager.loadCondition(new MMOLineConfig(key)));
+            } catch (IllegalArgumentException exception) {
+                MMOCore.plugin.getLogger().log(Level.WARNING, "Could not load custom mining condition '" + key + "': " + exception.getMessage());
+            }
+    }
+
+    @Deprecated
+    public boolean shouldProtect() {
+        return protectVanillaBlocks();
+    }
 }
