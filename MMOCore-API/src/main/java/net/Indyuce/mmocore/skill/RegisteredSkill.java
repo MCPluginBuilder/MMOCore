@@ -44,19 +44,16 @@ public class RegisteredSkill {
         categories.add(getHandler().getId());
         categories.add(triggerType.isPassive() ? "PASSIVE" : "ACTIVE");
 
-        if (config.contains("parameters")) {
+        // Load default modifier formulas and decimal formats.
+        for (String param : handler.getParameters()) {
+            @Nullable var object = config.get("parameters." + param);
+            if (object == null) object = config.get(param); // [Backwards compatibility] Old syntax
 
-            // Load default modifier formulas and decimal formats.
-            for (String param : handler.getParameters()) {
-                @Nullable var object = config.get("parameters." + param);
-                if (object == null) object = config.get(param); // [Backwards compatibility] Old syntax
+            defaultParameters.put(param, ScalingFormula.fromConfig(object, null));
 
-                defaultParameters.put(param, ScalingFormula.fromConfig(object, null));
-
-                // Decimal format
-                if (object instanceof ConfigurationSection && ((ConfigurationSection) object).contains("decimal-format"))
-                    parameterDecimalFormats.put(param, new DecimalFormat(((ConfigurationSection) object).getString("decimal-format")));
-            }
+            // Decimal format
+            if (object instanceof ConfigurationSection && ((ConfigurationSection) object).contains("decimal-format"))
+                parameterDecimalFormats.put(param, new DecimalFormat(((ConfigurationSection) object).getString("decimal-format")));
         }
 
         /*
