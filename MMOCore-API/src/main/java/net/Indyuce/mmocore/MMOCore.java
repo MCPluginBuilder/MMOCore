@@ -65,7 +65,6 @@ import java.util.logging.Level;
 public class MMOCore extends MMOPlugin {
     public static MMOCore plugin;
     public final WaypointManager waypointManager = new WaypointManager();
-    public final SoundManager soundManager = new SoundManager();
     public final RequestManager requestManager = new RequestManager();
     public final ConfigItemManager configItems = new ConfigItemManager();
     public final ActionBarManager actionBarManager = new ActionBarManager();
@@ -286,7 +285,7 @@ public class MMOCore extends MMOPlugin {
         mineManager.resetRemainingBlocks();
 
         // Clear spawned loot chests
-        lootChests.getActive().forEach(chest -> chest.expire(false));
+        lootChests.getActive().forEach(chest -> chest.expire(null));
     }
 
     /**
@@ -324,7 +323,6 @@ public class MMOCore extends MMOPlugin {
         restrictionManager.initialize(clearBefore);
         waypointManager.initialize(clearBefore);
         requestManager.initialize(clearBefore);
-        soundManager.initialize(clearBefore);
         configItems.initialize(clearBefore);
         //Needs to be loaded after the class manager.
         InventoryManager.load();

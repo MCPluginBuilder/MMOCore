@@ -12,6 +12,8 @@ public class GuildChatEvent extends PlayerDataEvent implements Cancellable {
 	private final Guild guild;
 
 	private boolean cancelled;
+
+	@Deprecated
 	private String message;
 
 	public GuildChatEvent(PlayerData playerData, String message) {
@@ -24,6 +26,7 @@ public class GuildChatEvent extends PlayerDataEvent implements Cancellable {
 		this.message = message;
 	}
 
+	@Deprecated
 	public String getMessage() {
 		return message;
 	}

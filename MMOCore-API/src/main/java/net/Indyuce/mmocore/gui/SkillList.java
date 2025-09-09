@@ -10,17 +10,14 @@ import io.lumine.mythic.lib.gui.editable.item.PhysicalItem;
 import io.lumine.mythic.lib.gui.editable.item.builtin.NextPageItem;
 import io.lumine.mythic.lib.gui.editable.item.builtin.PreviousPageItem;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
-import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
-import net.Indyuce.mmocore.api.SoundEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.util.MMOCoreUtils;
+import net.Indyuce.mmocore.player.Message;
 import net.Indyuce.mmocore.skill.ClassSkill;
 import net.Indyuce.mmocore.skill.RegisteredSkill;
 import net.Indyuce.mmocore.skill.binding.SkillSlot;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -30,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class SkillList extends EditableInventory {
@@ -89,14 +87,12 @@ public class SkillList extends EditableInventory {
             int spent = inv.playerData.countSkillPointsSpent();
 
             if (spent < 1) {
-                ConfigMessage.fromKey("no-skill-points-spent").send(inv.getPlayer());
-                MMOCore.plugin.soundManager.getSound(SoundEvent.NOT_ENOUGH_POINTS).playTo(inv.getPlayer());
+                Message.NO_SKILL_POINTS_SPENT.send(inv.playerData);
                 return;
             }
 
             if (inv.playerData.getSkillReallocationPoints() < 1) {
-                ConfigMessage.fromKey("not-skill-reallocation-point").send(inv.playerData);
-                MMOCore.plugin.soundManager.getSound(SoundEvent.NOT_ENOUGH_POINTS).playTo(inv.getPlayer());
+                Message.NOT_SKILL_REALLOCATION_POINT.send(inv.playerData);
                 return;
             }
 
@@ -105,8 +101,7 @@ public class SkillList extends EditableInventory {
 
             inv.playerData.giveSkillPoints(spent);
             inv.playerData.setSkillReallocationPoints(inv.playerData.getSkillReallocationPoints() - 1);
-            ConfigMessage.fromKey("skill-points-reallocated", "points", inv.playerData.getSkillPoints()).send(inv.getPlayer());
-            MMOCore.plugin.soundManager.getSound(SoundEvent.RESET_SKILLS).playTo(inv.getPlayer());
+            Message.SKILL_POINTS_REALLOCATED.send(inv.playerData, "points", inv.playerData.getSkillPoints());
             inv.open();
         }
     }
@@ -120,7 +115,7 @@ public class SkillList extends EditableInventory {
         public void preprocessLore(@NotNull SkillViewerInventory inv, int index, @NotNull List<String> lore) {
             if (inv.selected == null) return;
 
-            int skillLevel = inv.playerData.getSkillLevel(inv.selected.getSkill());
+            //int skillLevel = inv.playerData.getSkillLevel(inv.selected.getSkill());
             boolean unlocked = inv.selected.getUnlockLevel() <= inv.playerData.getLevel();
 
             // Replace skill lore
@@ -154,7 +149,7 @@ public class SkillList extends EditableInventory {
         }
 
         @Override
-        public Placeholders getPlaceholders(SkillViewerInventory inv, int n) {
+        public @NotNull Placeholders getPlaceholders(SkillViewerInventory inv, int n) {
             var skillLevel = inv.playerData.getSkillLevel(inv.selected.getSkill());
 
             Placeholders holders = new Placeholders();
@@ -297,7 +292,7 @@ public class SkillList extends EditableInventory {
 
             // Select if the player is doing Shift Left Click
             if (event.getClick() == ClickType.SHIFT_LEFT) {
-                if (inv.playerData.hasSkillBound(index)){
+                if (inv.playerData.hasSkillBound(index)) {
                     inv.selected = inv.playerData.getBoundSkill(index);
                     inv.open();
                 }
@@ -307,46 +302,42 @@ public class SkillList extends EditableInventory {
             // unbind if there is a current spell.
             if (event.getClick() == ClickType.RIGHT) {
                 if (!inv.playerData.hasSkillBound(index)) {
-                    ConfigMessage.fromKey("no-skill-bound").send(inv.getPlayer());
-                    inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 2);
+                    Message.NO_SKILL_BOUND.send(inv.playerData);
                     return;
                 }
                 if (!inv.playerData.getProfess().getSkillSlot(index).canManuallyBind()) {
-                    ConfigMessage.fromKey("cant-manually-bind").send(inv.getPlayer());
-                    inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 2);
+                    Message.CANT_MANUALLY_BIND.send(inv.playerData);
                     return;
                 }
-                inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 2);
+
+                Message.SKILL_UNBOUND_FROM_SLOT.send(inv.playerData, "slot", skillSlot.getName(),
+                        "index", index, "skill", inv.playerData.getBoundSkill(index).getSkill().getName());
                 inv.playerData.unbindSkill(index);
                 inv.open();
                 return;
             }
 
             if (inv.selected.isPermanent()) {
-                ConfigMessage.fromKey("skill-cannot-be-bound").send(inv.getPlayer());
-                inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 2);
+                Message.SKILL_CANNOT_BE_BOUND.send(inv.playerData);
                 return;
             }
 
             if (!inv.playerData.hasUnlockedLevel(inv.selected)) {
-                ConfigMessage.fromKey("skill-level-not-met").send(inv.getPlayer());
-                inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 2);
+                Message.SKILL_LEVEL_NOT_MET.send(inv.playerData);
                 return;
             }
 
             if (!skillSlot.canManuallyBind()) {
-                ConfigMessage.fromKey("cant-manually-bind").send(inv.getPlayer());
-                inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 2);
+                Message.CANT_MANUALLY_BIND.send(inv.playerData);
                 return;
             }
 
             if (!skillSlot.acceptsSkill(inv.selected)) {
-                ConfigMessage.fromKey("not-compatible-skill").send(inv.getPlayer());
-                inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 2);
+                Message.NOT_COMPATIBLE_SKILL.send(inv.playerData);
                 return;
             }
 
-            inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 2);
+            Message.SKILL_BOUND_TO_SLOT.send(inv.playerData, "slot", skillSlot.getName(), "index", index, "skill", inv.selected.getSkill().getName());
             inv.playerData.bindSkill(index, inv.selected);
             inv.open();
         }
@@ -419,8 +410,9 @@ public class SkillList extends EditableInventory {
         public void onClick(@NotNull SkillViewerInventory inv, @NotNull InventoryClickEvent event) {
             var clickSlot = inv.skillSlots.indexOf(event.getSlot());
             var index = inv.getPageIndex(clickSlot);
-            inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.UI_BUTTON_CLICK, 1, 2);
-            inv.selected = inv.skills.get(index);
+            var skillFocus = Objects.requireNonNull(inv.skills.get(index), "Skill at index " + index + " is null");
+            Message.SKILL_UI_FOCUS.send(inv.playerData, "skill", skillFocus.getSkill().getName());
+            inv.selected = skillFocus;
             inv.open();
         }
     }
@@ -453,33 +445,28 @@ public class SkillList extends EditableInventory {
         public void onClick(@NotNull SkillViewerInventory inv, @NotNull InventoryClickEvent event) {
 
             if (!inv.playerData.hasUnlockedLevel(inv.selected)) {
-                ConfigMessage.fromKey("skill-level-not-met").send(inv.getPlayer());
-                inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 2);
+                Message.SKILL_LEVEL_NOT_MET.send(inv.playerData);
                 return;
             }
 
             if (!inv.selected.isUpgradable()) {
-                ConfigMessage.fromKey("cannot-upgrade-skill").send(inv.getPlayer());
-                inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 2);
+                Message.CANNOT_UPGRADE_SKILL.send(inv.playerData);
                 return;
             }
 
             if (inv.playerData.getSkillPoints() < 1) {
-                ConfigMessage.fromKey("not-enough-skill-points").send(inv.getPlayer());
-                inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 2);
+                Message.NOT_ENOUGH_SKILL_POINTS.send(inv.playerData);
                 return;
             }
 
             if (inv.selected.hasMaxLevel() && inv.playerData.getSkillLevel(inv.selected.getSkill()) >= inv.selected.getMaxLevel()) {
-                ConfigMessage.fromKey("skill-max-level-hit").send(inv.getPlayer());
-                inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 2);
+                Message.SKILL_MAX_LEVEL_HIT.send(inv.playerData);
                 return;
             }
 
             if (event.getClick().isShiftClick()) {
                 if (inv.playerData.getSkillPoints() < shiftCost) {
-                    ConfigMessage.fromKey("not-enough-skill-points-shift", "shift_points", "" + shiftCost).send(inv.getPlayer());
-                    inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 2);
+                    Message.NOT_ENOUGH_SKILL_POINTS_SHIFT.send(inv.playerData, "shift_points", shiftCost);
                     return;
                 }
 
@@ -490,8 +477,7 @@ public class SkillList extends EditableInventory {
                 inv.playerData.setSkillLevel(inv.selected.getSkill(), inv.playerData.getSkillLevel(inv.selected.getSkill()) + 1);
             }
 
-            ConfigMessage.fromKey("upgrade-skill", "skill", inv.selected.getSkill().getName(), "level", inv.playerData.getSkillLevel(inv.selected.getSkill())).send(inv.getPlayer());
-            inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 2);
+            Message.UPGRADE_SKILL.send(inv.playerData, "skill", inv.selected.getSkill().getName(), "level", inv.playerData.getSkillLevel(inv.selected.getSkill()));
             inv.open();
         }
     }

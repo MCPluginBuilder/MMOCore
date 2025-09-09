@@ -1,9 +1,8 @@
 package net.Indyuce.mmocore.manager;
 
+import io.lumine.mythic.lib.util.config.YamlFile;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigFile;
 import net.Indyuce.mmocore.util.item.ConfigItem;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -27,7 +26,7 @@ public class ConfigItemManager implements MMOCoreManager {
         if (clearBefore)
             map.clear();
 
-        FileConfiguration config = new ConfigFile("items").getConfig();
+        var config = new YamlFile(MMOCore.plugin, "items").getContent();
         for (String key : config.getKeys(false))
             try {
                 register(new ConfigItem(config.getConfigurationSection(key)));

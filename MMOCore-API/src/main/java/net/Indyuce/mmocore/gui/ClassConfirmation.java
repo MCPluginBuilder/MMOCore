@@ -8,13 +8,12 @@ import io.lumine.mythic.lib.gui.editable.item.PhysicalItem;
 import io.lumine.mythic.lib.gui.editable.item.builtin.GoBackItem;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
-import net.Indyuce.mmocore.api.SoundEvent;
 import net.Indyuce.mmocore.api.event.PlayerChangeClassEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.profess.PlayerClass;
 import net.Indyuce.mmocore.api.player.profess.SavedClassInformation;
 import net.Indyuce.mmocore.player.ClassDataContainer;
+import net.Indyuce.mmocore.player.Message;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -122,8 +121,7 @@ public class ClassConfirmation extends AbstractClassSelect {
 
             // Send message
             if (enableInitialMMOProfilesClassSelectSound || inv.profileCallback == null) {
-                ConfigMessage.fromKey("class-select", "class", inv.profess.getName()).send(inv.playerData);
-                MMOCore.plugin.soundManager.getSound(SoundEvent.SELECT_CLASS).playTo(inv.getPlayer());
+                Message.CLASS_SELECT.send(inv.playerData, "class", inv.profess.getName());
             }
 
             inv.getPlayer().closeInventory();

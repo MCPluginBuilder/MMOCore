@@ -1,9 +1,9 @@
 package net.Indyuce.mmocore.listener;
 
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.event.social.GuildChatEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
+import net.Indyuce.mmocore.player.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -12,28 +12,26 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 public class GuildListener implements Listener {
-	@EventHandler(priority = EventPriority.LOW)
-	public void a(AsyncPlayerChatEvent event) {
-		if (!event.getMessage().startsWith(MMOCore.plugin.nativeGuildManager.getConfig().getPrefix()))
-			return;
 
-		PlayerData data = PlayerData.get(event.getPlayer());
-		if (!data.inGuild())
-			return;
+    @EventHandler(priority = EventPriority.LOW)
+    public void a(AsyncPlayerChatEvent event) {
+        if (!event.getMessage().startsWith(MMOCore.plugin.nativeGuildManager.getConfig().getPrefix())) return;
 
-		event.setCancelled(true);
+        PlayerData data = PlayerData.get(event.getPlayer());
+        if (!data.inGuild()) return;
 
-		// Run it sync
-		Bukkit.getScheduler().runTask(MMOCore.plugin, () -> {
-			ConfigMessage format = ConfigMessage.fromKey("guild-chat", "player", data.getPlayer().getName(), "tag", data.getGuild().getTag(), "message", event.getMessage().substring(MMOCore.plugin.nativeGuildManager.getConfig().getPrefix().length()));
-			GuildChatEvent called = new GuildChatEvent(data, format.asLine());
-			Bukkit.getPluginManager().callEvent(called);
-			if (!called.isCancelled())
-				data.getGuild().forEachMember(member -> {
-					Player p = Bukkit.getPlayer(member);
-					if (p != null)
-						format.send(p);
-				});
-		});
-	}
+        event.setCancelled(true);
+
+        // Run it sync
+        Bukkit.getScheduler().runTask(MMOCore.plugin, () -> {
+            var rawMessage = event.getMessage().substring(MMOCore.plugin.nativeGuildManager.getConfig().getPrefix().length());
+            var message = Message.GUILD_CHAT.prepare("player", data.getPlayer().getName(), "tag", data.getGuild().getTag(), "message", rawMessage);
+            GuildChatEvent called = new GuildChatEvent(data, message.getRawContent());
+            Bukkit.getPluginManager().callEvent(called);
+            if (!called.isCancelled()) data.getGuild().forEachMember(member -> {
+                Player online = Bukkit.getPlayer(member);
+                if (online != null) message.send(online);
+            });
+        });
+    }
 }

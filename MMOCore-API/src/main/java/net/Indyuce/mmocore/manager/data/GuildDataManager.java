@@ -1,9 +1,9 @@
 package net.Indyuce.mmocore.manager.data;
 
-import net.Indyuce.mmocore.api.ConfigFile;
+import io.lumine.mythic.lib.util.config.YamlFile;
+import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.guild.provided.Guild;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -82,7 +82,7 @@ public abstract class GuildDataManager {
         private final NamingRules tagRules, nameRules;
 
         public GuildConfiguration() {
-            FileConfiguration config = new ConfigFile("guilds").getConfig();
+            var config = new YamlFile(MMOCore.plugin, "guilds").getContent();
 
             this.prefix = config.getString("chat-prefix", "*");
             this.uppercaseTags = config.getBoolean("uppercase-tags", true);

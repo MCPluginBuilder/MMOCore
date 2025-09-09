@@ -12,7 +12,6 @@ import io.lumine.mythic.lib.gui.editable.item.SimpleItem;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import io.lumine.mythic.lib.manager.StatManager;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.attribute.PlayerAttribute;
 import net.Indyuce.mmocore.api.util.math.format.DelayFormat;
@@ -258,6 +257,7 @@ public class PlayerStats extends EditableInventory {
 
     public class BoostItem extends SimpleItem<PlayerStatsInventory> {
         private final PhysicalItem<PlayerStatsInventory> noBoost, mainLevel, profession;
+        private final String boosterExpiredPlaceholder;
 
         public BoostItem(ConfigurationSection config) {
             super(config);
@@ -266,9 +266,11 @@ public class PlayerStats extends EditableInventory {
             Validate.notNull(noBoost, "Could not load 'no-boost' config");
             this.noBoost = new SimpleItem<>(noBoost);
 
+            this.boosterExpiredPlaceholder = config.getString("booster_expired", "&cExpired!");
+
             ConfigurationSection mainLevel = config.getConfigurationSection("main-level");
             Validate.notNull(mainLevel, "Could not load 'main-level' config");
-            this.mainLevel = new PhysicalItem<PlayerStatsInventory>(mainLevel) {
+            this.mainLevel = new PhysicalItem<>(mainLevel) {
 
                 @Override
                 public boolean hasDifferentDisplay() {
@@ -284,7 +286,7 @@ public class PlayerStats extends EditableInventory {
                     holders.register("author", boost.hasAuthor() ? boost.getAuthor() : "Server");
                     holders.register("value", (int) (boost.getExtra() * 100));
                     holders.register("left", boost.isTimedOut() ?
-                            ConfigMessage.fromKey("booster-expired").asLine()
+                            boosterExpiredPlaceholder
                             : new DelayFormat(2).format(boost.getLeft()));
 
                     return holders;
@@ -293,7 +295,7 @@ public class PlayerStats extends EditableInventory {
 
             ConfigurationSection profession = config.getConfigurationSection("profession");
             Validate.notNull(profession, "Could not load 'profession' config");
-            this.profession = new PhysicalItem<PlayerStatsInventory>(profession) {
+            this.profession = new PhysicalItem<>(profession) {
 
                 @Override
                 public boolean hasDifferentDisplay() {
@@ -310,7 +312,7 @@ public class PlayerStats extends EditableInventory {
                     holders.register("profession", boost.getProfession().getName());
                     holders.register("value", (int) (boost.getExtra() * 100));
                     holders.register("left", boost.isTimedOut() ?
-                            ConfigMessage.fromKey("booster-expired").asLine()
+                            boosterExpiredPlaceholder
                             : new DelayFormat(2).format(boost.getLeft()));
 
                     return holders;

@@ -4,8 +4,8 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.util.FileUtils;
+import io.lumine.mythic.lib.util.config.YamlFile;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigFile;
 import net.Indyuce.mmocore.skill.RegisteredSkill;
 import net.Indyuce.mmocore.skill.list.Ambers;
 import net.Indyuce.mmocore.skill.list.Neptune_Gift;
@@ -70,30 +70,30 @@ public class SkillManager implements MMOCoreManager {
         // Generate at least once a config file for registered skills
         // TODO remove temporary solution after stable release
         {
-            final ConfigFile generated = new ConfigFile(MMOCore.plugin, "", "_generated_skill_configs");
-            final List<String> generatedSkillHandlerIds = generated.getConfig().getStringList("list");
+            final var generated = new YamlFile(MMOCore.plugin, "_generated_skill_configs");
+            final List<String> generatedSkillHandlerIds = generated.getContent().getStringList("list");
             for (SkillHandler<?> handler : MythicLib.plugin.getSkills().getHandlers()) {
                 if (generatedSkillHandlerIds.contains(handler.getId())) continue;
 
                 generatedSkillHandlerIds.add(handler.getId());
 
                 // generate default config
-                final ConfigFile config = new ConfigFile("/skills", handler.getLowerCaseId());
+                final var config = new YamlFile(MMOCore.plugin, "skills", handler.getLowerCaseId());
                 if (!config.exists()) {
-                    config.getConfig().set("name", UtilityMethods.caseOnWords(handler.getId().replace("_", " ").replace("-", " ").toLowerCase()));
-                    config.getConfig().set("lore", Arrays.asList("This is the default skill description", "", "&e{cooldown}s Cooldown", "&9Costs {mana} {mana_name}"));
-                    config.getConfig().set("material", "BOOK");
+                    config.getContent().set("name", UtilityMethods.caseOnWords(handler.getId().replace("_", " ").replace("-", " ").toLowerCase()));
+                    config.getContent().set("lore", Arrays.asList("This is the default skill description", "", "&e{cooldown}s Cooldown", "&9Costs {mana} {mana_name}"));
+                    config.getContent().set("material", "BOOK");
                     for (Object param : handler.getParameters()) {
-                        config.getConfig().set(param + ".base", 0);
-                        config.getConfig().set(param + ".per-level", 0);
-                        config.getConfig().set(param + ".min", 0);
-                        config.getConfig().set(param + ".max", 0);
+                        config.getContent().set(param + ".base", 0);
+                        config.getContent().set(param + ".per-level", 0);
+                        config.getContent().set(param + ".min", 0);
+                        config.getContent().set(param + ".max", 0);
                     }
                     config.save();
                 }
             }
 
-            generated.getConfig().set("list", generatedSkillHandlerIds);
+            generated.getContent().set("list", generatedSkillHandlerIds);
             generated.save();
         }
 

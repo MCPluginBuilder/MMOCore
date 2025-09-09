@@ -2,16 +2,16 @@ package net.Indyuce.mmocore.api.util.input;
 
 import io.lumine.mythic.lib.gui.editable.GeneratedInventory;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.util.Consumer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Consumer;
 
 public class ChatInput extends PlayerInput {
     private final InputType inputType;
@@ -37,7 +37,7 @@ public class ChatInput extends PlayerInput {
         this.lastOpened = lastOpened;
 
         player.closeInventory();
-        ConfigMessage.fromKey("player-input.chat." + inputType.getLowerCaseName()).send(player);
+        inputType.inputMessage.send(player);
     }
 
     @Override
@@ -53,9 +53,8 @@ public class ChatInput extends PlayerInput {
             event.setCancelled(true);
 
             if (event.getMessage().equals("cancel")) {
-                if (lastOpened != null)
-                    Bukkit.getScheduler().runTask(MMOCore.plugin, () -> lastOpened.open());
-                ConfigMessage.fromKey("player-input.chat." + inputType.getLowerCaseName() + "-cancel").send(getPlayer());
+                if (lastOpened != null) Bukkit.getScheduler().runTask(MMOCore.plugin, lastOpened::open);
+                inputType.cancelMessage.send(getPlayer());
             } else
                 // Run sync
                 Bukkit.getScheduler().runTask(MMOCore.plugin, () -> output(event.getMessage()));

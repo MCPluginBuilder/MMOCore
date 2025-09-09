@@ -3,7 +3,6 @@ package net.Indyuce.mmocore.listener.profession;
 import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.event.CustomPlayerFishEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.util.MMOCoreUtils;
@@ -11,6 +10,7 @@ import net.Indyuce.mmocore.experience.EXPSource;
 import net.Indyuce.mmocore.loot.LootBuilder;
 import net.Indyuce.mmocore.loot.fishing.FishingDropItem;
 import net.Indyuce.mmocore.manager.profession.FishingManager.FishingDropTable;
+import net.Indyuce.mmocore.util.Language;
 import org.bukkit.*;
 import org.bukkit.entity.FishHook;
 import org.bukkit.entity.Item;
@@ -48,11 +48,10 @@ public class FishingListener implements Listener {
              * fishing OTHERWISE initialize fishing, register other listener.
              */
             FishingDropTable table = MMOCore.plugin.fishingManager.calculateDropTable(player, hook);
-            if (table == null)
-                return;
+            if (table == null) return;
 
             new FishingData(player, hook, table);
-            MMOCoreUtils.displayIndicator(hook.getLocation().add(0, 1.25, 0), ConfigMessage.fromKey("caught-fish").asLine());
+            MMOCoreUtils.displayIndicator(hook.getLocation().add(0, 1.25, 0), Language.CAUGHT_FISH.getFormat());
         }
     }
 
@@ -190,8 +189,8 @@ public class FishingListener implements Listener {
             player.incrementStatistic(Statistic.FISH_CAUGHT);
 
             // Calculate yeet velocity
-            MMOCoreUtils.displayIndicator(location.add(0, 1.25, 0),
-                    ConfigMessage.fromKey("fish-out-water" + (isCriticalFish() ? "-crit" : "")).asLine());
+            final var languageEntry = isCriticalFish() ? Language.FISH_OUT_WATER_CRIT : Language.FISH_OUT_WATER;
+            MMOCoreUtils.displayIndicator(location.add(0, 1.25, 0), languageEntry.getFormat());
             Vector vec = player.getLocation().subtract(hook.getLocation()).toVector();
             vec.setY(vec.getY() * .031 + vec.length() * .05);
             vec.setX(vec.getX() * .08);

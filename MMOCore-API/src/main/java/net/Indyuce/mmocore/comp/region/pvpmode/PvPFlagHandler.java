@@ -10,11 +10,11 @@ import com.sk89q.worldguard.session.MoveType;
 import com.sk89q.worldguard.session.Session;
 import io.lumine.mythic.lib.MythicLib;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
+import net.Indyuce.mmocore.player.Message;
 
 public class PvPFlagHandler extends MMOCoreFlagHandler {
 
-    public static final Factory FACTORY = new Factory() {
+    public static final Factory<PvPFlagHandler> FACTORY = new Factory<>() {
 
         @Override
         public PvPFlagHandler create(Session session) {
@@ -51,8 +51,8 @@ public class PvPFlagHandler extends MMOCoreFlagHandler {
             // Send message
             if (canSendMessage()) {
                 lastMessage = System.currentTimeMillis();
-                ConfigMessage.fromKey("pvp-mode.enter.pvp-mode-on", "time",
-                        MythicLib.plugin.getMMOConfig().decimal.format(MMOCore.plugin.configManager.pvpModeInvulnerabilityTimeRegionChange)).send(playerData.getPlayer());
+                var timeFormatted = MythicLib.plugin.getMMOConfig().decimal.format(MMOCore.plugin.configManager.pvpModeInvulnerabilityTimeRegionChange);
+                Message.PVP_MODE_ENTER_PVP_MODE_ON.send(playerData, "time", timeFormatted);
             }
         }
         return true;

@@ -10,7 +10,6 @@ import io.lumine.mythic.lib.gui.editable.item.builtin.PreviousPageItem;
 import io.lumine.mythic.lib.gui.editable.placeholder.ErrorPlaceholders;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.player.PlayerActivity;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.util.MMOCoreUtils;
@@ -18,11 +17,11 @@ import net.Indyuce.mmocore.api.util.input.ChatInput;
 import net.Indyuce.mmocore.api.util.input.PlayerInput.InputType;
 import net.Indyuce.mmocore.api.util.math.format.DelayFormat;
 import net.Indyuce.mmocore.manager.InventoryManager;
+import net.Indyuce.mmocore.player.Message;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -124,37 +123,32 @@ public class EditableFriendList extends EditableInventory {
         public void onClick(@NotNull FriendListInventory inv, @NotNull InventoryClickEvent event) {
             long remaining = inv.playerData.getActivityTimeOut(PlayerActivity.FRIEND_REQUEST);
             if (remaining > 0) {
-                ConfigMessage.fromKey("friend-request-cooldown", "cooldown", new DelayFormat().format(remaining))
-                        .send(inv.playerData);
+                Message.FRIEND_REQUEST_COOLDOWN.send(inv.playerData, "cooldown", new DelayFormat().format(remaining));
                 return;
             }
 
             new ChatInput(inv.getPlayer(), InputType.FRIEND_REQUEST, inv, input -> {
                 Player target = Bukkit.getPlayer(input);
                 if (target == null) {
-                    ConfigMessage.fromKey("not-online-player", "player", input).send(inv.playerData);
-                    inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
+                    Message.FRIEND_NOT_ONLINE_PLAYER.send(inv.playerData, "player", input);
                     inv.open();
                     return;
                 }
 
                 if (inv.playerData.hasFriend(target.getUniqueId())) {
-                    ConfigMessage.fromKey("already-friends", "player", target.getName()).send(inv.playerData);
-                    inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
+                    Message.FRIEND_ALREADY.send(inv.playerData, "player", target.getName());
                     inv.open();
                     return;
                 }
 
                 if (inv.playerData.getUniqueId().equals(target.getUniqueId())) {
-                    ConfigMessage.fromKey("cant-request-to-yourself").send(inv.playerData);
-                    inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
+                    Message.FRIEND_CANT_FRIEND_YOURSELF.send(inv.playerData);
                     inv.open();
                     return;
                 }
 
                 inv.playerData.sendFriendRequest(PlayerData.get(target));
-                ConfigMessage.fromKey("sent-friend-request", "player", target.getName()).send(inv.playerData);
-                inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+                Message.FRIEND_SENT_REQUEST.send(inv.playerData, "player", target.getName());
                 inv.open();
             });
 

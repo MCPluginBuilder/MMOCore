@@ -12,43 +12,57 @@ import java.io.IOException;
 import java.util.UUID;
 import java.util.logging.Level;
 
+/**
+ * @see io.lumine.mythic.lib.util.config.YamlFile
+ * @deprecated
+ */
+@Deprecated
 public class ConfigFile {
 	private final File file;
 	private final String name;
 	private final FileConfiguration config;
 
+	@Deprecated
 	public ConfigFile(Player player) {
 		this(player.getUniqueId());
 	}
 
+	@Deprecated
 	public ConfigFile(UUID uuid) {
 		this(MMOCore.plugin, "/userdata", uuid.toString());
 	}
 
+	@Deprecated
 	public ConfigFile(Guild guild) {
 		this(MMOCore.plugin, "/guilds", guild.getId());
 	}
 
+	@Deprecated
 	public ConfigFile(String name) {
 		this(MMOCore.plugin, "", name);
 	}
 
+	@Deprecated
 	public ConfigFile(String folder, String name) {
 		this(MMOCore.plugin, folder, name);
 	}
 
+	@Deprecated
 	public ConfigFile(Plugin plugin, String folder, String name) {
 		config = YamlConfiguration.loadConfiguration(file = new File(plugin.getDataFolder() + folder, (this.name = name) + ".yml"));
 	}
 
+	@Deprecated
 	public boolean exists() {
 		return file.exists();
 	}
 
+	@Deprecated
 	public FileConfiguration getConfig() {
 		return config;
 	}
 
+	@Deprecated
 	public void save() {
 		try {
 			config.save(file);
@@ -57,6 +71,7 @@ public class ConfigFile {
 		}
 	}
 
+	@Deprecated
 	public void delete() {
 		if (file.exists())
 			if (!file.delete())

@@ -2,7 +2,6 @@ package net.Indyuce.mmocore.player;
 
 import io.lumine.mythic.lib.util.Closeable;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.event.PlayerCombatEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.command.PvpModeCommand;
@@ -38,7 +37,7 @@ public class CombatHandler implements Closeable {
             // Entering combat
         } else {
             lastEntry = System.currentTimeMillis();
-            ConfigMessage.fromKey("now-in-combat").send(player.getPlayer());
+            Message.NOW_IN_COMBAT.send(player);
             Bukkit.getPluginManager().callEvent(new PlayerCombatEvent(player, true));
             task = newTask();
         }
@@ -46,7 +45,7 @@ public class CombatHandler implements Closeable {
 
     @NotNull
     private BukkitTask newTask() {
-        return Bukkit.getScheduler().runTaskLater(MMOCore.plugin, () -> quit(false), MMOCore.plugin.configManager.combatLogTimer / 50);
+        return Bukkit.getScheduler().runTaskLater(MMOCore.plugin, () -> quit(false), MMOCore.plugin.configManager.combatLogTimer);
     }
 
     public boolean isInPvpMode() {
@@ -110,7 +109,7 @@ public class CombatHandler implements Closeable {
 
         if (player.isOnline()) {
             Bukkit.getPluginManager().callEvent(new PlayerCombatEvent(player, false));
-            ConfigMessage.fromKey("leave-combat").send(player.getPlayer());
+            Message.LEAVE_COMBAT.send(player);
         }
     }
 

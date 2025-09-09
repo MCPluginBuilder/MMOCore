@@ -4,13 +4,13 @@ import io.lumine.mythic.lib.gui.PluginInventory;
 import io.lumine.mythic.lib.version.VInventoryView;
 import io.lumine.mythic.lib.version.VersionUtils;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.social.Request;
 import net.Indyuce.mmocore.gui.social.party.EditablePartyView;
 import net.Indyuce.mmocore.manager.InventoryManager;
 import net.Indyuce.mmocore.party.AbstractParty;
 import net.Indyuce.mmocore.party.PartyUtils;
+import net.Indyuce.mmocore.player.Message;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -101,7 +101,7 @@ public class Party implements AbstractParty {
         removeMember(data, true);
     }
 
-    public void removeMember(PlayerData data, boolean notify) {
+    public void removeMember(PlayerData data, boolean notifyOwnershipTransfer) {
         if (data.isOnline() && VersionUtils.getOpen(data.getPlayer()).getTopInventory().getHolder() instanceof EditablePartyView.PartyViewInventory)
             InventoryManager.PARTY_CREATION.newInventory(data).open();
 
@@ -113,7 +113,7 @@ public class Party implements AbstractParty {
         updateOpenInventories();
 
         // Disband the party if no member left
-        if (members.size() < 1) {
+        if (members.isEmpty()) {
             module.unregisterParty(this);
             return;
         }
@@ -121,8 +121,7 @@ public class Party implements AbstractParty {
         // Transfer ownership
         if (owner.equals(data)) {
             owner = members.get(0);
-            if (notify && owner.isOnline())
-                ConfigMessage.fromKey("transfer-party-ownership").send(owner.getPlayer());
+            if (notifyOwnershipTransfer && owner.isOnline()) Message.PARTY_TRANSFER_OWNERSHIP.send(owner);
         }
     }
 
@@ -154,10 +153,8 @@ public class Party implements AbstractParty {
     public void sendInvite(PlayerData inviter, PlayerData target) {
         invites.put(target.getUniqueId(), System.currentTimeMillis());
         Request request = new PartyInvite(this, inviter, target);
-        ConfigMessage.fromKey("party-invite").addPlaceholders("player", inviter.getPlayer().getName(), "uuid", request.getUniqueId().toString())
-                .send(target.getPlayer());
-
         MMOCore.plugin.requestManager.registerRequest(request);
+        Message.PARTY_INVITE.send(target, "player", inviter.getPlayer().getName(), "uuid", request.getUniqueId().toString());
     }
 
     /**

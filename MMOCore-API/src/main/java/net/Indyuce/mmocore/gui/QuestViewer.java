@@ -10,12 +10,11 @@ import io.lumine.mythic.lib.gui.editable.item.builtin.NextPageItem;
 import io.lumine.mythic.lib.gui.editable.item.builtin.PreviousPageItem;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
-import net.Indyuce.mmocore.api.SoundEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.quest.Quest;
 import net.Indyuce.mmocore.api.util.math.format.DelayFormat;
 import net.Indyuce.mmocore.experience.Profession;
+import net.Indyuce.mmocore.player.Message;
 import org.apache.commons.lang.Validate;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
@@ -206,29 +205,27 @@ public class QuestViewer extends EditableInventory {
                 if (inv.playerData.getQuestData().hasCurrent(quest)) {
                     if (event.getClick() == ClickType.RIGHT) {
                         inv.playerData.getQuestData().start(null);
-                        MMOCore.plugin.soundManager.getSound(SoundEvent.CANCEL_QUEST).playTo(inv.getPlayer());
-                        ConfigMessage.fromKey("cancel-quest").send(inv.playerData);
+                        Message.QUEST_CANCEL.send(inv.playerData);
                         inv.open();
                     }
                     return;
                 }
 
                 // The player cannot start a new quest if he is already doing one
-                ConfigMessage.fromKey("already-on-quest").send(inv.playerData);
+                Message.QUEST_ALREADY_ACTIVE.send(inv.playerData);
                 return;
             }
 
             // Check for level requirements.
             int level;
             if (inv.playerData.getLevel() < (level = quest.getLevelRestriction(null))) {
-                ConfigMessage.fromKey("quest-level-restriction", "level", "Lvl", "count", "" + level).send(inv.playerData);
+                Message.QUEST_LEVEL_RESTRICTION.send(inv.playerData, "count", level);
                 return;
             }
 
             for (Profession profession : quest.getLevelRestrictions())
                 if (inv.playerData.getCollectionSkills().getLevel(profession) < (level = quest.getLevelRestriction(profession))) {
-                    ConfigMessage.fromKey("quest-level-restriction", "level", profession.getName() + " Lvl", "count", "" + level)
-                            .send(inv.playerData);
+                    Message.QUEST_PROFESSION_LEVEL_RESTRICTION.send(inv.playerData, "profession", profession.getName(), "count", level);
                     return;
                 }
 
@@ -236,20 +233,20 @@ public class QuestViewer extends EditableInventory {
 
                 // If the player has already finished this quest, he can't start it again
                 if (!quest.isRedoable()) {
-                    ConfigMessage.fromKey("cant-redo-quest").send(inv.playerData);
+                    Message.QUEST_CANNOT_REDO.send(inv.playerData);
                     return;
                 }
 
                 // Has the player waited long enough
                 if (!inv.playerData.getQuestData().checkCooldownAvailability(quest)) {
-                    ConfigMessage.fromKey("quest-cooldown", "delay", new DelayFormat(2).format(inv.playerData.getQuestData().getDelayFeft(quest))).send(inv.playerData);
+                    var delayFormatted = new DelayFormat(2).format(inv.playerData.getQuestData().getDelayFeft(quest));
+                    Message.QUEST_COOLDOWN.send(inv.playerData, "delay", delayFormatted);
                     return;
                 }
             }
 
             // Eventually start the quest
-            ConfigMessage.fromKey("start-quest", "quest", quest.getName()).send(inv.playerData);
-            MMOCore.plugin.soundManager.getSound(SoundEvent.START_QUEST).playTo(inv.getPlayer());
+            Message.QUEST_START.send(inv.playerData, "quest", quest.getName());
             inv.playerData.getQuestData().start(quest);
             inv.open();
         }

@@ -3,11 +3,10 @@ package net.Indyuce.mmocore.listener;
 import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.version.VParticle;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
-import net.Indyuce.mmocore.api.SoundEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.loot.chest.particle.SmallParticleEffect;
 import net.Indyuce.mmocore.manager.InventoryManager;
+import net.Indyuce.mmocore.player.Message;
 import net.Indyuce.mmocore.waypoint.Waypoint;
 import net.Indyuce.mmocore.waypoint.WaypointOption;
 import org.bukkit.entity.Player;
@@ -32,18 +31,17 @@ public class WaypointsListener implements Listener {
         if (waypoint == null)
             return;
 
-        PlayerData data = PlayerData.get(player);
-        if (waypoint.hasOption(WaypointOption.UNLOCKABLE) && !data.hasWaypoint(waypoint)) {
-            data.unlockWaypoint(waypoint);
-            new SmallParticleEffect(player, VParticle.WITCH.get());
-            ConfigMessage.fromKey("new-waypoint", "waypoint", waypoint.getName()).send(player);
-            MMOCore.plugin.soundManager.getSound(SoundEvent.WARP_UNLOCK).playTo(player);
+        PlayerData playerData = PlayerData.get(player);
+        if (waypoint.hasOption(WaypointOption.UNLOCKABLE) && !playerData.hasWaypoint(waypoint)) {
+            playerData.unlockWaypoint(waypoint);
+            new SmallParticleEffect(player, VParticle.WITCH.get()); // TODO move to PlayerMessage
+            Message.WAYPOINT_UNLOCK.send(playerData, "waypoint", waypoint.getName());
             return;
         }
 
         if (waypoint.hasOption(WaypointOption.ENABLE_MENU)) {
             player.setSneaking(false);
-            InventoryManager.WAYPOINTS.newInventory(data, waypoint).open();
+            InventoryManager.WAYPOINTS.newInventory(playerData, waypoint).open();
         }
     }
 
@@ -64,7 +62,7 @@ public class WaypointsListener implements Listener {
 
             playerData.unlockWaypoint(waypoint);
             event.getItem().setAmount(event.getItem().getAmount() - 1); // Consume item
-            ConfigMessage.fromKey("new-waypoint-book", "waypoint", waypoint.getName()).send(event.getPlayer());
+            Message.WAYPOINT_UNLOCK_BOOK.send(playerData, "waypoint", waypoint.getName());
         }
     }
 }

@@ -2,13 +2,14 @@ package net.Indyuce.mmocore.manager;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.util.FileUtils;
+import io.lumine.mythic.lib.util.config.YamlFile;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigFile;
 import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.util.input.ChatInput;
 import net.Indyuce.mmocore.api.util.input.PlayerInput;
 import net.Indyuce.mmocore.api.util.input.PlayerInput.InputType;
 import net.Indyuce.mmocore.command.api.CommandVerbose;
+import net.Indyuce.mmocore.player.Message;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -34,8 +35,6 @@ public class ConfigManager {
             pvpModeCombatTimeout, pvpModeInvulnerabilityTimeRegionChange, pvpModeInvulnerabilityTimeCommand, pvpModeRegionEnterCooldown, pvpModeRegionLeaveCooldown;
     public int maxPartyLevelDifference, maxPartyPlayers, minCombatLevel, maxCombatLevelDifference, skillTreeScrollStepX, skillTreeScrollStepY, waypointWarpTime;
     public final List<EntityDamageEvent.DamageCause> combatLogDamageCauses = new ArrayList<>();
-
-    private final FileConfiguration messages;
 
     /*
      * The instance must be created after the other managers since all it does
@@ -117,17 +116,19 @@ public class ConfigManager {
         copyDefaultFile("items.yml");
         copyDefaultFile("messages.yml");
         copyDefaultFile("restrictions.yml");
-        copyDefaultFile("sounds.yml");
         copyDefaultFile("stats.yml");
+
+        // Reload messages
+        Message.loadMessagesFromConfig();
 
         final ConfigurationSection config = MMOCore.plugin.getConfig();
         commandVerbose.reload(MMOCore.plugin.getConfig().getConfigurationSection("command-verbose"));
 
-        messages = new ConfigFile("messages").getConfig();
+        messages = new YamlFile(MMOCore.plugin, "messages").getContent(); // Backwards compatibility.
         partyChatPrefix = MMOCore.plugin.getConfig().getString("party.chat-prefix");
         maxPartyPlayers = Math.max(2, MMOCore.plugin.getConfig().getInt("party.max-players", 8));
         // Combat log
-        combatLogTimer = MMOCore.plugin.getConfig().getInt("combat-log.timer") * 1000L;
+        combatLogTimer = MMOCore.plugin.getConfig().getInt("combat-log.timer") * 20L;
         combatLogDamageCauses.clear();
         for (String key : MMOCore.plugin.getConfig().getStringList("combat-log.causes"))
             try {
@@ -191,13 +192,17 @@ public class ConfigManager {
         }
     }
 
+    public void copyDefaultFile(String path) {
+        FileUtils.copyDefaultFile(MMOCore.plugin, path);
+    }
+
+    //region Deprecated
+
+    private final FileConfiguration messages;
+
     @Deprecated
     public PlayerInput newPlayerInput(Player player, InputType type, Consumer<String> output) {
         return new ChatInput(player, type, null, output);
-    }
-
-    public void copyDefaultFile(String path) {
-        FileUtils.copyDefaultFile(MMOCore.plugin, path);
     }
 
     @Deprecated
@@ -211,6 +216,10 @@ public class ConfigManager {
         else copyDefaultFile(path + "/" + name);
     }
 
+    /**
+     * @see net.Indyuce.mmocore.player.Message
+     * @deprecated
+     */
     @Deprecated
     public List<String> getMessage(String key) {
         return messages.getStringList(key);
@@ -218,12 +227,19 @@ public class ConfigManager {
 
     /**
      * @return The original object, which should be cloned afterwards!!
+     * @see net.Indyuce.mmocore.player.Message
+     * @deprecated
      */
     @Nullable
+    @Deprecated
     public Object getMessageObject(String key) {
         return messages.get(key);
     }
 
+    /**
+     * @see net.Indyuce.mmocore.player.Message
+     * @deprecated
+     */
     @Deprecated
     public SimpleMessage getSimpleMessage(String key, String... placeholders) {
         SimpleMessage wrapper = new SimpleMessage(ConfigMessage.fromKey(key));
@@ -251,4 +267,6 @@ public class ConfigManager {
             return !message.getLines().isEmpty();
         }
     }
+
+    //endregion
 }

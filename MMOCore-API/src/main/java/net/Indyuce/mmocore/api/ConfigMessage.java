@@ -15,6 +15,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * @see net.Indyuce.mmocore.player.Message
+ * @deprecated
+ */
+@Deprecated
 public class ConfigMessage {
     private final String key;
     private final List<String> lines = new ArrayList<>();
@@ -56,17 +61,30 @@ public class ConfigMessage {
      * do require the ability to fully remove text.
      *
      * @return First line of message, if it exists.
+     * @see net.Indyuce.mmocore.player.Message
+     * @deprecated
      */
+    @Deprecated
     @NotNull
     public String asLine() {
         return lines.isEmpty() ? "" : lines.get(0);
     }
 
+    /**
+     * @see net.Indyuce.mmocore.player.Message
+     * @deprecated
+     */
+    @Deprecated
     @NotNull
     public List<String> getLines() {
         return lines;
     }
 
+    /**
+     * @see net.Indyuce.mmocore.player.Message
+     * @deprecated
+     */
+    @Deprecated
     @NotNull
     public ConfigMessage addPlaceholders(@NotNull Object... placeholders) {
 
@@ -85,19 +103,38 @@ public class ConfigMessage {
         return this;
     }
 
+    /**
+     * @see net.Indyuce.mmocore.player.Message
+     * @deprecated
+     */
     @Deprecated
     public void sendAsJSon(Player player) {
         send(player);
     }
 
+    /**
+     * @see net.Indyuce.mmocore.player.Message
+     * @deprecated
+     */
+    @Deprecated
     public void send(PlayerData playerData) {
         for (String line : lines) send(playerData.getPlayer(), line);
     }
 
+    /**
+     * @see net.Indyuce.mmocore.player.Message
+     * @deprecated
+     */
+    @Deprecated
     public void send(CommandSender player) {
         for (String line : lines) send(player, line);
     }
 
+    /**
+     * @see net.Indyuce.mmocore.player.Message
+     * @deprecated
+     */
+    @Deprecated
     public void send(Collection<? extends CommandSender> players) {
         for (CommandSender player : players) for (String line : lines) send(player, line);
     }
@@ -111,6 +148,7 @@ public class ConfigMessage {
      */
     private void send(@NotNull CommandSender recipient, String messageFormat) {
         Validate.notNull(recipient, "Recipient cannot be null");
+
 
         // Command blocks and console
         if (!(recipient instanceof Player)) {
@@ -139,6 +177,10 @@ public class ConfigMessage {
         }
     }
 
+    /**
+     * @see net.Indyuce.mmocore.player.Message
+     * @deprecated
+     */
     @NotNull
     private String format(@Nullable Player player, String input) {
         input = MythicLib.plugin.parseColors(input);
@@ -146,6 +188,11 @@ public class ConfigMessage {
         return MMOCore.plugin.placeholderParser.parse(player, input);
     }
 
+    /**
+     * @see net.Indyuce.mmocore.player.Message
+     * @deprecated
+     */
+    @Deprecated
     @NotNull
     public static ConfigMessage fromKey(@NotNull String key, Object... placeholders) {
         Validate.notNull(MMOCore.plugin.configManager, "MMOCore has not finished enabling");

@@ -1,12 +1,11 @@
 package net.Indyuce.mmocore.command.api;
 
+import io.lumine.mythic.lib.util.config.YamlFile;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigFile;
 import net.Indyuce.mmocore.command.*;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -78,13 +77,13 @@ public enum ToggleableCommand {
 
         // Load default config file
         if (!new File(MMOCore.plugin.getDataFolder(), "commands.yml").exists()) {
-            final ConfigFile config = new ConfigFile("commands");
+            final var config = new YamlFile(MMOCore.plugin, "commands");
 
             for (ToggleableCommand cmd : values()) {
                 final String path = cmd.getConfigPath();
-                config.getConfig().set(path + ".main", cmd.mainLabel);
-                config.getConfig().set(path + ".aliases", cmd.aliases);
-                config.getConfig().set(path + ".description", cmd.description);
+                config.getContent().set(path + ".main", cmd.mainLabel);
+                config.getContent().set(path + ".aliases", cmd.aliases);
+                config.getContent().set(path + ".description", cmd.description);
             }
 
             config.save();
@@ -99,7 +98,7 @@ public enum ToggleableCommand {
             final CommandMap commandMap = (CommandMap) commandMapField.get(Bukkit.getServer());
 
             // Enable commands individually
-            final FileConfiguration config = new ConfigFile("commands").getConfig();
+            final var config = new YamlFile(MMOCore.plugin, "commands").getContent();
             for (ToggleableCommand cmd : values())
                 if (cmd.isEnabled() && config.contains(cmd.getConfigPath()))
                     commandMap.register("mmocore", cmd.generator.apply(config.getConfigurationSection(cmd.getConfigPath())));

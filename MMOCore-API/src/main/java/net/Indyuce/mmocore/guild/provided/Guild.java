@@ -4,12 +4,12 @@ import io.lumine.mythic.lib.gui.PluginInventory;
 import io.lumine.mythic.lib.version.VInventoryView;
 import io.lumine.mythic.lib.version.VersionUtils;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.social.Request;
 import net.Indyuce.mmocore.gui.social.guild.EditableGuildView;
 import net.Indyuce.mmocore.guild.AbstractGuild;
 import net.Indyuce.mmocore.manager.InventoryManager;
+import net.Indyuce.mmocore.player.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -75,7 +75,7 @@ public class Guild implements AbstractGuild {
         reopenInventories();
 
         // Disband the guild if no member left
-        if (members.size() < 1) {
+        if (members.isEmpty()) {
             MMOCore.plugin.nativeGuildManager.unregisterGuild(this);
             return;
         }
@@ -83,7 +83,7 @@ public class Guild implements AbstractGuild {
         // Transfer ownership
         if (owner.equals(uuid)) {
             owner = members.stream().findAny().get();
-            ConfigMessage.fromKey("transfer-guild-ownership").send(Bukkit.getPlayer(owner));
+            Message.TRANSFER_GUILD_OWNERSHIP.send(Bukkit.getPlayer(owner));
         }
     }
 
@@ -114,7 +114,7 @@ public class Guild implements AbstractGuild {
     public void sendGuildInvite(PlayerData inviter, PlayerData target) {
         invites.put(target.getUniqueId(), System.currentTimeMillis());
         Request request = new GuildInvite(this, inviter, target);
-        ConfigMessage.fromKey("guild-invite").addPlaceholders("player", inviter.getPlayer().getName(), "uuid", request.getUniqueId().toString()).send(target.getPlayer());
+        Message.GUILD_INVITE.send(target, "player", inviter.getPlayer().getName(), "uuid", request.getUniqueId().toString());
         MMOCore.plugin.requestManager.registerRequest(request);
     }
 

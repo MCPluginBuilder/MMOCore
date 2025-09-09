@@ -5,12 +5,11 @@ import io.lumine.mythic.lib.api.MMOLineConfig;
 import io.lumine.mythic.lib.api.itemtype.ItemType;
 import io.lumine.mythic.lib.util.PostLoadAction;
 import io.lumine.mythic.lib.util.PreloadedObject;
+import io.lumine.mythic.lib.util.config.YamlFile;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigFile;
 import net.Indyuce.mmocore.api.block.BlockType;
 import org.apache.commons.lang.Validate;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -41,7 +40,7 @@ public class RestrictionManager implements MMOCoreManager {
             defaultPermissions = null;
         }
 
-        FileConfiguration config = new ConfigFile("restrictions").getConfig();
+        var config = new YamlFile(MMOCore.plugin, "restrictions").getContent();
         for (String key : config.getKeys(false))
             try {
                 register(new ToolPermissions(config.getConfigurationSection(key)));

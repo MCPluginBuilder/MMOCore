@@ -11,9 +11,8 @@ import io.lumine.mythic.lib.gui.editable.item.SimpleItem;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import io.lumine.mythic.lib.gui.util.IconOptions;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
-import net.Indyuce.mmocore.api.SoundEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
+import net.Indyuce.mmocore.player.Message;
 import net.Indyuce.mmocore.skilltree.IntegerCoordinates;
 import net.Indyuce.mmocore.skilltree.NodeState;
 import net.Indyuce.mmocore.skilltree.ParentType;
@@ -117,25 +116,22 @@ public class SkillTreeViewer extends EditableInventory {
 
             int spent = inv.playerData.getPointsSpent(inv.skillTree);
             if (spent < 1) {
-                ConfigMessage.fromKey("no-skill-tree-points-spent").send(inv.playerData);
-                MMOCore.plugin.soundManager.getSound(SoundEvent.NOT_ENOUGH_POINTS).playTo(inv.getPlayer());
+                Message.NO_SKILL_TREE_POINTS_SPENT.send(inv.playerData);
                 return;
             }
 
             if (inv.playerData.getSkillTreeReallocationPoints() <= 0) {
-                ConfigMessage.fromKey("not-skill-tree-reallocation-point").send(inv.playerData);
-                MMOCore.plugin.soundManager.getSound(SoundEvent.NOT_ENOUGH_POINTS).playTo(inv.getPlayer());
+                Message.NOT_SKILL_TREE_REALLOCATION_POINT.send(inv.playerData);
                 return;
             }
 
             int reallocated = inv.playerData.getPointsSpent(inv.skillTree);
-            //We remove all the nodeStates progress
+            // Remove all the nodeStates progress
             inv.playerData.giveSkillTreePoints(inv.skillTree.getId(), reallocated);
             inv.playerData.giveSkillTreeReallocationPoints(-1);
             inv.playerData.resetSkillTree(inv.skillTree);
             inv.skillTree.setupNodeStates(inv.playerData);
-            ConfigMessage.fromKey("reallocated-points", "points", inv.playerData.getSkillTreePoints(inv.skillTree.getId()), "skill-tree", inv.skillTree.getName()).send(inv.playerData);
-            MMOCore.plugin.soundManager.getSound(SoundEvent.RESET_SKILL_TREE).playTo(inv.getPlayer());
+            Message.SKILL_TREE_REALLOCATE.send(inv.playerData, "points", inv.playerData.getSkillTreePoints(inv.skillTree.getId()), "skill-tree", inv.skillTree.getName());
             inv.open();
         }
     }
@@ -249,8 +245,9 @@ public class SkillTreeViewer extends EditableInventory {
         @Override
         public void onClick(@NotNull SkillTreeInventory inv, @NotNull InventoryClickEvent event) {
             String id = event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(MMOCore.plugin, "skill-tree-id"), PersistentDataType.STRING);
-            MMOCore.plugin.soundManager.getSound(SoundEvent.CHANGE_SKILL_TREE).playTo(inv.getPlayer());
-            inv.skillTree = MMOCore.plugin.skillTreeManager.get(id);
+            var skillTree = Objects.requireNonNull(MMOCore.plugin.skillTreeManager.get(id), "No skill tree found with ID " + id);
+            Message.SKILL_TREE_SWITCH.send(inv.playerData, "skill-tree", skillTree.getName());
+            inv.skillTree = skillTree;
             inv.open();
         }
     }
@@ -427,42 +424,36 @@ public class SkillTreeViewer extends EditableInventory {
             // Higher number of points spent in SKILL TREE (not node)
             final SkillTreeNode node = inv.skillTree.getNode(new IntegerCoordinates(x, y));
             if (inv.playerData.getPointsSpent(inv.skillTree) >= inv.skillTree.getMaxPointSpent()) {
-                ConfigMessage.fromKey("max-points-reached").send(inv.playerData);
-                MMOCore.plugin.soundManager.getSound(SoundEvent.NOT_ENOUGH_POINTS).playTo(inv.getPlayer());
+                Message.SKILL_TREE_MAX_POINTS_SPENT.send(inv.playerData);
                 return;
             }
 
             switch (inv.playerData.canIncrementNodeLevel(node)) {
                 case SUCCESS: {
                     inv.playerData.incrementNodeLevel(node);
-                    ConfigMessage.fromKey("upgrade-skill-node", "skill-node", node.getName(), "level", inv.playerData.getNodeLevel(node)).send(inv.playerData);
-                    MMOCore.plugin.soundManager.getSound(SoundEvent.LEVEL_SKILL_TREE_NODE).playTo(inv.getPlayer());
+                    Message.SKILL_TREE_UPGRADE_NODE.send(inv.playerData, "skill-node", node.getName(), "level", inv.playerData.getNodeLevel(node));
                     inv.open();
                     break;
                 }
 
                 case PERMISSION_DENIED: {
-                    ConfigMessage.fromKey("missing-skill-node-permission").send(inv.playerData);
-                    MMOCore.plugin.soundManager.getSound(SoundEvent.NOT_ENOUGH_POINTS).playTo(inv.getPlayer());
+                    Message.MISSING_SKILL_NODE_PERMISSION.send(inv.playerData);
                     break;
                 }
 
                 case LOCKED_NODE: {
-                    ConfigMessage.fromKey("locked-node").send(inv.playerData);
-                    MMOCore.plugin.soundManager.getSound(SoundEvent.NOT_ENOUGH_POINTS).playTo(inv.getPlayer());
+                    Message.SKILL_TREE_NODE_LOCKED.send(inv.playerData);
                     break;
                 }
 
                 // Max number of points spent in that NODE (not skill tree)
                 case MAX_LEVEL_REACHED: {
-                    ConfigMessage.fromKey("skill-node-max-level-hit").send(inv.playerData);
-                    MMOCore.plugin.soundManager.getSound(SoundEvent.NOT_ENOUGH_POINTS).playTo(inv.getPlayer());
+                    Message.SKILL_TREE_NODE_MAX_LEVEL_HIT.send(inv.playerData);
                     break;
                 }
 
                 case NOT_ENOUGH_POINTS: {
-                    ConfigMessage.fromKey("not-enough-skill-tree-points", "point", node.getPointConsumption()).send(inv.playerData);
-                    MMOCore.plugin.soundManager.getSound(SoundEvent.NOT_ENOUGH_POINTS).playTo(inv.getPlayer());
+                    Message.NOT_ENOUGH_SKILL_TREE_POINTS.send(inv.playerData, "point", node.getPointConsumption());
                     break;
                 }
             }

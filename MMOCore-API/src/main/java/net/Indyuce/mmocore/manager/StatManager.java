@@ -1,10 +1,10 @@
 package net.Indyuce.mmocore.manager;
 
-import net.Indyuce.mmocore.api.ConfigFile;
+import io.lumine.mythic.lib.util.config.YamlFile;
+import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.experience.Profession;
 import net.Indyuce.mmocore.player.stats.StatInfo;
 import net.Indyuce.mmocore.util.formula.ScalingFormula;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,7 +22,7 @@ public class StatManager implements MMOCoreManager {
         }
 
         // Read default formulas
-        FileConfiguration config = new ConfigFile("stats").getConfig();
+        var config = new YamlFile(MMOCore.plugin, "stats").getContent();
         for (String key : config.getConfigurationSection("default").getKeys(false))
             registerDefaultFormula(key, ScalingFormula.fromConfig(config.get("default." + key)));
     }

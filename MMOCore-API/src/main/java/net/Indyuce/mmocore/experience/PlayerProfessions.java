@@ -6,14 +6,14 @@ import io.lumine.mythic.lib.gson.JsonElement;
 import io.lumine.mythic.lib.gson.JsonObject;
 import io.lumine.mythic.lib.version.VParticle;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
-import net.Indyuce.mmocore.api.SoundEvent;
 import net.Indyuce.mmocore.api.event.PlayerExperienceGainEvent;
 import net.Indyuce.mmocore.api.event.PlayerLevelUpEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import net.Indyuce.mmocore.loot.chest.particle.SmallParticleEffect;
 import net.Indyuce.mmocore.party.AbstractParty;
+import net.Indyuce.mmocore.player.Message;
+import net.Indyuce.mmocore.util.Language;
 import net.Indyuce.mmocore.util.formula.FormulaFailsafeException;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
@@ -187,7 +187,7 @@ public class PlayerProfessions {
 
         // Display hologram
         if (hologramLocation != null && profession.getOption(Profession.ProfessionOption.EXP_HOLOGRAMS))
-            MMOCoreUtils.displayIndicator(hologramLocation.add(.5, 1.5, .5), ConfigMessage.fromKey("exp-hologram", "exp", MythicLib.plugin.getMMOConfig().decimal.format(event.getExperience())).asLine());
+            MMOCoreUtils.displayIndicator(hologramLocation.add(.5, 1.5, .5), Language.EXP_HOLOGRAM.getFormat().replace("{exp}", MythicLib.plugin.getMMOConfig().decimal.format(event.getExperience())));
 
         exp.put(profession.getId(), Math.max(0, exp.getOrDefault(profession.getId(), 0d) + event.getExperience()));
         int level, oldLevel = getLevel(profession);
@@ -223,19 +223,24 @@ public class PlayerProfessions {
 
         if (check) {
             Bukkit.getPluginManager().callEvent(new PlayerLevelUpEvent(playerData, profession, oldLevel, level));
-            new SmallParticleEffect(playerData.getPlayer(), VParticle.INSTANT_EFFECT.get());
-            ConfigMessage.fromKey("profession-level-up").addPlaceholders("level", String.valueOf(level), "profession", profession.getName())
-                    .send(playerData.getPlayer());
-            MMOCore.plugin.soundManager.getSound(SoundEvent.LEVEL_UP).playTo(playerData.getPlayer());
+            new SmallParticleEffect(playerData.getPlayer(), VParticle.INSTANT_EFFECT.get()); // TODO move to playerMessage
+            Message.PROFESSION_LEVEL_UP.send(playerData, "level", level, "profession", profession.getName());
             playerData.getStats().updateStats();
         }
 
-        StringBuilder bar = new StringBuilder(ChatColor.BOLD.toString());
-        int chars = (int) (exp / needed * 20);
-        for (int j = 0; j < 20; j++)
-            bar.append(j == chars ? ChatColor.WHITE.toString() + ChatColor.BOLD : "").append("|");
-        if (playerData.isOnline())
-            ConfigMessage.fromKey("exp-notification", "profession", profession.getName(), "progress", bar.toString(), "ratio",
-                    MythicLib.plugin.getMMOConfig().decimal.format(exp / needed * 100)).send(playerData.getPlayer());
+        if (playerData.isOnline()) {
+
+            // Build exp bar
+            StringBuilder bar = new StringBuilder(ChatColor.BOLD.toString());
+            int chars = (int) (exp / needed * 20);
+            for (int j = 0; j < 20; j++)
+                bar.append(j == chars ? ChatColor.WHITE.toString() + ChatColor.BOLD : "").append("|");
+
+            var ratioFormatted = MythicLib.plugin.getMMOConfig().decimal.format(exp / needed * 100);
+            Message.EXP_NOTIFICATION.send(playerData,
+                    "profession", profession.getName(),
+                    "progress", bar.toString(),
+                    "ratio", ratioFormatted);
+        }
     }
 }

@@ -26,7 +26,7 @@ public class ListCommandTreeNode extends CommandTreeNode {
 						+ MythicLib.plugin.getMMOConfig().decimal.format((1 + booster.getExtra())) + "x" + ChatColor.YELLOW + " Booster - "
 						+ ChatColor.GOLD + (!booster.hasProfession() ? "ExploreAttributesCommand" : booster.getProfession().getName())
 						+ ChatColor.YELLOW + " - " + ChatColor.GOLD
-						+ new DelayFormat().format(booster.getCreationDate() + booster.getLength() - System.currentTimeMillis())
+						+ new DelayFormat().format(booster.getCreationDate() + booster.getDuration() - System.currentTimeMillis())
 						+ "\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/mmocore booster remove " + booster.getUniqueId().toString()
 						+ "\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"Click to remove.\"}}}");
 		sender.sendMessage(ChatColor.YELLOW + "----------------------------------------------------");

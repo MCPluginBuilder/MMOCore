@@ -1,8 +1,8 @@
 package net.Indyuce.mmocore.skill.cast.handler;
 
+import io.lumine.mythic.lib.message.PlayerMessage;
+import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
-import net.Indyuce.mmocore.api.SoundEvent;
 import net.Indyuce.mmocore.api.event.PlayerKeyPressEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.skill.ClassSkill;
@@ -24,6 +24,11 @@ import java.util.Objects;
 public class SkillBar extends SkillCastingHandler {
     private final Keybind mainKey;
     private final boolean ignoreSneak, lowestKeybinds;
+    private final ActionBarOptions actionBarOptions;
+
+    // Messages
+    @NotNull
+    private final PlayerMessage messageEnter, messageQuit;
 
     public SkillBar(@NotNull ConfigurationSection config) {
         super(config);
@@ -31,6 +36,13 @@ public class SkillBar extends SkillCastingHandler {
         mainKey = Objects.requireNonNull(Keybind.fromConfig(config.get("open")), "Could not find open keybind");
         ignoreSneak = config.getBoolean("ignore-sneak", config.getBoolean("disable-sneak", false));
         lowestKeybinds = config.getBoolean("use-lowest-keybinds");
+
+        // Messages
+        messageEnter = PlayerMessage.fromConfig(config.get("message.enter"));
+        messageQuit = PlayerMessage.fromConfig(config.get("message.quit"));
+
+        // Action bar
+        actionBarOptions = config.contains("action-bar") ? new ActionBarOptions(config.getConfigurationSection("action-bar")) : null;
     }
 
     @NotNull
@@ -80,16 +92,10 @@ public class SkillBar extends SkillCastingHandler {
                 && !playerData.isCasting()
                 && playerData.hasActiveSkillBound())
             if (playerData.setSkillCasting())
-                MMOCore.plugin.soundManager.getSound(SoundEvent.SPELL_CAST_BEGIN).playTo(player);
+                messageEnter.send(playerData.getMMOPlayerData());
     }
 
     public class CustomSkillCastingInstance extends SkillCastingInstance {
-        private final String ready = ConfigMessage.fromKey("casting.action-bar.ready").asLine();
-        private final String onCooldown = ConfigMessage.fromKey("casting.action-bar.on-cooldown").asLine();
-        private final String noMana = ConfigMessage.fromKey("casting.action-bar.no-mana").asLine();
-        private final String noStamina = ConfigMessage.fromKey("casting.action-bar.no-stamina").asLine();
-        private final String split = ConfigMessage.fromKey("casting.split").asLine();
-
         private int j;
 
         CustomSkillCastingInstance(PlayerData playerData) {
@@ -137,30 +143,7 @@ public class SkillBar extends SkillCastingHandler {
             final Player player = event.getPlayer();
             if (ignoreSneak && player.isSneaking()) return;
 
-            if (getCaster().leaveSkillCasting()) {
-                MMOCore.plugin.soundManager.getSound(SoundEvent.SPELL_CAST_END).playTo(player);
-                ConfigMessage.fromKey("casting.no-longer").send(getCaster().getPlayer());
-            }
-        }
-
-        @NotNull
-        private String getFormat(PlayerData data) {
-            if (!data.isOnline()) return "";
-
-            final StringBuilder str = new StringBuilder();
-            for (BoundSkillInfo active : getActiveSkills()) {
-                final ClassSkill skill = active.getClassSkill();
-                final int slot = active.skillBarCastSlot;
-
-                str.append(str.isEmpty() ? "" : split).append(
-                        (onCooldown(data, skill) ? onCooldown.replace("{cooldown}",
-                                String.valueOf(data.getCooldownMap().getInfo(skill).getRemaining() / 1000)) :
-                                noMana(data, skill) ? noMana : (noStamina(data, skill) ? noStamina : ready))
-                                .replace("{index}", String.valueOf(slot + (data.getPlayer().getInventory().getHeldItemSlot() < slot ? 1 : 0)))
-                                .replace("{skill}", skill.getSkill().getName()));
-            }
-
-            return MMOCore.plugin.placeholderParser.parse(data.getPlayer(), str.toString());
+            if (getCaster().leaveSkillCasting()) messageQuit.send(caster.getMMOPlayerData());
         }
 
         /**
@@ -168,21 +151,67 @@ public class SkillBar extends SkillCastingHandler {
          * modifier. We just look for an entry in the cooldown map which
          * won't be here if the skill has no cooldown.
          */
-        private boolean onCooldown(PlayerData data, ClassSkill skill) {
-            return data.getCooldownMap().isOnCooldown(skill);
+        private boolean onCooldown(ClassSkill skill) {
+            return caster.getCooldownMap().isOnCooldown(skill);
         }
 
-        private boolean noMana(PlayerData data, ClassSkill skill) {
-            return skill.getSkill().hasParameter("mana") && skill.getParameter("mana", caster) > data.getMana();
+        private boolean noMana(ClassSkill skill) {
+            return skill.getSkill().hasParameter("mana") && skill.getParameter("mana", caster) > caster.getMana();
         }
 
-        private boolean noStamina(PlayerData data, ClassSkill skill) {
-            return skill.getSkill().hasParameter("stamina") && skill.getParameter("stamina", data) > data.getStamina();
+        private boolean noStamina(ClassSkill skill) {
+            return skill.getSkill().hasParameter("stamina") && skill.getParameter("stamina", caster) > caster.getStamina();
         }
 
         @Override
         public void onTick() {
-            if (j++ % 2 == 0) getCaster().displayActionBar(getFormat(getCaster()));
+            if (actionBarOptions == null) return;
+            if (j++ % 2 == 0) {
+                var handler = caster.getMMOPlayerData().getActionBar();
+                if (!handler.canShow(ActionBarPriority.NORMAL)) return;
+                handler.show(ActionBarPriority.NORMAL, actionBarOptions.format(this));
+            }
+        }
+    }
+
+    public class ActionBarOptions {
+        private final String ready, onCooldown, noMana, noStamina, split;
+
+        public ActionBarOptions(@NotNull ConfigurationSection config) {
+            this.ready = config.getString("ready");
+            this.split = config.getString("split");
+            this.onCooldown = config.getString("on-cooldown");
+            this.noMana = config.getString("no-mana");
+            this.noStamina = config.getString("no-stamina");
+        }
+
+        @NotNull
+        public String format(CustomSkillCastingInstance instance) {
+
+            // Failsafe
+            if (!instance.getCaster().isOnline()) return "";
+
+            var data = instance.getCaster();
+            final var builder = new StringBuilder();
+            for (BoundSkillInfo active : instance.getActiveSkills()) {
+                final ClassSkill skill = active.getClassSkill();
+                final int slot = active.skillBarCastSlot;
+
+                if (!builder.isEmpty()) builder.append(split);
+
+                String singleSkill;
+                if (instance.onCooldown(skill))
+                    singleSkill = onCooldown.replace("{cooldown}", String.valueOf(data.getCooldownMap().getInfo(skill).getRemaining() / 1000));
+                else if (instance.noMana(skill)) singleSkill = noMana;
+                else if (instance.noStamina(skill)) singleSkill = noStamina;
+                else singleSkill = ready;
+
+                builder.append(singleSkill
+                        .replace("{index}", String.valueOf(slot + (data.getPlayer().getInventory().getHeldItemSlot() < slot ? 1 : 0)))
+                        .replace("{skill}", skill.getSkill().getName()));
+            }
+
+            return MMOCore.plugin.placeholderParser.parse(data.getPlayer(), builder.toString());
         }
     }
 }

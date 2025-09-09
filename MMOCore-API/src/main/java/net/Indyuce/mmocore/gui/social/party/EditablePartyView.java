@@ -8,17 +8,16 @@ import io.lumine.mythic.lib.gui.editable.item.PhysicalItem;
 import io.lumine.mythic.lib.gui.editable.item.SimpleItem;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.util.input.ChatInput;
 import net.Indyuce.mmocore.api.util.input.PlayerInput;
 import net.Indyuce.mmocore.api.util.math.format.DelayFormat;
 import net.Indyuce.mmocore.party.provided.Party;
+import net.Indyuce.mmocore.player.Message;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -56,46 +55,37 @@ public class EditablePartyView extends EditableInventory {
         public void onClick(@NotNull PartyViewInventory inv, @NotNull InventoryClickEvent event) {
             Party party = (Party) inv.playerData.getParty();
             if (party.getMembers().size() >= MMOCore.plugin.configManager.maxPartyPlayers) {
-                ConfigMessage.fromKey("party-is-full").send(inv.playerData);
-                inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
+                Message.PARTY_IS_FULL.send(inv.playerData);
                 return;
             }
 
             new ChatInput(inv.getPlayer(), PlayerInput.InputType.PARTY_INVITE, inv, input -> {
                 Player target = Bukkit.getPlayer(input);
                 if (target == null) {
-                    ConfigMessage.fromKey("not-online-player", "player", input).send(inv.playerData);
-                    inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
-                    // inv.open();
+                    Message.PARTY_NOT_ONLINE_PLAYER.send(inv.playerData, "player", input);
                     return;
                 }
 
                 long remaining = party.getLastInvite(target) + 60 * 2 * 1000 - System.currentTimeMillis();
                 if (remaining > 0) {
-                    ConfigMessage.fromKey("party-invite-cooldown", "player", target.getName(), "cooldown", new DelayFormat().format(remaining)).send(inv.playerData);
-                    // inv.open();
+                    Message.PARTY_INVITE_COOLDOWN.send(inv.playerData, "player", target.getName(), "cooldown", new DelayFormat().format(remaining));
                     return;
                 }
 
                 PlayerData targetData = PlayerData.get(target);
                 if (party.hasMember(target)) {
-                    ConfigMessage.fromKey("already-in-party", "player", target.getName()).send(inv.playerData);
-                    inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
-                    // inv.open();
+                    Message.PARTY_ALREADY_IN.send(inv.playerData, "player", target.getName());
                     return;
                 }
 
                 int levelDifference = Math.abs(targetData.getLevel() - party.getLevel());
                 if (levelDifference > MMOCore.plugin.configManager.maxPartyLevelDifference) {
-                    ConfigMessage.fromKey("high-level-difference", "player", target.getName(), "diff", String.valueOf(levelDifference)).send(inv.playerData);
-                    inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
-                    // inv.open();
+                    Message.PARTY_HIGH_LEVEL_DIFFERENCE.send(inv.playerData, "player", target.getName(), "diff", String.valueOf(levelDifference));
                     return;
                 }
 
                 party.sendInvite(inv.playerData, targetData);
-                ConfigMessage.fromKey("sent-party-invite", "player", target.getName()).send(inv.playerData);
-                inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+                Message.PARTY_SEND_INVITE.send(inv.playerData, "player", target.getName());
                 inv.open();
             });
         }
@@ -110,7 +100,7 @@ public class EditablePartyView extends EditableInventory {
         public void onClick(@NotNull PartyViewInventory inv, @NotNull InventoryClickEvent event) {
             Party party = (Party) inv.playerData.getParty();
             party.removeMember(inv.playerData);
-            inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+            Message.PARTY_LEAVE.send(inv.playerData); // Notify
             inv.getPlayer().closeInventory();
         }
     }
@@ -199,9 +189,10 @@ public class EditablePartyView extends EditableInventory {
             final OfflinePlayer target = Bukkit.getOfflinePlayer(UUID.fromString(uuidTag));
             if (target.equals(inv.getPlayer())) return;
 
-            party.removeMember(PlayerData.get(target));
-            ConfigMessage.fromKey("kick-from-party", "player", target.getName()).send(inv.playerData);
-            inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+            var targetData = PlayerData.get(target);
+            party.removeMember(targetData);
+            Message.PARTY_KICKED_FROM.send(targetData);
+            Message.PARTY_KICK_PLAYER.send(inv.playerData, "player", target.getName());
         }
     }
 

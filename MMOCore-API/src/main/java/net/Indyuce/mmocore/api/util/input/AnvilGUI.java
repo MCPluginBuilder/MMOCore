@@ -1,7 +1,6 @@
 package net.Indyuce.mmocore.api.util.input;
 
 import io.lumine.mythic.lib.MythicLib;
-import net.Indyuce.mmocore.api.ConfigMessage;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -23,7 +22,7 @@ public class AnvilGUI extends PlayerInput {
 
 		ItemStack paper = new ItemStack(Material.PAPER);
 		ItemMeta paperMeta = paper.getItemMeta();
-		paperMeta.setDisplayName(ConfigMessage.fromKey("player-input.anvil." + type.getLowerCaseName()).asLine());
+		//paperMeta.setDisplayName(ConfigMessage.fromKey("player-input.anvil." + type.getLowerCaseName()).asLine());
 		paper.setItemMeta(paperMeta);
 
 		MythicLib.plugin.getVersion().getWrapper().handleInventoryCloseEvent(player);

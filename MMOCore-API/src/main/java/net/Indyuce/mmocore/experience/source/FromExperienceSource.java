@@ -1,8 +1,8 @@
 package net.Indyuce.mmocore.experience.source;
 
 import io.lumine.mythic.lib.api.MMOLineConfig;
+import io.lumine.mythic.lib.util.config.YamlFile;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigFile;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.experience.dispenser.ExperienceDispenser;
 import net.Indyuce.mmocore.experience.source.type.ExperienceSource;
@@ -23,7 +23,7 @@ public class FromExperienceSource extends ExperienceSource {
         super(dispenser);
 
         config.validateKeys("source");
-        List<String> list = new ConfigFile("exp-sources").getConfig().getStringList(config.getString("source"));
+        var list = new YamlFile(MMOCore.plugin, "exp-sources").getContent().getStringList(config.getString("source"));
         Validate.isTrue(list != null && !list.isEmpty(), "There is no source matching " + config.getString("source"));
         list.stream()
                 .map(MMOLineConfig::new)

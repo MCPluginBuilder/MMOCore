@@ -4,12 +4,11 @@ import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.gui.Navigator;
 import io.lumine.mythic.lib.gui.editable.item.InventoryItem;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
-import net.Indyuce.mmocore.api.SoundEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.profess.ClassOption;
 import net.Indyuce.mmocore.api.player.profess.PlayerClass;
 import net.Indyuce.mmocore.manager.InventoryManager;
+import net.Indyuce.mmocore.player.Message;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jetbrains.annotations.NotNull;
@@ -44,20 +43,17 @@ public class ClassSelect extends AbstractClassSelect {
         public void onClick(@NotNull ProfessSelectionInventory inv, @NotNull InventoryClickEvent event) {
 
             if (inv.profileCallback == null && inv.playerData.getClassPoints() < 1) {
-                MMOCore.plugin.soundManager.getSound(SoundEvent.CANT_SELECT_CLASS).playTo(inv.getPlayer());
-                ConfigMessage.fromKey("cant-choose-new-class").send(inv.playerData);
+                Message.CANT_CHOOSE_NEW_CLASS.send(inv.playerData);
                 return;
             }
 
             if (playerClass.hasOption(ClassOption.NEEDS_PERMISSION) && !inv.getPlayer().hasPermission("mmocore.class." + playerClass.getId().toLowerCase())) {
-                MMOCore.plugin.soundManager.getSound(SoundEvent.CANT_SELECT_CLASS).playTo(inv.getPlayer());
-                ConfigMessage.fromKey("no-permission-for-class").send(inv.playerData);
+                Message.NO_PERMISSION_FOR_CLASS.send(inv.playerData);
                 return;
             }
 
             if (playerClass.equals(inv.playerData.getProfess())) {
-                MMOCore.plugin.soundManager.getSound(SoundEvent.CANT_SELECT_CLASS).playTo(inv.getPlayer());
-                ConfigMessage.fromKey("already-on-class", "class", playerClass.getName()).send(inv.getPlayer());
+                Message.ALREADY_ON_CLASS.send(inv.playerData, "class", playerClass.getName());
                 return;
             }
 

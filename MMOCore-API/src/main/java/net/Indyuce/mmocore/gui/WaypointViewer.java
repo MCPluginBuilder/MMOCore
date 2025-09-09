@@ -11,9 +11,9 @@ import io.lumine.mythic.lib.gui.editable.item.builtin.PreviousPageItem;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.player.PlayerActivity;
 import net.Indyuce.mmocore.api.player.PlayerData;
+import net.Indyuce.mmocore.player.Message;
 import net.Indyuce.mmocore.waypoint.Waypoint;
 import net.Indyuce.mmocore.waypoint.WaypointPath;
 import net.Indyuce.mmocore.waypoint.WaypointPathCalculation;
@@ -114,25 +114,25 @@ public class WaypointViewer extends EditableInventory {
 
             // Check item tag
             var container = event.getCurrentItem().getItemMeta().getPersistentDataContainer();
-            String tag = container.has(WAYPOINT_ID_KEY, PersistentDataType.STRING) ? container.get(WAYPOINT_ID_KEY, PersistentDataType.STRING) : "";
-            if (tag.isEmpty()) return;
+            var tag = container.has(WAYPOINT_ID_KEY, PersistentDataType.STRING) ? container.get(WAYPOINT_ID_KEY, PersistentDataType.STRING) : null;
+            if (tag == null || tag.isEmpty()) return;
 
             // Locked waypoint?
             final Waypoint waypoint = MMOCore.plugin.waypointManager.getOrThrow(tag);
             if (!inv.playerData.hasWaypoint(waypoint)) {
-                ConfigMessage.fromKey("not-unlocked-waypoint").send(inv.playerData);
+                Message.WAYPOINT_LOCKED.send(inv.playerData);
                 return;
             }
 
             // Cannot teleport to current waypoint
             if (waypoint.equals(inv.current)) {
-                ConfigMessage.fromKey("standing-on-waypoint").send(inv.playerData);
+                Message.WAYPOINT_STANDING_ON.send(inv.playerData);
                 return;
             }
 
             // No access to that waypoint
             if (inv.paths.get(waypoint) == null) {
-                ConfigMessage.fromKey("cannot-teleport-to").send(inv.playerData);
+                Message.WAYPOINT_MISSING_ACCESS.send(inv.playerData);
                 return;
             }
 
@@ -140,7 +140,7 @@ public class WaypointViewer extends EditableInventory {
             double withdraw = inv.paths.get(waypoint).getCost();
             double left = withdraw - inv.playerData.getStellium();
             if (left > 0) {
-                ConfigMessage.fromKey("not-enough-stellium", "more", ONE_DIGIT.format(left)).send(inv.playerData);
+                Message.WAYPOINT_MISSING_STELLIUM.send(inv.playerData, "more", ONE_DIGIT.format(left));
                 return;
             }
 

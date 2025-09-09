@@ -5,6 +5,7 @@ import net.Indyuce.mmocore.loot.chest.LootChest;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -21,7 +22,7 @@ public class LootableChestsListener implements Listener {
         Chest chest = (Chest) event.getInventory().getHolder();
         LootChest lootChest = MMOCore.plugin.lootChests.getChest(chest.getLocation());
         if (lootChest != null)
-            lootChest.expire(true);
+            lootChest.expire((Player) event.getPlayer());
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)

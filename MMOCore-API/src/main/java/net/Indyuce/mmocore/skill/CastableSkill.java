@@ -7,10 +7,10 @@ import io.lumine.mythic.lib.skill.Skill;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
-import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.event.PlayerResourceUpdateEvent;
 import net.Indyuce.mmocore.api.player.PlayerActivity;
 import net.Indyuce.mmocore.api.player.PlayerData;
+import net.Indyuce.mmocore.player.Message;
 import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Provider;
@@ -56,11 +56,11 @@ public class CastableSkill extends Skill {
     @Override
     public boolean getResult(SkillMetadata skillMeta) {
         PlayerData playerData = PlayerData.get(skillMeta.getCaster().getData());
-        boolean loud = !getTrigger().isSilent();
+        boolean notify = !getTrigger().isSilent();
 
         // Skill is not usable yet
         if (!playerData.hasUnlockedLevel(skill)) {
-            if (loud) ConfigMessage.fromKey("skill-level-not-met").send(playerData.getPlayer());
+            if (notify) Message.SKILL_LEVEL_NOT_MET.send(playerData);
             return false;
         }
 
@@ -70,23 +70,42 @@ public class CastableSkill extends Skill {
 
         // Cooldown check
         if (skillMeta.getCaster().getData().getCooldownMap().isOnCooldown(this)) {
-            if (loud) ConfigMessage.fromKey("casting.on-cooldown",
-                    "cooldown", MythicLib.plugin.getMMOConfig().decimal.format(skillMeta.getCaster().getData().getCooldownMap().getCooldown(this))).send(playerData.getPlayer());
+            if (notify) {
+                var cooldown = skillMeta.getCaster().getData().getCooldownMap().getCooldown(this);
+                var cdFormatted = MythicLib.plugin.getMMOConfig().decimal.format(cooldown);
+                Message.CASTING_ON_COOLDOWN.send(playerData, "skill", skill.getSkill().getName(), "cooldown", cdFormatted);
+            }
             return false;
         }
 
         // Mana cost
-        if (playerData.getMana() < skillMeta.getParameter("mana")) {
-            if (loud) ConfigMessage.fromKey("casting.no-mana",
-                    "mana-required", MythicLib.plugin.getMMOConfig().decimal.format((skillMeta.getParameter("mana") - playerData.getMana())),
-                    "mana", playerData.getProfess().getManaDisplay().getName()).send(playerData.getPlayer());
+        var manaCost = skillMeta.getParameter("mana");
+        if (playerData.getMana() < manaCost) {
+            if (notify) {
+                final var manaRequired = manaCost - playerData.getMana();
+                final var manaReqFormatted = MythicLib.plugin.getMMOConfig().decimal.format(manaRequired);
+                final var manaCostFormatted = MythicLib.plugin.getMMOConfig().decimal.format(manaCost);
+                Message.CASTING_NO_MANA.send(playerData,
+                        "skill", skill.getSkill().getName(),
+                        "mana-required", manaReqFormatted,
+                        "mana-cost", manaCostFormatted,
+                        "mana", playerData.getProfess().getManaDisplay().getName());
+            }
             return false;
         }
 
         // Stamina cost
-        if (playerData.getStamina() < skillMeta.getParameter("stamina")) {
-
-            if (loud) ConfigMessage.fromKey("casting.no-stamina").send(playerData.getPlayer());
+        var staminaCost = skillMeta.getParameter("stamina");
+        if (playerData.getStamina() < staminaCost) {
+            if (notify) {
+                final var staminaRequired = manaCost - playerData.getStamina();
+                final var staminaReqFormatted = MythicLib.plugin.getMMOConfig().decimal.format(staminaRequired);
+                final var staminaCostFormatted = MythicLib.plugin.getMMOConfig().decimal.format(staminaCost);
+                Message.CASTING_NO_STAMINA.send(playerData,
+                        "skill", skill.getSkill().getName(),
+                        "stamina-required", staminaReqFormatted,
+                        "stamina-cost", staminaCostFormatted);
+            }
             return false;
         }
 

@@ -1,7 +1,7 @@
 package net.Indyuce.mmocore.manager.data.yaml;
 
+import io.lumine.mythic.lib.util.config.YamlFile;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigFile;
 import net.Indyuce.mmocore.api.player.profess.PlayerClass;
 import net.Indyuce.mmocore.manager.data.OfflinePlayerData;
 import org.jetbrains.annotations.NotNull;
@@ -15,7 +15,7 @@ import java.util.UUID;
 @Deprecated
 public class YAMLOfflinePlayerData implements OfflinePlayerData {
     private final UUID uuid;
-    private final ConfigFile config;
+    private final YamlFile config;
 
     /**
      * Supports offline player data operations like friend removals which can't
@@ -24,7 +24,7 @@ public class YAMLOfflinePlayerData implements OfflinePlayerData {
     @Deprecated
     public YAMLOfflinePlayerData(UUID uuid) {
         this.uuid = uuid;
-        config = new ConfigFile(uuid);
+        config = new YamlFile(MMOCore.plugin, "userdata", uuid.toString());
     }
 
     @Override
@@ -35,29 +35,29 @@ public class YAMLOfflinePlayerData implements OfflinePlayerData {
 
     @Override
     public void removeFriend(UUID uuid) {
-        List<String> friends = config.getConfig().getStringList("friends");
+        List<String> friends = config.getContent().getStringList("friends");
         friends.remove(uuid.toString());
-        config.getConfig().set("friends", friends);
+        config.getContent().set("friends", friends);
         config.save();
     }
 
     @Override
     public boolean hasFriend(UUID uuid) {
-        return config.getConfig().getStringList("friends").contains(uuid.toString());
+        return config.getContent().getStringList("friends").contains(uuid.toString());
     }
 
     @Override
     public PlayerClass getProfess() {
-        return config.getConfig().contains("class") ? MMOCore.plugin.classManager.get(config.getConfig().getString("class")) : MMOCore.plugin.classManager.getDefaultClass();
+        return config.getContent().contains("class") ? MMOCore.plugin.classManager.get(config.getContent().getString("class")) : MMOCore.plugin.classManager.getDefaultClass();
     }
 
     @Override
     public int getLevel() {
-        return config.getConfig().getInt("level");
+        return config.getContent().getInt("level");
     }
 
     @Override
     public long getLastLogin() {
-        return config.getConfig().getLong("last-login");
+        return config.getContent().getLong("last-login");
     }
 }

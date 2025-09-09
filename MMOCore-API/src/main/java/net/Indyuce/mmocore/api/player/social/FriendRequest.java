@@ -1,9 +1,8 @@
 package net.Indyuce.mmocore.api.player.social;
 
-import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.player.PlayerActivity;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import org.bukkit.Sound;
+import net.Indyuce.mmocore.player.Message;
 
 public class FriendRequest extends Request {
     public FriendRequest(PlayerData creator, PlayerData target) {
@@ -12,17 +11,30 @@ public class FriendRequest extends Request {
 
     @Override
     public void whenDenied() {
-        getTarget().getPlayer().playSound(getTarget().getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
+
+        // Notify target
+        Message.FRIEND_REQUEST_DENIED.send(getTarget(), "player", getCreator().getPlayer().getName());
+
+        // Notify creator
+        if (getCreator().isOnline()) {
+            Message.FRIEND_REQUEST_DENIED_CREATOR.send(getCreator(), "player", getTarget().getPlayer().getName());
+        }
     }
 
     @Override
     public void whenAccepted() {
+
+        // TODO there's most likely a problem if creator goes offline
         getCreator().setLastActivity(PlayerActivity.FRIEND_REQUEST, 0);
         getCreator().addFriend(getTarget().getUniqueId());
         getTarget().addFriend(getCreator().getUniqueId());
+
+        // Notify target
+        Message.FRIEND_NOW.send(getTarget(), "player", getCreator().lastKnownName);
+
+        // Notify creator
         if (getCreator().isOnline()) {
-            ConfigMessage.fromKey("now-friends", "player", getTarget().getPlayer().getName()).send(getCreator().getPlayer());
-            ConfigMessage.fromKey("now-friends", "player", getCreator().getPlayer().getName()).send(getTarget().getPlayer());
+            Message.FRIEND_NOW.send(getCreator(), "player", getTarget().getPlayer().getName());
         }
     }
 }

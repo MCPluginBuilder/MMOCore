@@ -8,11 +8,11 @@ import io.lumine.mythic.lib.gui.editable.item.PhysicalItem;
 import io.lumine.mythic.lib.gui.editable.item.SimpleItem;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.util.input.ChatInput;
 import net.Indyuce.mmocore.api.util.input.PlayerInput;
 import net.Indyuce.mmocore.api.util.math.format.DelayFormat;
+import net.Indyuce.mmocore.player.Message;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -59,39 +59,36 @@ public class EditableGuildAdmin extends EditableInventory {
         @Override
         public void onClick(@NotNull GuildViewInventory inv, @NotNull InventoryClickEvent event) {
             if (inv.playerData.getGuild().countMembers() >= inv.max) {
-                ConfigMessage.fromKey("guild-is-full").send(inv.playerData);
-                inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
+                Message.GUILD_IS_FULL.send(inv.playerData);
                 return;
             }
 
             new ChatInput(inv.getPlayer(), PlayerInput.InputType.GUILD_INVITE, inv, input -> {
                 Player target = Bukkit.getPlayer(input);
                 if (target == null) {
-                    ConfigMessage.fromKey("not-online-player", "player", input).send(inv.playerData);
-                    inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
+                    Message.GUILD_NOT_ONLINE_PLAYER.send(inv.playerData, "player", input);
                     inv.open();
                     return;
                 }
 
                 long remaining = inv.playerData.getGuild().getLastInvite(target) + 60 * 2 * 1000 - System.currentTimeMillis();
                 if (remaining > 0) {
-                    ConfigMessage.fromKey("guild-invite-cooldown", "player", target.getName(), "cooldown",
-                            new DelayFormat().format(remaining)).send(inv.playerData);
+                    Message.GUILD_INVITE_COOLDOWN.send(inv.playerData,
+                            "player", target.getName(),
+                            "cooldown", new DelayFormat().format(remaining));
                     inv.open();
                     return;
                 }
 
                 PlayerData targetData = PlayerData.get(target);
                 if (inv.playerData.getGuild().hasMember(target.getUniqueId())) {
-                    ConfigMessage.fromKey("already-in-guild", "player", target.getName()).send(inv.playerData);
-                    inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
+                    Message.ALREADY_IN_GUILD.send(inv.playerData, "player", target.getName());
                     inv.open();
                     return;
                 }
 
                 inv.playerData.getGuild().sendGuildInvite(inv.playerData, targetData);
-                ConfigMessage.fromKey("sent-guild-invite", "player", target.getName()).send(inv.playerData);
-                inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+                Message.SENT_GUILD_INVITE.send(inv.playerData, "player", target.getName());
                 inv.open();
             });
         }
@@ -186,8 +183,7 @@ public class EditableGuildAdmin extends EditableInventory {
             if (target.equals(inv.getPlayer())) return;
 
             inv.playerData.getGuild().removeMember(target.getUniqueId());
-            ConfigMessage.fromKey("kick-from-guild", "player", target.getName()).send(inv.playerData);
-            inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+            Message.GUILD_KICK_PLAYER.send(inv.playerData, "player", target.getName());
         }
     }
 

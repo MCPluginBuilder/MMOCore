@@ -1,15 +1,14 @@
 package net.Indyuce.mmocore.command.rpg.booster;
 
+import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.command.api.CommandTreeNode;
 import io.lumine.mythic.lib.command.api.Parameter;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.command.MMOCoreCommandTreeRoot;
 import net.Indyuce.mmocore.experience.Booster;
-import net.Indyuce.mmocore.experience.Profession;
+import net.Indyuce.mmocore.player.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 
 import java.util.Arrays;
@@ -46,12 +45,12 @@ public class CreateCommandTreeNode extends CommandTreeNode {
 			return CommandResult.FAILURE;
 		}
 
-		if (args[2].equalsIgnoreCase("main")) {
-			MMOCore.plugin.boosterManager.register(new Booster(args.length > 5 ? args[5] : null, extra, length));
-			ConfigMessage.fromKey("booster-main").addPlaceholders("multiplier", "" + (1 + extra)).send(Bukkit.getOnlinePlayers());
-			Bukkit.getOnlinePlayers().forEach(player -> player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1));
-			return CommandResult.SUCCESS;
-		}
+        var multFormatted = MythicLib.plugin.getMMOConfig().decimal.format(1 + extra);
+        if (args[2].equalsIgnoreCase("main")) {
+            MMOCore.plugin.boosterManager.register(new Booster(args.length > 5 ? args[5] : null, extra, length));
+            Message.NEW_EXP_BOOSTER_MAIN.send(Bukkit.getOnlinePlayers(), "multiplier", multFormatted);
+            return CommandResult.SUCCESS;
+        }
 
 		String format = args[2].toLowerCase().replace("_", "-");
 		if (!MMOCore.plugin.professionManager.has(format)) {
@@ -59,11 +58,9 @@ public class CreateCommandTreeNode extends CommandTreeNode {
 			return CommandResult.FAILURE;
 		}
 
-		Profession profession = MMOCore.plugin.professionManager.get(format);
-		MMOCore.plugin.boosterManager.register(new Booster(args.length > 5 ? args[5] : null, profession, extra, length));
-		ConfigMessage.fromKey("booster-skill").addPlaceholders("multiplier", "" + (1 + extra), "profession", profession.getName())
-				.send(Bukkit.getOnlinePlayers());
-		Bukkit.getOnlinePlayers().forEach(player -> player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1));
-		return CommandResult.SUCCESS;
+        var profession = MMOCore.plugin.professionManager.get(format);
+        MMOCore.plugin.boosterManager.register(new Booster(args.length > 5 ? args[5] : null, profession, extra, length));
+        Message.NEW_EXP_BOOSTER_PROFESSION.send(Bukkit.getOnlinePlayers(), "multiplier", multFormatted, "profession", profession.getName());
+        return CommandResult.SUCCESS;
 	}
 }

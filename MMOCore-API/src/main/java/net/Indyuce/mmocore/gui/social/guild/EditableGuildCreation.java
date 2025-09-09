@@ -7,15 +7,14 @@ import io.lumine.mythic.lib.gui.editable.item.InventoryItem;
 import io.lumine.mythic.lib.gui.editable.item.SimpleItem;
 import io.lumine.mythic.lib.gui.editable.item.builtin.CloseInventoryItem;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.util.input.ChatInput;
 import net.Indyuce.mmocore.api.util.input.PlayerInput;
 import net.Indyuce.mmocore.manager.InventoryManager;
 import net.Indyuce.mmocore.manager.data.GuildDataManager;
+import net.Indyuce.mmocore.player.Message;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -44,11 +43,11 @@ public class EditableGuildCreation extends EditableInventory {
                 if (MMOCore.plugin.nativeGuildManager.getConfig().shouldUppercaseTags())
                     input = input.toUpperCase();
 
-                if (check(inv.getPlayer(), input, MMOCore.plugin.nativeGuildManager.getConfig().getTagRules())) {
+                if (check(inv.playerData, input, MMOCore.plugin.nativeGuildManager.getConfig().getTagRules())) {
                     String tag = input;
 
                     new ChatInput(inv.getPlayer(), PlayerInput.InputType.GUILD_CREATION_NAME, inv, name -> {
-                        if (check(inv.getPlayer(), name, MMOCore.plugin.nativeGuildManager.getConfig().getNameRules())) {
+                        if (check(inv.playerData, name, MMOCore.plugin.nativeGuildManager.getConfig().getNameRules())) {
                             MMOCore.plugin.nativeGuildManager.newRegisteredGuild(inv.playerData.getUniqueId(), name, tag);
                             MMOCore.plugin.nativeGuildManager.getGuild(tag.toLowerCase()).addMember(inv.playerData.getUniqueId());
 
@@ -75,21 +74,17 @@ public class EditableGuildCreation extends EditableInventory {
         }
     }
 
-    public boolean check(Player player, String input, GuildDataManager.GuildConfiguration.NamingRules rules) {
-        String reason;
+    private boolean check(PlayerData playerData, String input, GuildDataManager.GuildConfiguration.NamingRules rules) {
+        Message message;
 
         if (input.length() <= rules.getMax() && input.length() >= rules.getMin())
             if (input.matches(rules.getRegex()))
-                if (!MMOCore.plugin.nativeGuildManager.isRegistered(input))
-                    return true;
-                else
-                    reason = ConfigMessage.fromKey("guild-creation.reasons.already-taken").asLine();
-            else
-                reason = ConfigMessage.fromKey("guild-creation.reasons.invalid-characters").asLine();
-        else
-            reason = ConfigMessage.fromKey("guild-creation.reasons.invalid-length", "min", "" + rules.getMin(), "max", "" + rules.getMax()).asLine();
+                if (!MMOCore.plugin.nativeGuildManager.isRegistered(input)) return true;
+                else message = Message.GUILD_FAIL_CREATION_ALREADY_EXISTS;
+            else message = Message.GUILD_FAIL_CREATION_INVALID_CHARS;
+        else message = Message.GUILD_FAIL_CREATION_INVALID_LENGTH;
 
-        ConfigMessage.fromKey("guild-creation.failed", "reason", reason).send(player);
+        message.send(playerData);
         return false;
     }
 }

@@ -1,14 +1,14 @@
 package net.Indyuce.mmocore.command;
 
+import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.eco.Withdraw;
 import net.Indyuce.mmocore.command.api.RegisteredCommand;
 import net.Indyuce.mmocore.command.api.ToggleableCommand;
+import net.Indyuce.mmocore.player.Message;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -30,6 +30,7 @@ public class WithdrawCommand extends RegisteredCommand {
             player = tryFirstArg != null ? tryFirstArg : sender instanceof Player ? (Player) sender : null;
         } else if (sender instanceof Player) player = (Player) sender;
         else player = null;
+
         if (player == null) {
             sender.sendMessage(ChatColor.RED + "Please specify a valid player.");
             return true;
@@ -41,7 +42,9 @@ public class WithdrawCommand extends RegisteredCommand {
             else amount = Integer.parseInt(args[args.length - 1]);
             Validate.isTrue(amount >= 0);
         } catch (IllegalArgumentException exception) {
-            ConfigMessage.fromKey("wrong-number", "arg", args[0]).send(sender);
+            if (sender instanceof Player)
+                Message.WITHDRAW_INVALID_AMOUNT.prepare("arg", args[0]).send((MMOPlayerData) sender);
+            else sender.sendMessage(ChatColor.RED + "Please specify a valid number.");
             return true;
         }
 
@@ -54,14 +57,13 @@ public class WithdrawCommand extends RegisteredCommand {
 
         int left = (int) MMOCore.plugin.economy.getEconomy().getBalance(player) - amount;
         if (left < 0) {
-            ConfigMessage.fromKey("not-enough-money", "left", "" + -left).send(player);
+            Message.WITHDRAW_NOT_ENOUGH_MONEY.send(player, "left", -left);
             return true;
         }
 
         MMOCore.plugin.economy.getEconomy().withdrawPlayer(player, amount);
         request.withdrawAlgorithm(amount);
-        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-        ConfigMessage.fromKey("withdrew", "worth", amount).send(player);
+        Message.WITHDRAW_SUCCESS.send(player, "worth", amount);
         return true;
     }
 }

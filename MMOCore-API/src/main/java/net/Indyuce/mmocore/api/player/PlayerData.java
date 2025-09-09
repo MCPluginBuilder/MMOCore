@@ -9,8 +9,6 @@ import io.lumine.mythic.lib.util.Closeable;
 import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.version.VParticle;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
-import net.Indyuce.mmocore.api.SoundEvent;
 import net.Indyuce.mmocore.api.event.*;
 import net.Indyuce.mmocore.api.event.unlocking.ItemLockedEvent;
 import net.Indyuce.mmocore.api.event.unlocking.ItemUnlockedEvent;
@@ -41,6 +39,7 @@ import net.Indyuce.mmocore.party.provided.MMOCorePartyModule;
 import net.Indyuce.mmocore.party.provided.Party;
 import net.Indyuce.mmocore.player.ClassDataContainer;
 import net.Indyuce.mmocore.player.CombatHandler;
+import net.Indyuce.mmocore.player.Message;
 import net.Indyuce.mmocore.player.Unlockable;
 import net.Indyuce.mmocore.skill.ClassSkill;
 import net.Indyuce.mmocore.skill.RegisteredSkill;
@@ -51,6 +50,7 @@ import net.Indyuce.mmocore.skill.cast.SkillCastingMode;
 import net.Indyuce.mmocore.skilltree.NodeState;
 import net.Indyuce.mmocore.skilltree.SkillTreeNode;
 import net.Indyuce.mmocore.skilltree.tree.SkillTree;
+import net.Indyuce.mmocore.util.Language;
 import net.Indyuce.mmocore.waypoint.Waypoint;
 import net.Indyuce.mmocore.waypoint.WaypointOption;
 import org.apache.commons.lang.Validate;
@@ -146,6 +146,9 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     public boolean noCooldown;
     public long lastDropEvent;
     public int permSkillScrollIndex;
+
+    @Deprecated(forRemoval = true)
+    public String lastKnownName = "Unknown";
 
     public PlayerData(MMOPlayerData mmoData) {
         super(MMOCore.plugin, mmoData);
@@ -325,6 +328,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         for (SkillTreeNode node : skillTree.getNodes()) nodeStates.remove(node);
     }
 
+    // TODO move to UI...?
     @NotNull
     public NodeIncrementResult canIncrementNodeLevel(@NotNull SkillTreeNode node) {
         final var nodeState = nodeStates.get(node);
@@ -452,7 +456,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     /**
      * @return If the item is unlocked by the player
-     * This is used for skills that can be locked & unlocked.
+     *         This is used for skills that can be locked & unlocked.
      */
     public boolean hasUnlocked(Unlockable unlockable) {
         return unlockable.isUnlockedByDefault() || unlockedItems.contains(unlockable.getUnlockNamespacedKey());
@@ -631,7 +635,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     /**
      * @param key The identifier of an exp table item.
      * @return Amount of times an item has been claimed
-     * inside an experience table.
+     *         inside an experience table.
      */
     public int getClaims(@NotNull String key) {
         return tableItemClaims.getOrDefault(key, 0);
@@ -837,8 +841,9 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
         setLastActivity(PlayerActivity.FRIEND_REQUEST);
         FriendRequest request = new FriendRequest(this, target);
-        ConfigMessage.fromKey("friend-request").addPlaceholders("player", getPlayer().getName(), "uuid", request.getUniqueId().toString()).send(target.getPlayer());
         MMOCore.plugin.requestManager.registerRequest(request);
+
+        Message.FRIEND_REQUEST.send(target.getPlayer(), "player", getPlayer().getName(), "uuid", request.getUniqueId().toString());
     }
 
     /**
@@ -868,8 +873,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
             public void run() {
                 if (!isOnline() || getPlayer().getLocation().getBlockX() != x || getPlayer().getLocation().getBlockY() != y || getPlayer().getLocation().getBlockZ() != z) {
                     if (isOnline()) {
-                        MMOCore.plugin.soundManager.getSound(SoundEvent.WARP_CANCELLED).playTo(getPlayer());
-                        ConfigMessage.fromKey("warping-canceled").send(getPlayer());
+                        Message.WAYPOINT_TP_CANCEL.send(getPlayer());
                     }
                     giveStellium(cost, PlayerResourceUpdateEvent.UpdateReason.USE_WAYPOINT);
                     cancel();
@@ -879,13 +883,12 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
                 if (hasPerm || t++ >= warpTime) {
                     getPlayer().teleport(target.getLocation());
                     getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 20, 1, false, false));
-                    MMOCore.plugin.soundManager.getSound(SoundEvent.WARP_TELEPORT).playTo(getPlayer());
+                    Message.WAYPOINT_TP_DONE.send(getPlayer(), "waypoint", target.getName());
                     cancel();
                     return;
                 }
 
-                ConfigMessage.fromKey("warping-comencing", "left", String.valueOf((warpTime - t) / 20)).send(getPlayer());
-                MMOCore.plugin.soundManager.getSound(SoundEvent.WARP_CHARGE).playTo(getPlayer(), 1, (float) (.5 + t * 1.5 / warpTime));
+                Message.WAYPOINT_TP_CHARGE.send(getPlayer(), "left", String.valueOf((warpTime - t) / 20));
                 final double r = Math.sin((double) t / warpTime * Math.PI);
                 for (double j = 0; j < Math.PI * 2; j += Math.PI / 4)
                     getPlayer().getLocation().getWorld().spawnParticle(VParticle.REDSTONE.get(), getPlayer().getLocation().add(Math.cos((double) 5 * t / warpTime + j) * r, (double) 2 * t / warpTime, Math.sin((double) 5 * t / warpTime + j) * r), 1, new Particle.DustOptions(Color.PURPLE, 1.25f));
@@ -946,8 +949,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         if (event.isCancelled()) return;
 
         // Experience hologram
-        if (hologramLocation != null && isOnline())
-            MMOCoreUtils.displayIndicator(hologramLocation, ConfigMessage.fromKey("exp-hologram", "exp", MythicLib.plugin.getMMOConfig().decimal.format(event.getExperience())).asLine());
+        if (hologramLocation != null)
+            MMOCoreUtils.displayIndicator(hologramLocation, Language.EXP_HOLOGRAM.getFormat().replace("exp", MythicLib.plugin.getMMOConfig().decimal.format(event.getExperience())));
 
         experience = Math.max(0, experience + event.getExperience());
 
@@ -971,9 +974,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         if (level > oldLevel) {
             Bukkit.getPluginManager().callEvent(new PlayerLevelUpEvent(this, null, oldLevel, level));
             if (isOnline()) {
-                ConfigMessage.fromKey("level-up").addPlaceholders("level", String.valueOf(level)).send(getPlayer());
-                MMOCore.plugin.soundManager.getSound(SoundEvent.LEVEL_UP).playTo(getPlayer());
-                new SmallParticleEffect(getPlayer(), VParticle.INSTANT_EFFECT.get());
+                Message.LEVEL_UP.send(this, "level", level);
+                new SmallParticleEffect(getPlayer(), VParticle.INSTANT_EFFECT.get()); // TODO move to playerMessage
             }
             getStats().updateStats();
         }
@@ -1129,7 +1131,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     /**
      * @return If the PlayerEnterCastingModeEvent successfully put the player
-     * into casting mode, otherwise if the event is cancelled, returns false.
+     *         into casting mode, otherwise if the event is cancelled, returns false.
      */
     public boolean setSkillCasting() {
         Validate.isTrue(!isCasting(), "Player already in casting mode");
@@ -1148,7 +1150,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     /**
      * @return If player successfully left skill casting i.e the Bukkit
-     * event has not been cancelled
+     *         event has not been cancelled
      */
     public boolean leaveSkillCasting() {
         return leaveSkillCasting(false);
@@ -1157,7 +1159,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     /**
      * @param skipEvent Skip firing the exit event
      * @return If player successfully left skill casting i.e the Bukkit
-     * event has not been cancelled
+     *         event has not been cancelled
      */
     public boolean leaveSkillCasting(boolean skipEvent) {
         Validate.isTrue(isCasting(), "Player not in casting mode");
@@ -1174,10 +1176,12 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return true;
     }
 
+    @Deprecated
     public void displayActionBar(@NotNull String message) {
         displayActionBar(message, false);
     }
 
+    @Deprecated
     public void displayActionBar(@NotNull String message, boolean raw) {
 
         // TODO add an option to disable action-bar properly in all casting modes
@@ -1185,8 +1189,9 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
         // TODO move raw/not raw decision to MythicLib
         var handler = getMMOPlayerData().getActionBar();
-        if (!raw) handler.show(ActionBarPriority.NORMAL, message);
-        else {
+        if (!raw) {
+            handler.show(ActionBarPriority.NORMAL, message);
+        } else {
             if (!handler.canShow(ActionBarPriority.NORMAL)) return;
             handler.show(ActionBarPriority.NORMAL, "");
             MythicLib.plugin.getVersion().getWrapper().sendActionBarRaw(getPlayer(), message);
@@ -1368,7 +1373,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
      * checks if they could potentially upgrade to one of these
      *
      * @return If the player can change its current class to
-     * a subclass
+     *         a subclass
      */
     @Deprecated
     public boolean canChooseSubclass() {

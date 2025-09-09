@@ -27,7 +27,7 @@ public class BoosterManager {
 
 		for (Booster active : map)
 			if (active.canStackWith(booster)) {
-				active.addLength(booster.getLength());
+				active.addDuration(booster.getDuration());
 				return;
 			}
 

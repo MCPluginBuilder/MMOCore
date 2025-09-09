@@ -6,11 +6,10 @@ import io.lumine.mythic.lib.gui.editable.item.InventoryItem;
 import io.lumine.mythic.lib.gui.editable.item.SimpleItem;
 import io.lumine.mythic.lib.gui.editable.item.builtin.GoBackItem;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
-import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.manager.data.OfflinePlayerData;
+import net.Indyuce.mmocore.player.Message;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jetbrains.annotations.NotNull;
@@ -53,8 +52,7 @@ public class EditableFriendRemoval extends EditableInventory {
         public void onClick(@NotNull ClassConfirmationInventory inv, @NotNull InventoryClickEvent event) {
             inv.playerData.removeFriend(inv.friend.getUniqueId());
             OfflinePlayerData.get(inv.friend.getUniqueId()).removeFriend(inv.playerData.getUniqueId());
-            inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
-            ConfigMessage.fromKey("no-longer-friends", "unfriend", inv.friend.getName()).send(inv.playerData);
+            Message.FRIEND_REMOVED.send(inv.playerData, "unfriend", inv.friend.getName());
             inv.getNavigator().popOpen();
         }
     }

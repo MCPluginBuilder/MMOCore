@@ -10,7 +10,7 @@ import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.manager.InventoryManager;
 import net.Indyuce.mmocore.party.provided.MMOCorePartyModule;
-import org.bukkit.Sound;
+import net.Indyuce.mmocore.player.Message;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jetbrains.annotations.NotNull;
@@ -41,7 +41,7 @@ public class EditablePartyCreation extends EditableInventory {
         public void onClick(@NotNull ClassConfirmationInventory inv, @NotNull InventoryClickEvent event) {
             ((MMOCorePartyModule) MMOCore.plugin.partyModule).newRegisteredParty(inv.playerData);
             InventoryManager.PARTY_VIEW.newInventory(inv.playerData).open();
-            inv.getPlayer().playSound(inv.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+            Message.PARTY_CREATED.send(inv.getPlayer());
         }
     }
 

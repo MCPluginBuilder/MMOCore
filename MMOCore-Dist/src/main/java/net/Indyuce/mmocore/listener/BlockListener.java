@@ -3,7 +3,6 @@ package net.Indyuce.mmocore.listener;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.block.BlockInfo;
 import net.Indyuce.mmocore.api.block.VanillaBlockType;
 import net.Indyuce.mmocore.api.event.CustomBlockMineEvent;
@@ -12,6 +11,7 @@ import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import net.Indyuce.mmocore.experience.source.MineBlockExperienceSource;
 import net.Indyuce.mmocore.loot.LootBuilder;
 import net.Indyuce.mmocore.loot.chest.condition.ConditionInstance;
+import net.Indyuce.mmocore.player.Message;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -74,21 +74,22 @@ public class BlockListener implements Listener {
         // Broken can be broken, if event is fake then skip it.
         if (UtilityMethods.isFake(event)) return;
 
+        var playerData = PlayerData.get(player);
         boolean canBreak = true;
         if (MMOCore.plugin.mineManager.hasToolRestrictions() && !MMOCore.plugin.restrictionManager.checkPermissions(player.getInventory().getItemInMainHand(), info.getBlock())) {
-            ConfigMessage.fromKey("cannot-break").send(player);
+            Message.CANNOT_BREAK.send(playerData);
             canBreak = false;
         }
 
         // Find the block drops
         boolean conditionsMet = !info.hasDropTable() || info.getDropTable().areConditionsMet(new ConditionInstance(player));
-        List<ItemStack> drops = conditionsMet && info.hasDropTable() ? info.getDropTable().collect(new LootBuilder(PlayerData.get(player), info.getDropTable().getCapacity())) : new ArrayList<>();
+        List<ItemStack> drops = conditionsMet && info.hasDropTable() ? info.getDropTable().collect(new LootBuilder(playerData, info.getDropTable().getCapacity())) : new ArrayList<>();
 
         /*
          * Calls the event and listen for cancel & for drops changes... also
          * allows to apply tool durability & enchants to drops, etc.
          */
-        CustomBlockMineEvent called = new CustomBlockMineEvent(PlayerData.get(player), block, info, drops, !canBreak);
+        CustomBlockMineEvent called = new CustomBlockMineEvent(playerData, block, info, drops, !canBreak);
         Bukkit.getPluginManager().callEvent(called);
         if (called.isCancelled()) {
             event.setCancelled(true);
@@ -113,7 +114,6 @@ public class BlockListener implements Listener {
          * can give exp to other TOOLS and display HOLOGRAMS
          */
         if (conditionsMet && info.hasTriggers() && !block.hasMetadata("player_placed")) {
-            PlayerData playerData = PlayerData.get(player);
             info.getTriggers().forEach(trigger -> trigger.apply(playerData));
         }
 

@@ -1,15 +1,13 @@
 package net.Indyuce.mmocore.gui;
 
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.gui.editable.GeneratedInventory;
 import io.lumine.mythic.lib.gui.editable.item.InventoryItem;
 import io.lumine.mythic.lib.gui.editable.item.builtin.GoBackItem;
-import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
-import net.Indyuce.mmocore.api.SoundEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.profess.ClassOption;
-import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import net.Indyuce.mmocore.manager.InventoryManager;
+import net.Indyuce.mmocore.player.Message;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jetbrains.annotations.NotNull;
@@ -52,17 +50,15 @@ public class SubclassSelect extends AbstractClassSelect {
 
             if (inv.playerData.getClassPoints() < 1) {
                 inv.getPlayer().closeInventory();
-                MMOCore.plugin.soundManager.getSound(SoundEvent.CANT_SELECT_CLASS).playTo(inv.getPlayer());
-                ConfigMessage.fromKey("cant-choose-new-class").send(inv.playerData);
+                Message.CANT_CHOOSE_NEW_CLASS.send(inv.playerData);
                 return;
             }
             if (playerClass.hasOption(ClassOption.NEEDS_PERMISSION) && !inv.getPlayer().hasPermission("mmocore.class." + playerClass.getId().toLowerCase())) {
-                MMOCore.plugin.soundManager.getSound(SoundEvent.CANT_SELECT_CLASS).playTo(inv.getPlayer());
-                ConfigMessage.fromKey("no-permission-for-class").send(inv.playerData);
+                Message.NO_PERMISSION_FOR_CLASS.send(inv.playerData, "class", playerClass.getName());
                 return;
             }
 
-            InventoryManager.CLASS_CONFIRM.get(MMOCoreUtils.ymlName(playerClass.getId())).newInventory(inv, true).open();
+            InventoryManager.CLASS_CONFIRM.get(UtilityMethods.kebabCase(playerClass.getId())).newInventory(inv, true).open();
         }
     }
 

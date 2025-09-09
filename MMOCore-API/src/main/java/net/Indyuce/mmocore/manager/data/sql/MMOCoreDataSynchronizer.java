@@ -123,6 +123,8 @@ public class MMOCoreDataSynchronizer extends SQLDataSynchronizer<PlayerData> {
         getData().setStamina(result.getDouble("stamina"));
         getData().setStellium(result.getDouble("stellium"));
 
+        getData().lastKnownName =   getData().getPlayer().getName();
+
         UtilityMethods.debug(MMOCore.plugin, "SQL", String.format("{ class: %s, level: %d }", getData().getProfess().getId(), getData().getLevel()));
     }
 
@@ -137,6 +139,7 @@ public class MMOCoreDataSynchronizer extends SQLDataSynchronizer<PlayerData> {
     @Override
     public void loadEmptyData() {
         MMOCore.plugin.playerDataManager.getDefaultData().apply(getData());
+        getData().lastKnownName = getData().getPlayer().getName();
         UtilityMethods.debug(MMOCore.plugin, "SQL", "Loaded DEFAULT data for: '" + getData().getUniqueId() + "' as no saved data was found.");
     }
 }

@@ -2,8 +2,8 @@ package net.Indyuce.mmocore.manager;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.gui.editable.EditableInventory;
+import io.lumine.mythic.lib.util.config.YamlFile;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigFile;
 import net.Indyuce.mmocore.api.player.profess.PlayerClass;
 import net.Indyuce.mmocore.gui.*;
 import net.Indyuce.mmocore.gui.skilltree.SkillTreeViewer;
@@ -64,14 +64,14 @@ public class InventoryManager {
             }
 
             for (String id : invType.ids.get()) {
-                final var formattedId = UtilityMethods.ymlName(id);
-                final var configFile = new ConfigFile("/gui/" + invType.name, invType.name + "-" + formattedId);
+                final var formattedId = UtilityMethods.kebabCase(id);
+                final var configFile = new YamlFile(MMOCore.plugin, "gui/" + invType.name, invType.name + "-" + formattedId);
                 final var specificUi = invType.provider.apply(id, !configFile.exists());
 
                 ((Map) invType.inventories).put(formattedId, specificUi);
 
               //  try {
-                    specificUi.reload(MMOCore.plugin, new ConfigFile("/gui/" + invType.name, specificUi.getId()).getConfig());
+                    specificUi.reload(MMOCore.plugin, new YamlFile(MMOCore.plugin, "gui/" + invType.name, specificUi.getId()).getContent());
                /* } catch (Exception exception) {
                     MMOCore.log(Level.WARNING, "Could not load inventory 'gui/" + invType.name + "/" + invType.name + "-default" + "': " + exception.getMessage());
                 } */
@@ -81,7 +81,7 @@ public class InventoryManager {
         LIST.forEach(inv -> {
             try {
                 MMOCore.plugin.configManager.copyDefaultFile("gui/" + inv.getId() + ".yml");
-                inv.reload(MMOCore.plugin, new ConfigFile("/gui", inv.getId()).getConfig());
+                inv.reload(MMOCore.plugin, new YamlFile(MMOCore.plugin, "gui", inv.getId()).getContent());
             } catch (Exception exception) {
                 MMOCore.log(Level.WARNING, "Could not load inventory '" + (inv instanceof ClassConfirmation ? "class-confirm/" : "") + inv.getId() + "': " + exception.getMessage());
             }

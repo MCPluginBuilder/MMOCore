@@ -2,12 +2,12 @@ package net.Indyuce.mmocore.command;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.event.MMOCommandEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.command.api.RegisteredCommand;
 import net.Indyuce.mmocore.command.api.ToggleableCommand;
 import net.Indyuce.mmocore.manager.InventoryManager;
+import net.Indyuce.mmocore.player.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -23,11 +23,10 @@ public class SkillTreesCommand extends RegisteredCommand {
     }
 
     @Override
-    public boolean execute(@NotNull CommandSender sender, String s, String[] args) {
-        if (!sender.hasPermission("mmocore.skilltrees"))
-            return false;
-        if (!(sender instanceof Player))
-            return false;
+    public boolean execute(@NotNull CommandSender sender, @NotNull String label, String[] args) {
+        if (!sender.hasPermission("mmocore.skilltrees")) return false;
+        if (!(sender instanceof Player)) return false;
+
         final Player player = (Player) sender;
         PlayerData data = PlayerData.get(player);
         MMOCommandEvent event = new MMOCommandEvent(data, "skilltrees");
@@ -41,14 +40,16 @@ public class SkillTreesCommand extends RegisteredCommand {
                 sender.sendMessage(ChatColor.RED + "Usage: /skilltrees <skilltree_id>");
                 return false;
             }
-            if (data.getProfess().getSkillTrees().size() != 0) {
+            if (!data.getProfess().getSkillTrees().isEmpty()) {
                 InventoryManager.TREE_VIEW.newInventory(data).open();
                 return true;
             } else {
-                ConfigMessage.fromKey("no-skill-tree").send(player);
+                Message.NO_SKILL_TREE.send(player);
                 return false;
             }
         }
+
+        // Specific skilltree command
         if (args.length == 1) {
             if (!MMOCore.plugin.configManager.enableSpecificSkillTreeGUI) {
                 sender.sendMessage(ChatColor.RED + "Usage: /skilltrees <skilltree-id>");

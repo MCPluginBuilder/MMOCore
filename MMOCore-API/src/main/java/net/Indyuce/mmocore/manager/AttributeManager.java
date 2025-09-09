@@ -2,11 +2,10 @@ package net.Indyuce.mmocore.manager;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.util.FileUtils;
+import io.lumine.mythic.lib.util.config.YamlFile;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigFile;
 import net.Indyuce.mmocore.api.player.attribute.MMOCoreAttributeStatHandler;
 import net.Indyuce.mmocore.api.player.attribute.PlayerAttribute;
-import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,7 +50,7 @@ public class AttributeManager implements MMOCoreManager {
             map.put(path, new PlayerAttribute(config));
         }, "Could not load attribute '%s' from file '%s': %s");
 
-        final ConfigurationSection statsConfig = new ConfigFile(MythicLib.plugin, "", "stats").getConfig();
+        final var statsConfig = new YamlFile(MythicLib.plugin, "stats").getContent();
         for (PlayerAttribute attr : getAll()) {
             final MMOCoreAttributeStatHandler handler = new MMOCoreAttributeStatHandler(statsConfig, attr);
             MythicLib.plugin.getStats().registerStat(handler, handler.getStat() + "_PERCENT");

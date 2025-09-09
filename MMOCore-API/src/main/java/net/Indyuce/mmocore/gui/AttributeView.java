@@ -8,12 +8,11 @@ import io.lumine.mythic.lib.gui.editable.item.PhysicalItem;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import io.lumine.mythic.lib.manager.StatManager;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigMessage;
-import net.Indyuce.mmocore.api.SoundEvent;
 import net.Indyuce.mmocore.api.event.PlayerAttributeUseEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.attribute.PlayerAttribute;
 import net.Indyuce.mmocore.api.player.attribute.PlayerAttributes;
+import net.Indyuce.mmocore.player.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -55,22 +54,19 @@ public class AttributeView extends EditableInventory {
         public void onClick(@NotNull AttrInventory inv, @NotNull InventoryClickEvent event) {
             int spent = inv.playerData.getAttributes().countPoints();
             if (spent < 1) {
-                ConfigMessage.fromKey("no-attribute-points-spent").send(inv.playerData);
-                MMOCore.plugin.soundManager.getSound(SoundEvent.NOT_ENOUGH_POINTS).playTo(inv.getPlayer());
+                Message.ATTRIBUTE_NO_POINTS_SPENT.send(inv.playerData);
                 return;
             }
 
             if (inv.playerData.getAttributeReallocationPoints() < 1) {
-                ConfigMessage.fromKey("not-attribute-reallocation-point").send(inv.playerData);
-                MMOCore.plugin.soundManager.getSound(SoundEvent.NOT_ENOUGH_POINTS).playTo(inv.getPlayer());
+                Message.ATTRIBUTE_MISSING_REALLOCATION_POINT.send(inv.playerData);
                 return;
             }
 
             inv.playerData.getAttributes().getInstances().forEach(ins -> ins.setBase(0));
             inv.playerData.giveAttributePoints(spent);
             inv.playerData.giveAttributeReallocationPoints(-1);
-            ConfigMessage.fromKey("attribute-points-reallocated", "points", inv.playerData.getAttributePoints()).send(inv.playerData);
-            MMOCore.plugin.soundManager.getSound(SoundEvent.RESET_ATTRIBUTES).playTo(inv.getPlayer());
+            Message.ATTRIBUTE_POINTS_REALLOCATED.send(inv.playerData, "points", inv.playerData.getAttributePoints());
             inv.open();
         }
     }
@@ -112,15 +108,13 @@ public class AttributeView extends EditableInventory {
         public void onClick(@NotNull AttrInventory inv, @NotNull InventoryClickEvent event) {
 
             if (inv.playerData.getAttributePoints() < 1) {
-                ConfigMessage.fromKey("not-attribute-point").send(inv.playerData);
-                MMOCore.plugin.soundManager.getSound(SoundEvent.NOT_ENOUGH_POINTS).playTo(inv.getPlayer());
+                Message.ATTRIBUTE_MISSING_POINT.send(inv.playerData);
                 return;
             }
 
             PlayerAttributes.AttributeInstance ins = inv.playerData.getAttributes().getInstance(attribute);
             if (attribute.hasMax() && ins.getBase() >= attribute.getMax()) {
-                ConfigMessage.fromKey("attribute-max-points-hit").send(inv.playerData);
-                MMOCore.plugin.soundManager.getSound(SoundEvent.NOT_ENOUGH_POINTS).playTo(inv.getPlayer());
+                Message.ATTRIBUTE_MAX_POINTS_HIT.send(inv.playerData);
                 return;
             }
 
@@ -130,8 +124,7 @@ public class AttributeView extends EditableInventory {
             if (attribute.hasMax()) pointsSpent = Math.min(pointsSpent, attribute.getMax() - ins.getBase());
 
             if (shiftClick && inv.playerData.getAttributePoints() < pointsSpent) {
-                ConfigMessage.fromKey("not-attribute-point-shift", "shift_points", String.valueOf(pointsSpent)).send(inv.playerData);
-                MMOCore.plugin.soundManager.getSound(SoundEvent.NOT_ENOUGH_POINTS).playTo(inv.getPlayer());
+                Message.ATTRIBUTE_MISSING_POINT_SHIFT.send(inv.playerData, "shift_points",pointsSpent);
                 return;
             }
 
@@ -142,12 +135,9 @@ public class AttributeView extends EditableInventory {
             while (pointsSpent-- > 0)
                 attribute.updateAdvancement(inv.playerData, ins.getBase());
 
-            ConfigMessage.fromKey("attribute-level-up", "attribute", attribute.getName(), "level", String.valueOf(ins.getBase())).send(inv.playerData);
-            MMOCore.plugin.soundManager.getSound(SoundEvent.LEVEL_ATTRIBUTE).playTo(inv.getPlayer());
-
-            PlayerAttributeUseEvent playerAttributeUseEvent = new PlayerAttributeUseEvent(inv.playerData, attribute);
-            Bukkit.getServer().getPluginManager().callEvent(playerAttributeUseEvent);
-
+            Message.ATTRIBUTE_LEVEL_UP.send(inv.playerData, "attribute", attribute.getName(), "level", ins.getBase());
+            var calledEvent = new PlayerAttributeUseEvent(inv.playerData, attribute);
+            Bukkit.getServer().getPluginManager().callEvent(calledEvent);
             inv.open();
         }
     }

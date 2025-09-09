@@ -1,7 +1,7 @@
 package net.Indyuce.mmocore.loot.chest;
 
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.SoundEvent;
+import net.Indyuce.mmocore.player.Message;
 import net.Indyuce.mmocore.util.HashableLocation;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
@@ -10,6 +10,7 @@ import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -40,7 +41,7 @@ public class LootChest {
         closeRunnable = new BukkitRunnable() {
             @Override
             public void run() {
-                expire(false);
+                expire(null);
             }
         };
         closeRunnable.runTaskLater(MMOCore.plugin, MMOCore.plugin.configManager.lootChestExpireTime);
@@ -64,14 +65,13 @@ public class LootChest {
 
     /**
      * This does NOT remove the loot chest from the plugin registry.
+     * When naturally expiring, content should be lost
      *
      * @param player If a player triggered the unregistration of that chest by
-     *               opening and then closing it for the first time. It's set
-     *               to false when a loot chest expires or when MMOCore disables.
-     *               <p>
-     *               When no player is closing the chest, its content should be lost
+     *               opening and then closing it for the first time. Null when
+     *               a loot chests naturally expires or when MMOCore disables.
      */
-    public void expire(boolean player) {
+    public void expire(@Nullable Player player) {
 
         // Check for expire
         Validate.isTrue(active, "Chest has already expired");
@@ -85,8 +85,8 @@ public class LootChest {
          * If a player is responsible of closing the chest, play the
          * closing sound and drop its content before clearing it
          */
-        if (player) {
-            MMOCore.plugin.soundManager.getSound(SoundEvent.CLOSE_LOOT_CHEST).playAt(block.loc.bukkit());
+        if (player != null) {
+            Message.CLOSE_LOOT_CHEST.send(player);
             block.loc.getWorld().spawnParticle(Particle.CRIT, block.loc.bukkit().add(.5, .5, .5), 16, 0, 0, 0, .5);
 
             final Inventory chestInv = ((Chest) block.loc.bukkit().getBlock().getState()).getBlockInventory();

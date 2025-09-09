@@ -1,7 +1,7 @@
 package net.Indyuce.mmocore.guild.provided;
 
+import io.lumine.mythic.lib.util.config.YamlFile;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.ConfigFile;
 import net.Indyuce.mmocore.manager.data.GuildDataManager;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -14,14 +14,14 @@ import java.util.UUID;
 public class YAMLGuildDataManager extends GuildDataManager {
 	@Override
 	public void save(Guild guild) {
-		ConfigFile config = new ConfigFile(guild);
-		config.getConfig().set("name", guild.getName());
-		config.getConfig().set("tag", guild.getTag());
-		config.getConfig().set("owner", guild.getOwner().toString());
+		var config = getGuildDataFile(guild);
+		config.getContent().set("name", guild.getName());
+		config.getContent().set("tag", guild.getTag());
+		config.getContent().set("owner", guild.getOwner().toString());
 
 		List<String> memberList = new ArrayList<>();
 		guild.forEachMember(uuid -> memberList.add(uuid.toString()));
-		config.getConfig().set("members", memberList);
+		config.getContent().set("members", memberList);
 
 		config.save();
 	}
@@ -41,8 +41,12 @@ public class YAMLGuildDataManager extends GuildDataManager {
 		}
 	}
 
+    private static YamlFile getGuildDataFile(Guild guild) {
+        return new YamlFile(MMOCore.plugin, "guilds", guild.getId());
+    }
+
 	@Override
 	public void delete(Guild guild) {
-		new ConfigFile(guild).delete();
+		getGuildDataFile(guild).delete();
 	}
 }

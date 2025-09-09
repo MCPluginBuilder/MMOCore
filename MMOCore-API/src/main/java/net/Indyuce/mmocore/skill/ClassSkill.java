@@ -16,7 +16,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.logging.Level;
 
 public class ClassSkill implements CooldownObject, Unlockable {
     private final RegisteredSkill skill;
