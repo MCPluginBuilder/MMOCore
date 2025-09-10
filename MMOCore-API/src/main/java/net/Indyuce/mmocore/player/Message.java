@@ -4,7 +4,7 @@ import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.message.PlayerMessage;
 import io.lumine.mythic.lib.message.ReadyMessage;
 import io.lumine.mythic.lib.message.type.EmptyMessage;
-import io.lumine.mythic.lib.util.ConfigFile;
+import io.lumine.mythic.lib.util.config.YamlFile;
 import io.lumine.mythic.lib.util.config.YamlUtils;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
@@ -223,7 +223,7 @@ public enum Message {
     }
 
     public static void loadMessagesFromConfig() {
-        var config = new ConfigFile(MMOCore.plugin, "messages").getConfig();
+        var config = new YamlFile(MMOCore.plugin, "messages").getContent();
 
         // Load language entries
         Language.loadLanguageFromConfig(config);
