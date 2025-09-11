@@ -70,11 +70,11 @@ public class InventoryManager {
 
                 ((Map) invType.inventories).put(formattedId, specificUi);
 
-              //  try {
+                try {
                     specificUi.reload(MMOCore.plugin, new YamlFile(MMOCore.plugin, "gui/" + invType.name, specificUi.getId()).getContent());
-               /* } catch (Exception exception) {
+                } catch (Exception exception) {
                     MMOCore.log(Level.WARNING, "Could not load inventory 'gui/" + invType.name + "/" + invType.name + "-default" + "': " + exception.getMessage());
-                } */
+                }
             }
         }
 
