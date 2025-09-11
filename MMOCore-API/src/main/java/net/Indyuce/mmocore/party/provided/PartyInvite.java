@@ -44,7 +44,7 @@ public class PartyInvite extends Request {
 
         // Notify target
         // TODO replace after profile switch update. MythicLib now has a function to get the last player name
-        Message.PARTY_JOINED.send(getTarget(), "owner", party.getOwner().lastKnownName);
+        Message.PARTY_JOINED.send(getTarget(), "owner", party.getOwner().getMMOPlayerData().getPlayerName());
 
         party.addMember(getTarget()); // Only add after to avoid double messages
         InventoryManager.PARTY_VIEW.newInventory(getTarget()).open();

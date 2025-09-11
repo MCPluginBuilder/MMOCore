@@ -30,7 +30,7 @@ public class FriendRequest extends Request {
         getTarget().addFriend(getCreator().getUniqueId());
 
         // Notify target
-        Message.FRIEND_NOW.send(getTarget(), "player", getCreator().lastKnownName);
+        Message.FRIEND_NOW.send(getTarget(), "player", getCreator().getMMOPlayerData().getPlayerName());
 
         // Notify creator
         if (getCreator().isOnline()) {

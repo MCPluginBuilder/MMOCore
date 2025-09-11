@@ -125,8 +125,6 @@ public class YAMLPlayerDataHandler extends YAMLSynchronizedDataHandler<PlayerDat
         data.setMana(config.getDouble("mana", data.getStats().getStat("MAX_MANA")));
         data.setStamina(config.getDouble("stamina", data.getStats().getStat("MAX_STAMINA")));
         data.setStellium(config.getDouble("stellium", data.getStats().getStat("MAX_STELLIUM")));
-
-        data.lastKnownName = data.getPlayer().getName();
     }
 
     @Override

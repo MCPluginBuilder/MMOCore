@@ -147,9 +147,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     public long lastDropEvent;
     public int permSkillScrollIndex;
 
-    @Deprecated(forRemoval = true)
-    public String lastKnownName = "Unknown";
-
     public PlayerData(MMOPlayerData mmoData) {
         super(MMOCore.plugin, mmoData);
 
