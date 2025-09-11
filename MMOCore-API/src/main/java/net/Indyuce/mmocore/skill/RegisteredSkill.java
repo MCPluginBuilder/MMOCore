@@ -66,7 +66,7 @@ public class RegisteredSkill {
     public RegisteredSkill(SkillHandler<?> handler, String name, IconOptions icon, List<String> lore, @Nullable TriggerType triggerType) {
         this.handler = handler;
         this.name = name;
-        this.icon = IconOptions.from(icon);
+        this.icon = icon;
         this.lore = lore;
         this.triggerType = triggerType;
         this.categories = new ArrayList<>();
