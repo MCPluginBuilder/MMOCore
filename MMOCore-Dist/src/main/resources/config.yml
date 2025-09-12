@@ -113,9 +113,34 @@ should-cobblestone-generators-give-exp: false
 # pretty tricky so it's best to read the wiki page before editing anything
 skill-casting:
   mode: SKILL_BAR
+
+  # General options
   open: SWAP_HANDS
-  disable-sneak: false
+  ignore-sneak: false
   use-lowest-keybinds: true
+
+  # Messages and sounds
+  message:
+    enter:
+      message: '&e&l☄ &a&lSKILL CASTING &e&l☄'
+      action-bar: true
+      duration: 20
+      priority: 31
+      sound: BLOCK_END_PORTAL_FRAME_FILL,1,2
+    quit:
+      message: '&e&l☄ &c&lSKILL CASTING &e&l☄'
+      action-bar: true
+      priority: 31
+      sound: BLOCK_FIRE_EXTINGUISH,1,2
+
+  # Action bar format
+  action-bar:
+    split: '&7 &7 - &7 '
+    ready: '&6[{index}] &a&l{skill}'
+    on-cooldown: '&6[{index}] &c&l{skill} &6(&c{cooldown}&6)'
+    no-mana: '&6[{index}] &9&l{skill}'
+    no-stamina: '&6[{index}] &9&l{skill}'
+
 
 loot-chests:
 
