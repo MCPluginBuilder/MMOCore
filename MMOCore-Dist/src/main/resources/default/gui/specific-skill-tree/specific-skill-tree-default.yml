@@ -88,7 +88,7 @@ status-names:
 # All of this is to "hide" the grid pattern of the chest inventory UI and give the
 # impression of a clean 2D skill tree UI.
 #
-# Please refer to skill-tree/combat.yml for syntax examples.
+# Please refer to skill-tree/combat.yml for more syntax examples.
 #####################
 display:
   paths:
@@ -181,55 +181,43 @@ display:
         item: "BLACK_DYE"
         custom-model-data: 0
   nodes:
+    # Node is unlocked but not maxed out
     unlocked:
-      up-right-down-left:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      up-right-down:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      up-right-left:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      up-down-left:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      down-right-left:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      up-right:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      up-down:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      up-left:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      down-right:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      down-left:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      right-left:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      right:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      left:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      up:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      down:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
-      no-path:
-        item: "WHITE_CONCRETE"
-        custom-model-data: 0
+      up-right-down-left: 'WHITE_CONCRETE:0'
+      up-right-down: 'WHITE_CONCRETE:0'
+      up-right-left: 'WHITE_CONCRETE:0'
+      up-down-left: 'WHITE_CONCRETE:0'
+      down-right-left: 'WHITE_CONCRETE:0'
+      up-right: 'WHITE_CONCRETE:0'
+      up-down: 'WHITE_CONCRETE:0'
+      up-left: 'WHITE_CONCRETE:0'
+      down-right: 'WHITE_CONCRETE:0'
+      down-left: 'WHITE_CONCRETE:0'
+      right-left: 'WHITE_CONCRETE:0'
+      right: 'WHITE_CONCRETE:0'
+      left: 'WHITE_CONCRETE:0'
+      up: 'WHITE_CONCRETE:0'
+      down: 'WHITE_CONCRETE:0'
+      no-path: 'WHITE_CONCRETE:0'
+    # No more points can be spent
+    maxed-out:
+      up-right-down-left: 'GREEN_CONCRETE:0'
+      up-right-down: 'GREEN_CONCRETE:0'
+      up-right-left: 'GREEN_CONCRETE:0'
+      up-down-left: 'GREEN_CONCRETE:0'
+      down-right-left: 'GREEN_CONCRETE:0'
+      up-right: 'GREEN_CONCRETE:0'
+      up-down: 'GREEN_CONCRETE:0'
+      up-left: 'GREEN_CONCRETE:0'
+      down-right: 'GREEN_CONCRETE:0'
+      down-left: 'GREEN_CONCRETE:0'
+      right-left: 'GREEN_CONCRETE:0'
+      right: 'GREEN_CONCRETE:0'
+      left: 'GREEN_CONCRETE:0'
+      up: 'GREEN_CONCRETE:0'
+      down: 'GREEN_CONCRETE:0'
+      no-path: 'GREEN_CONCRETE:0'
+    # Node is locked for now, cannot be upgraded yet with points
     locked:
       up-right-down-left:
         item: "GRAY_CONCRETE"
@@ -279,6 +267,7 @@ display:
       no-path:
         item: "GRAY_CONCRETE"
         custom-model-data: 0
+    # Node is unlockable, can be upgraded with points
     unlockable:
       up-right-down-left:
         item: "BLUE_CONCRETE"
@@ -328,6 +317,7 @@ display:
       no-path:
         item: "BLUE_CONCRETE"
         custom-model-data: 0
+    # Node is locked and not unlockable unless respec
     fully-locked:
       up-right-down-left:
         item: "BLACK_CONCRETE"

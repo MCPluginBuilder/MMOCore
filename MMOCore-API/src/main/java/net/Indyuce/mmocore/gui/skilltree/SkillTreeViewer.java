@@ -526,6 +526,10 @@ public class SkillTreeViewer extends EditableInventory {
 
                 // Node > skill tree > skill tree UI
                 var icon = DisplayMap.getIcon(displayInfo, node.getIcons(), skillTree.getIcons(), icons);
+                if (icon == null && nodeState == NodeState.MAXED_OUT) {
+                    displayInfo = new NodeDisplayInfo(nodeShape, NodeState.UNLOCKED);
+                    icon = DisplayMap.getIcon(displayInfo, node.getIcons(), skillTree.getIcons(), icons);
+                }
                 if (icon == null) icon = DisplayMap.DEFAULT_ICON;
                 //Validate.notNull(icon, "Node " + node.getFullId() + " has no icon for shape " + nodeShape + " and state " + nodeState);
 
