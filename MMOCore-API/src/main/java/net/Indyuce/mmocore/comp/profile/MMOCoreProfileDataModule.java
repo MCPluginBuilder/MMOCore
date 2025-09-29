@@ -1,34 +1,31 @@
 package net.Indyuce.mmocore.comp.profile;
 
 import fr.phoenixdevt.profiles.ProfileDataModule;
-import fr.phoenixdevt.profiles.event.ProfileCreateEvent;
-import fr.phoenixdevt.profiles.event.ProfileRemoveEvent;
 import fr.phoenixdevt.profiles.placeholder.PlaceholderProcessor;
 import fr.phoenixdevt.profiles.placeholder.PlaceholderRequest;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
+import io.lumine.mythic.lib.module.MMOPlugin;
+import io.lumine.mythic.lib.profile.DefaultProfileDataModule;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.attribute.PlayerAttribute;
 import net.Indyuce.mmocore.experience.Profession;
-import org.bukkit.event.EventHandler;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
-public class MMOCoreProfileDataModule implements ProfileDataModule, PlaceholderProcessor {
-
-    @Override
-    public JavaPlugin getOwningPlugin() {
-        return MMOCore.plugin;
-    }
-
-    @Override
-    public String getIdentifier() {
-        return "mmocore";
+public class MMOCoreProfileDataModule extends DefaultProfileDataModule implements PlaceholderProcessor {
+    public MMOCoreProfileDataModule(@NotNull MMOPlugin plugin) {
+        super(plugin);
     }
 
     @Override
     public ProfileDataModule getDataModule() {
         return this;
+    }
+
+    @Override
+    public @NotNull String getPlaceholderPrefix() {
+        return "mmocore";
     }
 
     @Override
@@ -49,15 +46,5 @@ public class MMOCoreProfileDataModule implements ProfileDataModule, PlaceholderP
 
             placeholderRequest.validate();
         });
-    }
-
-    @EventHandler
-    public void onProfileCreate(ProfileCreateEvent event) {
-        event.validate(this);
-    }
-
-    @EventHandler
-    public void onProfileDelete(ProfileRemoveEvent event) {
-        event.validate(this);
     }
 }

@@ -1,6 +1,7 @@
 package net.Indyuce.mmocore.manager.data.sql;
 
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.data.SaveReason;
 import io.lumine.mythic.lib.data.sql.SQLDataSource;
 import io.lumine.mythic.lib.data.sql.SQLSynchronizedDataHandler;
 import io.lumine.mythic.lib.gson.JsonArray;
@@ -93,7 +94,7 @@ public class SQLDataHandler extends SQLSynchronizedDataHandler<PlayerData, Offli
     }
 
     @Override
-    public void saveData(PlayerData data, boolean autosave) {
+    public void saveData(PlayerData data, @NotNull SaveReason saveReason) {
         final UUID effectiveId = data.getEffectiveId();
         UtilityMethods.debug(MMOCore.plugin, "SQL", "Saving data for: '" + effectiveId + "'...");
 
@@ -125,10 +126,9 @@ public class SQLDataHandler extends SQLSynchronizedDataHandler<PlayerData, Offli
         updater.addData("quests", data.getQuestData().toJsonString());
         updater.addData("class_info", createClassInfoData(data).toString());
         updater.addJSONArray("unlocked_items", data.getUnlockedItems());
-        if (!autosave)
-            updater.addData("is_saved", 1);
+        if (saveReason != SaveReason.AUTOSAVE) updater.addData("is_saved", 1);
 
-        updater.executeRequest(autosave);
+        updater.executeRequest(saveReason);
 
         UtilityMethods.debug(MMOCore.plugin, "SQL", "Saved data for: " + effectiveId);
         UtilityMethods.debug(MMOCore.plugin, "SQL", String.format("{ class: %s, level: %d }", data.getProfess().getId(), data.getLevel()));

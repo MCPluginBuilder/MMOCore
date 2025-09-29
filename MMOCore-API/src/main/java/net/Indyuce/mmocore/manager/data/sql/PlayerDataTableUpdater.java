@@ -1,5 +1,6 @@
 package net.Indyuce.mmocore.manager.data.sql;
 
+import io.lumine.mythic.lib.data.SaveReason;
 import io.lumine.mythic.lib.data.sql.SQLDataSource;
 import io.lumine.mythic.lib.gson.JsonArray;
 import io.lumine.mythic.lib.gson.JsonObject;
@@ -31,7 +32,7 @@ public class PlayerDataTableUpdater {
         this.effectiveId = playerData.getEffectiveId();
     }
 
-    public void executeRequest(boolean autosave) {
+    public void executeRequest(@NotNull SaveReason saveReason) {
         final String request = "INSERT INTO mmocore_playerdata(uuid, " + formatCollection(requestMap.keySet(), false)
                 + ") VALUES('" + effectiveId + "'," + formatCollection(requestMap.values(), true) + ")" +
                 " ON DUPLICATE KEY UPDATE " + formatMap() + ";";
@@ -44,21 +45,21 @@ public class PlayerDataTableUpdater {
                     statement.executeUpdate();
                 } catch (SQLException exception) {
                     MMOCore.log(Level.WARNING, "Could not save player data of " + effectiveId + ", saving through YAML instead");
-                    new YAMLPlayerDataHandler(MMOCore.plugin).saveData(playerData, autosave);
+                    new YAMLPlayerDataHandler(MMOCore.plugin).saveData(playerData, saveReason);
                     exception.printStackTrace();
                 } finally {
                     statement.close();
                 }
             } catch (SQLException exception) {
                 MMOCore.log(Level.WARNING, "Could not save player data of " + effectiveId + ", saving through YAML instead");
-                new YAMLPlayerDataHandler(MMOCore.plugin).saveData(playerData, autosave);
+                new YAMLPlayerDataHandler(MMOCore.plugin).saveData(playerData, saveReason);
                 exception.printStackTrace();
             } finally {
                 connection.close();
             }
         } catch (SQLException exception) {
             MMOCore.log(Level.WARNING, "Could not save player data of " + effectiveId + ", saving through YAML instead");
-            new YAMLPlayerDataHandler(MMOCore.plugin).saveData(playerData, autosave);
+            new YAMLPlayerDataHandler(MMOCore.plugin).saveData(playerData, saveReason);
             exception.printStackTrace();
         }
     }

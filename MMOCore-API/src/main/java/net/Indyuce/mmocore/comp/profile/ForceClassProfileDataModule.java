@@ -14,23 +14,31 @@ import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.manager.InventoryManager;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 public class ForceClassProfileDataModule implements ProfileDataModule {
+    private final NamespacedKey key;
+
     public ForceClassProfileDataModule() {
-        final ProfileProvider<?> provider = Bukkit.getServicesManager().getRegistration(ProfileProvider.class).getProvider();
-        provider.registerModule(this);
+        final var registration = Bukkit.getServicesManager().getRegistration(ProfileProvider.class);
+        Validate.notNull(registration, "Could not find ProfileAPI registration provider");
+        final var profileProvider = registration.getProvider();
+        profileProvider.registerModule(this);
+
+        this.key = new NamespacedKey(MMOCore.plugin, "force_class_select");
     }
 
     @Override
-    public JavaPlugin getOwningPlugin() {
+    public @NotNull JavaPlugin getOwningPlugin() {
         return MMOCore.plugin;
     }
 
     @Override
-    public String getIdentifier() {
-        return "mmocore_force_class";
+    public @NotNull NamespacedKey getId() {
+        return this.key;
     }
 
     /**

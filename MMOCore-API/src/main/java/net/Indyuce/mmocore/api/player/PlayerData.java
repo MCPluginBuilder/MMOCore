@@ -2,10 +2,10 @@ package net.Indyuce.mmocore.api.player;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
+import io.lumine.mythic.lib.data.SaveReason;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import io.lumine.mythic.lib.player.cooldown.CooldownMap;
-import io.lumine.mythic.lib.util.Closeable;
 import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.version.VParticle;
 import net.Indyuce.mmocore.MMOCore;
@@ -67,7 +67,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerData, Closeable, ClassDataContainer {
+public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerData, ClassDataContainer {
 
     /**
      * Can be null, the {@link #getProfess()} method will return the
@@ -505,7 +505,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     }
 
     @Override
-    public void close() {
+    public void onSaved(@NotNull SaveReason reason) {
+        super.onSaved(reason);
 
         // Saves player health before saveData as the player will be considered offline into it if it is async
         health = getPlayer().getHealth();
