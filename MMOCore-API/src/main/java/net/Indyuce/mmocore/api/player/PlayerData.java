@@ -8,6 +8,7 @@ import io.lumine.mythic.lib.player.cooldown.CooldownMap;
 import io.lumine.mythic.lib.util.Closeable;
 import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.version.VParticle;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.*;
 import net.Indyuce.mmocore.api.event.unlocking.ItemLockedEvent;
@@ -58,7 +59,7 @@ import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -469,7 +470,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         final boolean wasLocked = unlockedItems.add(unlockable.getUnlockNamespacedKey());
         if (wasLocked) {
             unlockable.whenUnlocked(this);
-            Bukkit.getScheduler().runTask(MythicLib.plugin, () -> Bukkit.getPluginManager().callEvent(new ItemUnlockedEvent(this, unlockable.getUnlockNamespacedKey())));
+            SchedulerAdapter.runTask(MythicLib.plugin, () -> Bukkit.getPluginManager().callEvent(new ItemUnlockedEvent(this, unlockable.getUnlockNamespacedKey())));
         }
         return wasLocked;
     }
@@ -485,7 +486,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         boolean wasUnlocked = unlockedItems.remove(unlockable.getUnlockNamespacedKey());
         if (wasUnlocked) {
             unlockable.whenLocked(this);
-            Bukkit.getScheduler().runTask(MythicLib.plugin, () -> Bukkit.getPluginManager().callEvent(new ItemLockedEvent(this, unlockable.getUnlockNamespacedKey())));
+            SchedulerAdapter.runTask(MythicLib.plugin, () -> Bukkit.getPluginManager().callEvent(new ItemLockedEvent(this, unlockable.getUnlockNamespacedKey())));
         }
         return wasUnlocked;
     }
@@ -859,38 +860,37 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         setLastActivity(PlayerActivity.USE_WAYPOINT);
         giveStellium(-cost, PlayerResourceUpdateEvent.UpdateReason.USE_WAYPOINT);
 
-        new BukkitRunnable() {
-            final int x = getPlayer().getLocation().getBlockX();
-            final int y = getPlayer().getLocation().getBlockY();
-            final int z = getPlayer().getLocation().getBlockZ();
-            final int warpTime = target.getWarpTime();
-            final boolean hasPerm = getPlayer().hasPermission("mmocore.bypass-waypoint-wait");
-            int t;
+        final int x = getPlayer().getLocation().getBlockX();
+        final int y = getPlayer().getLocation().getBlockY();
+        final int z = getPlayer().getLocation().getBlockZ();
+        final int warpTime = target.getWarpTime();
+        final boolean hasPerm = getPlayer().hasPermission("mmocore.bypass-waypoint-wait");
+        final int[] t = {0};
+        final BukkitTask[] taskHolder = new BukkitTask[1];
 
-            public void run() {
-                if (!isOnline() || getPlayer().getLocation().getBlockX() != x || getPlayer().getLocation().getBlockY() != y || getPlayer().getLocation().getBlockZ() != z) {
-                    if (isOnline()) {
-                        Message.WAYPOINT_TP_CANCEL.send(getPlayer());
-                    }
-                    giveStellium(cost, PlayerResourceUpdateEvent.UpdateReason.USE_WAYPOINT);
-                    cancel();
-                    return;
+        taskHolder[0] = SchedulerAdapter.runTaskTimer(MMOCore.plugin, () -> {
+            if (!isOnline() || getPlayer().getLocation().getBlockX() != x || getPlayer().getLocation().getBlockY() != y || getPlayer().getLocation().getBlockZ() != z) {
+                if (isOnline()) {
+                    Message.WAYPOINT_TP_CANCEL.send(getPlayer());
                 }
-
-                if (hasPerm || t++ >= warpTime) {
-                    getPlayer().teleport(target.getLocation());
-                    getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 20, 1, false, false));
-                    Message.WAYPOINT_TP_DONE.send(getPlayer(), "waypoint", target.getName());
-                    cancel();
-                    return;
-                }
-
-                Message.WAYPOINT_TP_CHARGE.send(getPlayer(), "left", String.valueOf((warpTime - t) / 20));
-                final double r = Math.sin((double) t / warpTime * Math.PI);
-                for (double j = 0; j < Math.PI * 2; j += Math.PI / 4)
-                    getPlayer().getLocation().getWorld().spawnParticle(VParticle.REDSTONE.get(), getPlayer().getLocation().add(Math.cos((double) 5 * t / warpTime + j) * r, (double) 2 * t / warpTime, Math.sin((double) 5 * t / warpTime + j) * r), 1, new Particle.DustOptions(Color.PURPLE, 1.25f));
+                giveStellium(cost, PlayerResourceUpdateEvent.UpdateReason.USE_WAYPOINT);
+                if (taskHolder[0] != null) taskHolder[0].cancel();
+                return;
             }
-        }.runTaskTimer(MMOCore.plugin, 0, 1);
+
+            if (hasPerm || t[0]++ >= warpTime) {
+                getPlayer().teleport(target.getLocation());
+                getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 20, 1, false, false));
+                Message.WAYPOINT_TP_DONE.send(getPlayer(), "waypoint", target.getName());
+                if (taskHolder[0] != null) taskHolder[0].cancel();
+                return;
+            }
+
+            Message.WAYPOINT_TP_CHARGE.send(getPlayer(), "left", String.valueOf((warpTime - t[0]) / 20));
+            final double r = Math.sin((double) t[0] / warpTime * Math.PI);
+            for (double j = 0; j < Math.PI * 2; j += Math.PI / 4)
+                getPlayer().getLocation().getWorld().spawnParticle(VParticle.REDSTONE.get(), getPlayer().getLocation().add(Math.cos((double) 5 * t[0] / warpTime + j) * r, (double) 2 * t[0] / warpTime, Math.sin((double) 5 * t[0] / warpTime + j) * r), 1, new Particle.DustOptions(Color.PURPLE, 1.25f));
+        }, 0, 1);
     }
 
     public boolean hasReachedMaxLevel() {
@@ -947,7 +947,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
         // Experience hologram
         if (hologramLocation != null)
-            MMOCoreUtils.displayIndicator(hologramLocation, Language.EXP_HOLOGRAM.getFormat().replace("exp", MythicLib.plugin.getMMOConfig().decimal.format(event.getExperience())));
+            MMOCoreUtils.displayIndicator(hologramLocation, Language.EXP_HOLOGRAM.getFormat().replace("{exp}", MythicLib.plugin.getMMOConfig().decimal.format(event.getExperience())));
 
         experience = Math.max(0, experience + event.getExperience());
 

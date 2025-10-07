@@ -2,22 +2,23 @@ package net.Indyuce.mmocore.loot.chest.particle;
 
 import io.lumine.mythic.lib.version.VParticle;
 import net.Indyuce.mmocore.MMOCore;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.util.function.Consumer;
 
-public class ParabolicProjectile extends BukkitRunnable {
+public class ParabolicProjectile implements Runnable {
 	private final Location target;
 	private final Consumer<Location> display;
 	private final Vector vec;
 	private final Runnable end;
 	private final int speed;
+	private BukkitTask task;
 
-	// calculation
 	private final Location loc;
 	private int j;
 
@@ -60,7 +61,7 @@ public class ParabolicProjectile extends BukkitRunnable {
 		this.vec = vec;
 		this.speed = Math.max(1, speed);
 
-		runTaskTimer(MMOCore.plugin, 0, 1);
+		task = SchedulerAdapter.runTaskTimer(MMOCore.plugin, this, 0, 1);
 	}
 
 	@Override
@@ -68,7 +69,7 @@ public class ParabolicProjectile extends BukkitRunnable {
 		for (int k = 0; k < speed; k++) {
 			if (j++ > 100 || loc.distanceSquared(target) < .8) {
 				end.run();
-				cancel();
+				if (task != null) task.cancel();
 			}
 
 			double c = Math.min(1, (double) j / 40);

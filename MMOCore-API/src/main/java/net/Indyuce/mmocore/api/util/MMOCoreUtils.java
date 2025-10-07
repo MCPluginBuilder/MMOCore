@@ -10,6 +10,7 @@ import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.version.VEnchantment;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.util.Icon;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.apache.commons.lang.Validate;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
@@ -118,7 +119,7 @@ public class MMOCoreUtils {
      */
     public static void displayIndicator(Location loc, String message) {
         Hologram holo = Hologram.create(loc, MythicLib.plugin.parseColors(Collections.singletonList(message)));
-        Bukkit.getScheduler().runTaskLater(MMOCore.plugin, holo::despawn, 20);
+        SchedulerAdapter.runAtLocationLater(MMOCore.plugin, loc, holo::despawn, 20);
     }
 
     public static boolean isPlayerHead(Material material) {

@@ -5,6 +5,7 @@ import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerCombatEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.command.PvpModeCommand;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
@@ -45,7 +46,7 @@ public class CombatHandler implements Closeable {
 
     @NotNull
     private BukkitTask newTask() {
-        return Bukkit.getScheduler().runTaskLater(MMOCore.plugin, () -> quit(false), MMOCore.plugin.configManager.combatLogTimer);
+        return SchedulerAdapter.runTaskLater(MMOCore.plugin, () -> quit(false), MMOCore.plugin.configManager.combatLogTimer);
     }
 
     public boolean isInPvpMode() {
@@ -103,8 +104,8 @@ public class CombatHandler implements Closeable {
      * @param cancelTask Should the running task be canceled.
      */
     private void quit(boolean cancelTask) {
-        Validate.isTrue(isInCombat(), "Player not in combat");
-        if (cancelTask) task.cancel();
+        if (!isInCombat()) return;
+        if (cancelTask && task != null) task.cancel();
         task = null;
 
         if (player.isOnline()) {

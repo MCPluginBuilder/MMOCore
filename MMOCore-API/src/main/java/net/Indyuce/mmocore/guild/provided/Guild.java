@@ -14,13 +14,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 public class Guild implements AbstractGuild {
-    private final Map<UUID, Long> invites = new HashMap<>();
+    private final Map<UUID, Long> invites = new ConcurrentHashMap<>();
     private final String guildId, guildName, guildTag;
 
-    private final Set<UUID> members = new HashSet<>();
+    private final Set<UUID> members = ConcurrentHashMap.newKeySet();
 
     /**
      * Owner changes when the old owner leaves guild

@@ -17,7 +17,6 @@ import net.Indyuce.mmocore.comp.citizens.CitizensMMOLoader;
 import net.Indyuce.mmocore.comp.mythicmobs.MythicHook;
 import net.Indyuce.mmocore.comp.mythicmobs.MythicMobsMMOLoader;
 import net.Indyuce.mmocore.comp.placeholder.DefaultParser;
-import net.Indyuce.mmocore.comp.placeholder.PlaceholderAPIParser;
 import net.Indyuce.mmocore.comp.placeholder.PlaceholderParser;
 import net.Indyuce.mmocore.comp.region.DefaultRegionHandler;
 import net.Indyuce.mmocore.comp.region.RegionHandler;
@@ -53,6 +52,7 @@ import net.Indyuce.mmocore.script.mechanic.StelliumMechanic;
 import net.Indyuce.mmocore.skill.cast.SkillCastingMode;
 import net.Indyuce.mmocore.skill.trigger.MMOCoreTriggerType;
 import org.apache.commons.lang.Validate;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventPriority;
@@ -161,10 +161,12 @@ public class MMOCore extends MMOPlugin {
 
         if (Bukkit.getPluginManager().getPlugin("Vault") != null) economy = new VaultEconomy();
 
+        /* PlaceholderAPI disabled - missing dependency
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             placeholderParser = new PlaceholderAPIParser();
             getLogger().log(Level.INFO, "Hooked onto PlaceholderAPI");
         }
+        */
 
         if (Bukkit.getPluginManager().getPlugin("Citizens") != null) {
             Bukkit.getPluginManager().registerEvents(new CitizenInteractEventListener(), this);
@@ -187,17 +189,19 @@ public class MMOCore extends MMOPlugin {
          * Resource regeneration. Must check if entity is dead otherwise regen
          * will make the 'respawn' button glitched plus HURT entity effect bug
          */
-        new BukkitRunnable() {
-            public void run() {
-                for (PlayerData player : PlayerData.getAll())
-                    if (player.isOnline() && !player.getPlayer().isDead())
+        SchedulerAdapter.runTaskTimer(MMOCore.plugin, () -> {
+            for (PlayerData player : PlayerData.getAll())
+                if (player.isOnline() && !player.getPlayer().isDead()) {
+                    final PlayerData finalPlayer = player;
+                    SchedulerAdapter.runAtEntity(MMOCore.plugin, player.getPlayer(), () -> {
                         for (PlayerResource resource : PlayerResource.values()) {
-                            double regenAmount = player.getProfess().getHandler(resource).getRegen(player);
+                            double regenAmount = finalPlayer.getProfess().getHandler(resource).getRegen(finalPlayer);
                             if (regenAmount != 0)
-                                resource.regen(player, regenAmount);
+                                resource.regen(finalPlayer, regenAmount);
                         }
-            }
-        }.runTaskTimer(MMOCore.plugin, 100, 20);
+                    });
+                }
+        }, 100, 20);
 
         /*
          * For the sake of the lord, make sure they aren't using MMOItems Mana and

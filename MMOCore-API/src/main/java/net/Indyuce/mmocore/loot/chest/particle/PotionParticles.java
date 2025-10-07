@@ -2,15 +2,17 @@ package net.Indyuce.mmocore.loot.chest.particle;
 
 import io.lumine.mythic.lib.version.VParticle;
 import net.Indyuce.mmocore.MMOCore;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.bukkit.Color;
 import org.bukkit.entity.ThrownPotion;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
-public class PotionParticles extends BukkitRunnable {
+public class PotionParticles implements Runnable {
 	private double r, g, b;
 	private final ThrownPotion potion;
 	private boolean valid = true;
+	private BukkitTask task;
 
 	public PotionParticles(ThrownPotion potion) {
 		this.potion = potion;
@@ -29,7 +31,7 @@ public class PotionParticles extends BukkitRunnable {
 
 	public void start() {
 		if (valid)
-			runTaskTimer(MMOCore.plugin, 0, 1);
+			task = SchedulerAdapter.runTaskTimer(MMOCore.plugin, this, 0, 1);
 	}
 
 	private double ratio(int l) {
@@ -39,7 +41,7 @@ public class PotionParticles extends BukkitRunnable {
 	@Override
 	public void run() {
 		if (potion == null || potion.isDead()) {
-			cancel();
+			if (task != null) task.cancel();
 			return;
 		}
 

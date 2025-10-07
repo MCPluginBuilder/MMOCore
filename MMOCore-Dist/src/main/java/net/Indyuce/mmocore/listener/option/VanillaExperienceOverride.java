@@ -2,6 +2,7 @@ package net.Indyuce.mmocore.listener.option;
 
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -29,7 +30,7 @@ public class VanillaExperienceOverride implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void cancelChange(PlayerRespawnEvent event) {
-        Bukkit.getScheduler().runTask(MMOCore.plugin, () -> PlayerData.get(event.getPlayer()).refreshVanillaExp());
+        SchedulerAdapter.runTask(MMOCore.plugin, () -> PlayerData.get(event.getPlayer()).refreshVanillaExp());
     }
 
     /**
@@ -42,6 +43,6 @@ public class VanillaExperienceOverride implements Listener {
     @EventHandler
     public void cancelChange(EnchantItemEvent event) {
         Player player = event.getEnchanter();
-        Bukkit.getScheduler().runTask(MMOCore.plugin, () -> player.setLevel(PlayerData.get(player).getLevel()));
+        SchedulerAdapter.runTask(MMOCore.plugin, () -> player.setLevel(PlayerData.get(player).getLevel()));
     }
 }

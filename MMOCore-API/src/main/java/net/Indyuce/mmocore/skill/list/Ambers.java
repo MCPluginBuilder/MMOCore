@@ -16,6 +16,7 @@ import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.version.VParticle;
 import net.Indyuce.mmocore.api.event.PlayerResourceUpdateEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -23,7 +24,7 @@ import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
 public class Ambers extends SkillHandler<SimpleSkillResult> implements Listener {
@@ -65,10 +66,11 @@ public class Ambers extends SkillHandler<SimpleSkillResult> implements Listener 
         passive.getTriggeredSkill().cast(new TriggerMetadata(event, TriggerType.API));
     }
 
-    class Amber extends BukkitRunnable {
+    class Amber implements Runnable {
         private final Location loc;
         private final MMOPlayerData data;
         private final double percent;
+        private BukkitTask task;
 
         private int j;
 
@@ -80,13 +82,13 @@ public class Ambers extends SkillHandler<SimpleSkillResult> implements Listener 
             this.percent = percent / 100;
 
             final Amber amber = this;
-            new ParabolicProjectile(source, loc, VParticle.REDSTONE.get(), () -> amber.runTaskTimer(MythicLib.plugin, 0, 3), 1, Color.ORANGE, 1.3f);
+            new ParabolicProjectile(source, loc, VParticle.REDSTONE.get(), () -> { task = SchedulerAdapter.runTaskTimer(MythicLib.plugin, amber, 0, 3); }, 1, Color.ORANGE, 1.3f);
         }
 
         @Override
         public void run() {
             if (j++ > 66 || !data.isOnline() || !data.getPlayer().getWorld().equals(loc.getWorld())) {
-                cancel();
+                if (task != null) task.cancel();
                 return;
             }
 
@@ -99,7 +101,7 @@ public class Ambers extends SkillHandler<SimpleSkillResult> implements Listener 
                 double missingMana = data.getStatMap().getStat("MAX_MANA") - playerData.getMana();
                 playerData.giveMana(missingMana * percent, PlayerResourceUpdateEvent.UpdateReason.SKILL_REGENERATION);
 
-                cancel();
+                if (task != null) task.cancel();
                 return;
             }
 

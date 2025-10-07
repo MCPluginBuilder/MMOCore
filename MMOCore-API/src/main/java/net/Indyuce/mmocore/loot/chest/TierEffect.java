@@ -2,6 +2,7 @@ package net.Indyuce.mmocore.loot.chest;
 
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.loot.chest.particle.ChestParticleEffect;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -30,7 +31,7 @@ public class TierEffect {
 				type.play(loc, particle);
 			}
 		};
-		runnable.runTaskTimer(MMOCore.plugin, 0, period);
+		SchedulerAdapter.runTaskTimer(MMOCore.plugin, runnable, 0, period);
 		return runnable;
 	}
 }

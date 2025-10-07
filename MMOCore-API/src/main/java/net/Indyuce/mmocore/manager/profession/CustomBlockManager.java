@@ -10,6 +10,7 @@ import net.Indyuce.mmocore.api.block.VanillaBlockType;
 import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import net.Indyuce.mmocore.loot.chest.condition.Condition;
 import net.Indyuce.mmocore.loot.chest.condition.ConditionInstance;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -19,6 +20,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 import java.util.logging.Level;
 
@@ -28,24 +31,24 @@ public class CustomBlockManager extends SpecificProfessionManager {
 	/**
 	 * Registered block infos
 	 */
-	private final Map<BlockType, BlockInfo> map = new HashMap<>();
+	private final Map<BlockType, BlockInfo> map = new ConcurrentHashMap<>();
 
 	/**
 	 * Blocks that are regenerating and that must be refreshed whenever the
 	 * server reloads or shuts down not to hurt the world map
 	 */
-	private final Set<BlockInfo.RegeneratingBlock> active = new HashSet<>();
+	private final Set<BlockInfo.RegeneratingBlock> active = ConcurrentHashMap.newKeySet();
 
 	/**
 	 * Stores conditions which must be met to apply custom mining
 	 */
-	private final List<Condition> customMineConditions = new ArrayList<>();
+	private final List<Condition> customMineConditions = new CopyOnWriteArrayList<>();
 
 	/**
 	 * List of functions which let MMOCore recognize what block a player is
 	 * currently breaking
 	 */
-	private final List<Function<Block, Optional<BlockType>>> blockTypes = new ArrayList<>();
+	private final List<Function<Block, Optional<BlockType>>> blockTypes = new CopyOnWriteArrayList<>();
 
 	private boolean enabled, protectVanillaBlocks, enableToolRestrictions;
 
@@ -98,7 +101,7 @@ public class CustomBlockManager extends SpecificProfessionManager {
 	public void initialize(BlockInfo.RegeneratingBlock info, boolean scheduleRegen) {
 		if (scheduleRegen) {
 			active.add(info);
-			Bukkit.getScheduler().runTaskLater(MMOCore.plugin, () -> regen(info, false), info.getRegeneratingBlock().getRegenerationInfo().getTime());
+			SchedulerAdapter.runTaskLater(MMOCore.plugin, () -> regen(info, false), info.getRegeneratingBlock().getRegenerationInfo().getTime());
 		}
 
 		if (info.getRegeneratingBlock().getRegenerationInfo().hasTemporaryBlock())

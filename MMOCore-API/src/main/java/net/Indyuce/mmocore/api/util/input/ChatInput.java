@@ -2,6 +2,7 @@ package net.Indyuce.mmocore.api.util.input;
 
 import io.lumine.mythic.lib.gui.editable.GeneratedInventory;
 import net.Indyuce.mmocore.MMOCore;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -53,11 +54,10 @@ public class ChatInput extends PlayerInput {
             event.setCancelled(true);
 
             if (event.getMessage().equals("cancel")) {
-                if (lastOpened != null) Bukkit.getScheduler().runTask(MMOCore.plugin, lastOpened::open);
+                if (lastOpened != null) SchedulerAdapter.runTask(MMOCore.plugin, lastOpened::open);
                 inputType.cancelMessage.send(getPlayer());
             } else
-                // Run sync
-                Bukkit.getScheduler().runTask(MMOCore.plugin, () -> output(event.getMessage()));
+                SchedulerAdapter.runTask(MMOCore.plugin, () -> output(event.getMessage()));
         }
     }
 

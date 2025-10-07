@@ -15,11 +15,13 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 public class Party implements AbstractParty {
-    private final List<PlayerData> members = new ArrayList<>();
-    private final Map<UUID, Long> invites = new HashMap<>();
+    private final List<PlayerData> members = new CopyOnWriteArrayList<>();
+    private final Map<UUID, Long> invites = new ConcurrentHashMap<>();
 
     /**
      * Used for {@link #equals(Object)}

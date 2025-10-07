@@ -8,6 +8,7 @@ import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import net.Indyuce.mmocore.experience.dispenser.ExperienceDispenser;
 import net.Indyuce.mmocore.experience.source.type.SpecificExperienceSource;
 import net.Indyuce.mmocore.manager.profession.ExperienceSourceManager;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -27,7 +28,7 @@ public class KillMythicMobExperienceSource extends SpecificExperienceSource<Stri
         return new ExperienceSourceManager<KillMythicMobExperienceSource>() {
             @EventHandler
             public void a(MythicMobDeathEvent event) {
-                Bukkit.getScheduler().runTaskLater(MMOCore.plugin, () -> {
+                SchedulerAdapter.runTaskLater(MMOCore.plugin, () -> {
                     if (!event.getEntity().isDead()) return;
                     if (!(event.getKiller() instanceof Player) || event.getKiller().hasMetadata("NPC")) return;
 

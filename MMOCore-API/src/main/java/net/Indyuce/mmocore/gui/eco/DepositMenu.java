@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.gui.PluginInventory;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import net.Indyuce.mmocore.player.Message;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import net.Indyuce.mmocore.util.item.SimpleItemBuilder;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
@@ -92,7 +93,7 @@ public class DepositMenu extends PluginInventory {
                 updateDeposit(inv);
             }
         };
-        updateRunnable.runTaskLater(MMOCore.plugin, 10);
+        SchedulerAdapter.runTaskLater(MMOCore.plugin, updateRunnable, 10);
     }
 
     private void updateDeposit(Inventory inv) {

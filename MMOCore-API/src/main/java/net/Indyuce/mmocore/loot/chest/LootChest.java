@@ -3,6 +3,7 @@ package net.Indyuce.mmocore.loot.chest;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.player.Message;
 import net.Indyuce.mmocore.util.HashableLocation;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -44,7 +45,7 @@ public class LootChest {
                 expire(null);
             }
         };
-        closeRunnable.runTaskLater(MMOCore.plugin, MMOCore.plugin.configManager.lootChestExpireTime);
+        SchedulerAdapter.runTaskLater(MMOCore.plugin, closeRunnable, MMOCore.plugin.configManager.lootChestExpireTime);
     }
 
     public ChestTier getTier() {

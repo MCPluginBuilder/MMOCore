@@ -11,6 +11,7 @@ import net.Indyuce.mmocore.loot.LootBuilder;
 import net.Indyuce.mmocore.loot.fishing.FishingDropItem;
 import net.Indyuce.mmocore.manager.profession.FishingManager.FishingDropTable;
 import net.Indyuce.mmocore.util.Language;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.bukkit.*;
 import org.bukkit.entity.FishHook;
 import org.bukkit.entity.Item;
@@ -23,7 +24,7 @@ import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerFishEvent.State;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.util.HashSet;
@@ -55,7 +56,8 @@ public class FishingListener implements Listener {
         }
     }
 
-    public class FishingData extends BukkitRunnable implements Listener {
+    public class FishingData implements Listener, Runnable {
+        private BukkitTask task;
         private final Location location;
         private final FishingDropItem caught;
         private final PlayerData playerData;
@@ -85,7 +87,7 @@ public class FishingListener implements Listener {
             this.experienceDropped = caught.rollExperience();
             this.vanillaExpDropped = caught.rollVanillaExp();
             fishing.add(player.getUniqueId());
-            runTaskTimer(MMOCore.plugin, 0, 2);
+            task = SchedulerAdapter.runTaskTimer(MMOCore.plugin, this, 0, 2);
             Bukkit.getPluginManager().registerEvents(this, MMOCore.plugin);
 
             // Check for instant loot
@@ -122,7 +124,7 @@ public class FishingListener implements Listener {
             hook.remove();
 
             HandlerList.unregisterAll(this);
-            cancel();
+            if (task != null) task.cancel();
         }
 
         @Override

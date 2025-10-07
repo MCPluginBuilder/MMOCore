@@ -4,14 +4,16 @@ import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.social.Request;
 import net.Indyuce.mmocore.manager.MMOCoreManager;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RequestManager implements MMOCoreManager {
-    private final Map<UUID, Request> requests = new HashMap<>();
+    private final Map<UUID, Request> requests = new ConcurrentHashMap<>();
 
     private boolean ENABLED;
 
@@ -24,7 +26,7 @@ public class RequestManager implements MMOCoreManager {
     @Override
     public void initialize(boolean clearBefore) {
         if (!ENABLED) {
-            Bukkit.getScheduler().runTaskTimer(MMOCore.plugin, this::flushRequests, 60 * 20, 60 * 20 * 5);
+            SchedulerAdapter.runTaskTimer(MMOCore.plugin, this::flushRequests, 60 * 20, 60 * 20 * 5);
             ENABLED = true;
         }
     }

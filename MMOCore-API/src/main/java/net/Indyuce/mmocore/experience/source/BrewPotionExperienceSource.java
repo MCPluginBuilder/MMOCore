@@ -7,6 +7,7 @@ import net.Indyuce.mmocore.experience.EXPSource;
 import net.Indyuce.mmocore.experience.dispenser.ExperienceDispenser;
 import net.Indyuce.mmocore.experience.source.type.ExperienceSource;
 import net.Indyuce.mmocore.manager.profession.ExperienceSourceManager;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -57,7 +58,7 @@ public class BrewPotionExperienceSource extends ExperienceSource<PotionMeta> {
 
             final ItemStack found = findPotion(event.getContents());
             if (found != null)
-                Bukkit.getScheduler().scheduleSyncDelayedTask(MMOCore.plugin, () -> {
+                SchedulerAdapter.runTask(MMOCore.plugin, () -> {
                     ItemStack brewn = findPotion(event.getContents());
                     if (brewn == null)
                         return;

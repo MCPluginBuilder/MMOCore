@@ -1,15 +1,17 @@
 package net.Indyuce.mmocore.loot.chest.particle;
 
 import net.Indyuce.mmocore.MMOCore;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
-public class SmallParticleEffect extends BukkitRunnable {
+public class SmallParticleEffect implements Runnable {
 	private final Location loc;
 	private final Particle particle;
 	private final double r;
+	private BukkitTask task;
 
 	private double t;
 
@@ -22,12 +24,12 @@ public class SmallParticleEffect extends BukkitRunnable {
 		this.particle = particle;
 		this.r = r;
 
-		runTaskTimer(MMOCore.plugin, 0, 1);
+		task = SchedulerAdapter.runTaskTimer(MMOCore.plugin, this, 0, 1);
 	}
 
 	public void run() {
 		if (t > Math.PI * 2)
-			cancel();
+			if (task != null) task.cancel();
 
 		for (int k = 0; k < 3; k++) {
 			t += Math.PI / 10;

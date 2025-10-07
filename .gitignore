@@ -12,3 +12,6 @@ MMOCore.iml
 /MMOCore-Dist/MMOCore-Dist.iml
 
 local_install.bat
+
+.c*
+.vscode

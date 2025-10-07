@@ -7,6 +7,7 @@ loadbefore: [ MMOItems,MythicDungeons ]
 depend: [ MythicLib ]
 softdepend: [ Vault,MythicMobs,MMOProfiles,PlaceholderAPI,Residence,Citizens,ProtocolLib,OBTeam ]
 api-version: 1.14
+folia-supported: true
 website: www.phoenixdevt.fr
 commands:
   mmocore:

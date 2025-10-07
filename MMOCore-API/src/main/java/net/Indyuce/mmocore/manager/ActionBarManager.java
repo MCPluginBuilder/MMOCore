@@ -7,14 +7,15 @@ import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import io.lumine.mythic.lib.version.Attributes;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
-// TODO extends Manager and not bukkit runnable for clarity.
-public class ActionBarManager extends BukkitRunnable {
+public class ActionBarManager {
     private int updateTicks;
     private String barFormat;
     private boolean enabled, scheduled;
+    private BukkitTask task;
 
     public void reload(ConfigurationSection config) {
         enabled = config.getBoolean("enabled", false);
@@ -22,15 +23,14 @@ public class ActionBarManager extends BukkitRunnable {
         barFormat = config.getString("format", "<No Action Bar Format Found>");
 
         if (!scheduled && enabled) {
-            runTaskTimer(MMOCore.plugin, 0, updateTicks);
+            task = SchedulerAdapter.runTaskTimer(MMOCore.plugin, this::run, 0, updateTicks);
             scheduled = true;
         } else if (scheduled && !enabled) {
-            cancel();
+            if (task != null) task.cancel();
             scheduled = false;
         }
     }
 
-    @Override
     public void run() {
         for (var player : PlayerData.getAll()) {
 

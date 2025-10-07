@@ -4,13 +4,13 @@ import net.Indyuce.mmocore.experience.Booster;
 import net.Indyuce.mmocore.experience.Profession;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 public class BoosterManager {
-	private final List<Booster> map = new ArrayList<>();
+	private final List<Booster> map = new CopyOnWriteArrayList<>();
 
 	/**
 	 * If MMOCore can find a booster with the same profession and value, the two
