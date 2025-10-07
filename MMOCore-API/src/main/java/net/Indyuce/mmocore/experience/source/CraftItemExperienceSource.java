@@ -6,6 +6,7 @@ import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.experience.dispenser.ExperienceDispenser;
 import net.Indyuce.mmocore.experience.source.type.SpecificExperienceSource;
 import net.Indyuce.mmocore.manager.profession.ExperienceSourceManager;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -67,7 +68,7 @@ public class CraftItemExperienceSource extends SpecificExperienceSource<Material
             final int itemsCraftedPerRecipe = event.getInventory().getResult().getAmount();
             final Material resultType = event.getInventory().getResult().getType();
 
-            Bukkit.getScheduler().runTask(MMOCore.plugin, () -> {
+            SchedulerAdapter.runTask(MMOCore.plugin, () -> {
 
                 // First check
                 int newAmount = getAmount(event.getInventory().getMatrix()[index]);

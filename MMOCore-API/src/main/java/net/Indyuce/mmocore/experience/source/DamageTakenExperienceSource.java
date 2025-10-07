@@ -9,6 +9,7 @@ import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.experience.dispenser.ExperienceDispenser;
 import net.Indyuce.mmocore.experience.source.type.SpecificExperienceSource;
 import net.Indyuce.mmocore.manager.profession.ExperienceSourceManager;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.apache.commons.lang.Validate;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -66,8 +67,7 @@ public class DamageTakenExperienceSource extends SpecificExperienceSource<Entity
                 return Math.min(eventDamage, maxHealth);
             });
 
-            // Wait 2 tick to check if the player died
-            new BukkitRunnable() {
+            SchedulerAdapter.runTaskLater(MMOCore.plugin, new BukkitRunnable() {
                 @Override
                 public void run() {
                     for (DamageTakenExperienceSource source : getSources())
@@ -76,7 +76,7 @@ public class DamageTakenExperienceSource extends SpecificExperienceSource<Entity
                             source.giveExperience(playerData, effectiveDamage.get(), null);
                         }
                 }
-            }.runTaskLater(MMOCore.plugin, 2);
+            }, 2);
         }
     }
 }

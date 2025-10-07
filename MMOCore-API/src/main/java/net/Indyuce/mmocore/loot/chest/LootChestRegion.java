@@ -6,6 +6,7 @@ import net.Indyuce.mmocore.api.player.PlayerActivity;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.loot.LootBuilder;
 import net.Indyuce.mmocore.loot.RandomWeightedRoll;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -17,6 +18,7 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 public class LootChestRegion {
@@ -25,7 +27,7 @@ public class LootChestRegion {
     private final long chestSpawnPeriod;
     private final RegionBounds bounds;
     private final ChestAlgorithmOptions algOptions;
-    private final Set<ChestTier> tiers = new LinkedHashSet<>();
+    private final Set<ChestTier> tiers = ConcurrentHashMap.newKeySet();
     private final BukkitRunnable runnable = new BukkitRunnable() {
 
         @Override
@@ -57,8 +59,7 @@ public class LootChestRegion {
 
         Validate.isTrue(!tiers.isEmpty(), "Your region must have at least one chest tier");
 
-        // Run timer
-        runnable.runTaskTimer(MMOCore.plugin, chestSpawnPeriod * 20, chestSpawnPeriod * 20);
+        SchedulerAdapter.runTaskTimer(MMOCore.plugin, runnable, chestSpawnPeriod * 20, chestSpawnPeriod * 20);
     }
 
     public String getId() {

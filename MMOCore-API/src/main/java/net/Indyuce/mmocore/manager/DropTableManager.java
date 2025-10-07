@@ -3,18 +3,19 @@ package net.Indyuce.mmocore.manager;
 import io.lumine.mythic.lib.util.FileUtils;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.loot.droptable.DropTable;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DropTableManager implements MMOCoreManager {
-	private final Map<String, DropTable> map = new HashMap<>();
+	private final Map<String, DropTable> map = new ConcurrentHashMap<>();
 
 	public void register(DropTable table) {
 		map.put(table.getId(), table);
@@ -52,7 +53,7 @@ public class DropTableManager implements MMOCoreManager {
 
 		if (obj instanceof ConfigurationSection) {
 			DropTable table = new DropTable((ConfigurationSection) obj);
-			Bukkit.getScheduler().runTask(MMOCore.plugin, table.getPostLoadAction()::performAction);
+			SchedulerAdapter.runTask(MMOCore.plugin, table.getPostLoadAction()::performAction);
 			return table;
 		}
 
@@ -68,6 +69,6 @@ public class DropTableManager implements MMOCoreManager {
             register(new DropTable(config));
         }, "Could not load drop table '%s' from file '%s': %s");
 
-		Bukkit.getScheduler().runTask(MMOCore.plugin, () -> map.values().forEach(table -> table.getPostLoadAction().performAction()));
+		SchedulerAdapter.runTask(MMOCore.plugin, () -> map.values().forEach(table -> table.getPostLoadAction().performAction()));
 	}
 }

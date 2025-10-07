@@ -9,12 +9,12 @@ import net.Indyuce.mmocore.party.AbstractParty;
 import net.Indyuce.mmocore.party.PartyUtils;
 import org.bukkit.configuration.ConfigurationSection;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 public class PartyManager implements MMOCoreManager {
-    private final Set<StatModifier> buffs = new HashSet<>();
+    private final Set<StatModifier> buffs = ConcurrentHashMap.newKeySet();
 
     public Set<StatModifier> getBonuses() {
         return buffs;

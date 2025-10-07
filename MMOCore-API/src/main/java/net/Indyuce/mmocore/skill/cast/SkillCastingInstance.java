@@ -4,26 +4,24 @@ import io.lumine.mythic.lib.UtilityMethods;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.skill.binding.BoundSkillInfo;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public abstract class SkillCastingInstance extends BukkitRunnable implements Listener {
+public abstract class SkillCastingInstance implements Listener, Runnable {
     protected final PlayerData caster;
     private final SkillCastingHandler handler;
+    private BukkitTask task;
 
     private static final int RUNNABLE_PERIOD = 10;
 
-    /**
-     * This variable temporarily stores the active skills that the player
-     * can try to cast.
-     */
     private List<BoundSkillInfo> activeSkills;
     private boolean open = true;
     private int j, sinceLastActivity;
@@ -32,7 +30,7 @@ public abstract class SkillCastingInstance extends BukkitRunnable implements Lis
         this.handler = handler;
         this.caster = caster;
 
-        runTaskTimer(MMOCore.plugin, 0, 1);
+        task = SchedulerAdapter.runTaskTimer(MMOCore.plugin, this, 0, 1);
         Bukkit.getPluginManager().registerEvents(this, MMOCore.plugin);
     }
 
@@ -45,11 +43,9 @@ public abstract class SkillCastingInstance extends BukkitRunnable implements Lis
 
         open = false;
 
-        // Unregister listeners
         HandlerList.unregisterAll(this);
 
-        // Cancel runnable
-        cancel();
+        if (task != null) task.cancel();
     }
 
     public void refreshTimeOut() {

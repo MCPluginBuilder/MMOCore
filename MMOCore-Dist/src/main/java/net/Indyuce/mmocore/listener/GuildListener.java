@@ -4,6 +4,7 @@ import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.social.GuildChatEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.player.Message;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -22,8 +23,7 @@ public class GuildListener implements Listener {
 
         event.setCancelled(true);
 
-        // Run it sync
-        Bukkit.getScheduler().runTask(MMOCore.plugin, () -> {
+        SchedulerAdapter.runTask(MMOCore.plugin, () -> {
             var rawMessage = event.getMessage().substring(MMOCore.plugin.nativeGuildManager.getConfig().getPrefix().length());
             var message = Message.GUILD_CHAT.prepare("player", data.getPlayer().getName(), "tag", data.getGuild().getTag(), "message", rawMessage);
             GuildChatEvent called = new GuildChatEvent(data, message.getRawContent());

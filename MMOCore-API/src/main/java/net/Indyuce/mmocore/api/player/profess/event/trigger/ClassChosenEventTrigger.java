@@ -4,6 +4,7 @@ import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerChangeClassEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.profess.event.EventTriggerHandler;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -20,7 +21,7 @@ public class ClassChosenEventTrigger implements EventTriggerHandler {
 	public void a(PlayerChangeClassEvent event) {
 		PlayerData player = event.getData();
 		if (event.getNewClass().hasEventTriggers("class-chosen")) {
-			Bukkit.getScheduler().runTaskLater(MMOCore.plugin, () -> {
+			SchedulerAdapter.runTaskLater(MMOCore.plugin, () -> {
 				event.getNewClass().getEventTriggers("class-chosen").getTriggers().forEach(trigger -> trigger.apply(player));
 			}, 1);
 

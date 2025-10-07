@@ -5,6 +5,7 @@ import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerChangeClassEvent;
 import net.Indyuce.mmocore.api.event.PlayerLevelUpEvent;
 import net.Indyuce.mmocore.script.trigger.MMOCoreTriggerType;
+import net.Indyuce.mmocore.util.SchedulerAdapter;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -21,8 +22,7 @@ public class ClassScriptListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onClassChange(PlayerChangeClassEvent event) {
 
-        // With delay
-        Bukkit.getScheduler().runTask(MMOCore.plugin, () -> {
+        SchedulerAdapter.runTask(MMOCore.plugin, () -> {
             final MMOPlayerData caster = event.getData().getMMOPlayerData();
             caster.triggerSkills(MMOCoreTriggerType.CLASS_CHOSEN, null);
         });
@@ -31,8 +31,7 @@ public class ClassScriptListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onLevelUp(PlayerLevelUpEvent event) {
 
-        // With delay
-        Bukkit.getScheduler().runTask(MMOCore.plugin, () -> {
+        SchedulerAdapter.runTask(MMOCore.plugin, () -> {
             final MMOPlayerData caster = event.getData().getMMOPlayerData();
             caster.triggerSkills(MMOCoreTriggerType.LEVEL_UP, null);
         });
