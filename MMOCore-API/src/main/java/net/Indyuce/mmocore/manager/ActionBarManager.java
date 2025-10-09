@@ -35,7 +35,7 @@ public class ActionBarManager extends BukkitRunnable {
         for (var player : PlayerData.getAll()) {
 
             // Basic checks
-            if (!player.isOnline() || player.getPlayer().isDead()) continue;
+            if (!player.isOnline() || player.getPlayer().isDead() || !player.getMMOPlayerData().isPlaying()) continue;
 
             // Check if action bar resource is free (small perf optimisation)
             var handler = player.getMMOPlayerData().getActionBar();
