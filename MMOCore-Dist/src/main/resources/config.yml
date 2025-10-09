@@ -35,10 +35,10 @@ default-playerdata:
   skill-realloc-points: 0
   attribute-points: 0
   attribute-realloc-points: 0
-  health: 20
-  mana: 0
-  stellium: 0
-  stamina: 0
+  health: 1000   # High enough so that the player
+  mana: 1000     # starts with full hp/mana/...
+  stellium: 1000 # These values will be clamped to
+  stamina: 1000  # max resource value!
 
 custom-mining:
 
