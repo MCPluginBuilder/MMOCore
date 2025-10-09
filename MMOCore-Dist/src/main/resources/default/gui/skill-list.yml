@@ -11,7 +11,7 @@ items:
 
     function: skill
     name: '&a{skill} &6[{level}]'
-    hide-flags: true
+    item-flags: [ 'HIDE_ATTRIBUTES' ]
     # You can set custom model data int and string here
     #custom_model_data_string: 'something'
     #custom_model_data: 1234

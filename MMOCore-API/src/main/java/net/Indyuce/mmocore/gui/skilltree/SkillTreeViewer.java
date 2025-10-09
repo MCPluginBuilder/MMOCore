@@ -218,7 +218,7 @@ public class SkillTreeViewer extends EditableInventory {
             ItemStack item = super.getDisplayedItem(inv, ItemOptions.material(n, skillTree.getItem()));
 
             ItemMeta meta = item.getItemMeta();
-            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES); // Hardcore 'hide-flags' on
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES); // Hardcode 'hide-flags' on
             meta.setDisplayName(skillTree.getName());
             meta.setCustomModelData(skillTree.getCustomModelData());
             PersistentDataContainer container = meta.getPersistentDataContainer();

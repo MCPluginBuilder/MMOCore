@@ -86,7 +86,7 @@ items:
     # You can set custom model data int and string here
     #custom_model_data_string: 'something'
     #custom_model_data: 1234
-    hide-flags: true
+    item-flags: [ 'HIDE_ATTRIBUTES' ]
     #The lore that will be displayed after the lore of the node.
     #The {node-lore} placeholder will be replaced by the lore specified in the skill tree node config.
     #All the placeholders you see here can also be used in the node lore.
@@ -108,7 +108,7 @@ items:
       - ''
       - '&e◆ Points Spent:&6 {point-spent}&e/&6{max-point-spent}'
       - '&e◆ Available: &6{skill-tree-points} &e+ &6{global-points} &eGlobal'
-    path-lore: []
+    path-lore: [ ]
 
 #This is the name that will be displayed for each status.
 status-names:
