@@ -144,9 +144,6 @@ public class DefaultPlayerData implements ClassDataContainer {
         player.setAttributeReallocationPoints(attrReallocPoints);
         player.setSkillTreeReallocationPoints(skillTreeReallocPoints);
         player.setSkillReallocationPoints(skillReallocPoints);
-        player.setLastHealth(health);
-        player.setMana(mana);
-        player.setStamina(stamina);
-        player.setStellium(stellium);
+        player.loadResources(health, mana, stamina, stellium);
     }
 }

@@ -341,11 +341,7 @@ public class SavedClassInformation implements ClassDataContainer {
         player.unloadClassInfo(profess);
 
         // This needs to be done at the end to make sure the MAX_HEALTH/MAX_MANA/... stats are loaded.
-        UtilityMethods.setHealth(player.getPlayer(), health);
-        player.setLastHealth(health);
-        player.setMana(mana);
-        player.setStellium(stellium);
-        player.setStamina(stamina);
+        player.loadResources(health, mana, stellium, stamina);
         player.applyTemporaryTriggers();
         player.getStats().updateStats();
     }

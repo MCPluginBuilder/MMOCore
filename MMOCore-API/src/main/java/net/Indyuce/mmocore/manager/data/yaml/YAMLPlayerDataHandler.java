@@ -121,10 +121,11 @@ public class YAMLPlayerDataHandler extends YAMLSynchronizedDataHandler<PlayerDat
          * These should be loaded after to make sure that the
          * MAX_MANA, MAX_STAMINA & MAX_STELLIUM stats are already loaded.
          */
-        data.setLastHealth(config.getDouble("health"));
-        data.setMana(config.getDouble("mana", data.getStats().getStat("MAX_MANA")));
-        data.setStamina(config.getDouble("stamina", data.getStats().getStat("MAX_STAMINA")));
-        data.setStellium(config.getDouble("stellium", data.getStats().getStat("MAX_STELLIUM")));
+        var fixedHealth = config.getDouble("health");
+        var fixedMana = config.getDouble("mana", data.getStats().getStat("MAX_MANA"));
+        var fixedStamina = config.getDouble("stamina", data.getStats().getStat("MAX_STAMINA"));
+        var fixedStellium = config.getDouble("stellium", data.getStats().getStat("MAX_STELLIUM"));
+        data.loadResources(fixedHealth, fixedMana, fixedStamina, fixedStellium);
     }
 
     @Override

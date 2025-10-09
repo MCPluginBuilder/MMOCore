@@ -118,10 +118,7 @@ public class MMOCoreDataSynchronizer extends SQLDataSynchronizer<PlayerData> {
          * These should be loaded after to make sure that the
          * MAX_MANA, MAX_STAMINA & MAX_STELLIUM stats are already loaded.
          */
-        getData().setLastHealth(result.getDouble("health"));
-        getData().setMana(result.getDouble("mana"));
-        getData().setStamina(result.getDouble("stamina"));
-        getData().setStellium(result.getDouble("stellium"));
+        getData().loadResources(result.getDouble("health"), result.getDouble("mana"), result.getDouble("stamina"), result.getDouble("stellium"));
 
         UtilityMethods.debug(MMOCore.plugin, "SQL", String.format("{ class: %s, level: %d }", getData().getProfess().getId(), getData().getLevel()));
     }

@@ -87,7 +87,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     /**
      * Saving resources (especially health) right in player data fixes TONS of issues.
      */
-    private double lastHealth, mana, stamina, stellium;
+    private double lastHealth, lastMana, lastStamina, lastStellium;
+    private double mana, stamina, stellium;
     private Guild guild;
     private SkillCastingInstance skillCasting;
     private final PlayerQuests questData;
@@ -235,6 +236,10 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     @Override
     protected void onSessionReady() {
+
+        // Update class stats and all
+        this.getStats().updateStats();
+
         getMMOPlayerData().getProfileSession().addOpenCallback(session -> this.onProfileSessionReady());
     }
 
@@ -257,6 +262,9 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
         // Set health again
         UtilityMethods.setHealth(getPlayer(), lastHealth);
+        setMana(lastMana);
+        setStamina(lastStamina);
+        setStellium(lastStellium);
     }
 
     public int getPointsSpent(@NotNull SkillTree skillTree) {
@@ -1044,8 +1052,23 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return attributes;
     }
 
-    public void setLastHealth(double amount) {
-        this.lastHealth = amount;
+    public void loadResources(double lastHealth, double lastMana, double lastStamina, double lastStellium) {
+
+        // Player started playing, update resources now
+        if (isSessionReady()) {
+            UtilityMethods.setHealth(getPlayer(), lastHealth);
+            setMana(lastMana);
+            setStamina(lastStamina);
+            setStellium(lastStellium);
+        }
+
+        // Cache and load later
+        else {
+            this.lastHealth = lastHealth;
+            this.lastMana = lastMana;
+            this.lastStamina = lastStamina;
+            this.lastStellium = lastStellium;
+        }
     }
 
     public void setMana(double amount) {
@@ -1324,7 +1347,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     //region Deprecated
 
     /**
-     * @see #setLastHealth(double)
+     * @see #loadResources(double, double, double, double)
      * @deprecated
      */
     @Deprecated
