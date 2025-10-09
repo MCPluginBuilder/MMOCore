@@ -311,8 +311,13 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
     }
 
     @Override
-    public ExpCurve getExpCurve() {
+    public @NotNull ExpCurve getExpCurve() {
         return expCurve;
+    }
+
+    @NotNull
+    public Collection<ClassSkill> getSkills() {
+        return skills.values();
     }
 
 
@@ -467,11 +472,6 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
     @Deprecated
     public double calculateBaseStat(String stat, int level) {
         return calculateBaseStat(stat, level, null);
-    }
-
-    @Deprecated
-    public Collection<ClassSkill> getSkills() {
-        return skills.values();
     }
 
     @Deprecated

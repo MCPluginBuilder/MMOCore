@@ -1,11 +1,13 @@
 package net.Indyuce.mmocore.api.player;
 
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.data.SaveReason;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import io.lumine.mythic.lib.player.cooldown.CooldownMap;
+import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.version.VParticle;
 import net.Indyuce.mmocore.MMOCore;
@@ -85,7 +87,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     /**
      * Saving resources (especially health) right in player data fixes TONS of issues.
      */
-    private double health, mana, stamina, stellium;
+    private double lastHealth, mana, stamina, stellium;
     private Guild guild;
     private SkillCastingInstance skillCasting;
     private final PlayerQuests questData;
@@ -230,11 +232,37 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
                 node.getExperienceTable().applyTemporaryTriggers(this, node);
     }
 
-    public void setupSkillTrees() {
+    private void setupSkillTrees() {
 
         // Node states setup
         for (SkillTree skillTree : getProfess().getSkillTrees())
             skillTree.setupNodeStates(this);
+    }
+
+    @Override
+    protected void onSessionReady() {
+        getMMOPlayerData().getProfileSession().addOpenCallback(session -> this.onProfileSessionReady());
+    }
+
+    private void castOnLoginScripts() {
+
+        // Class Skills
+        for (ClassSkill skill : getProfess().getSkills())
+            if (skill.getSkill().getTrigger() == TriggerType.LOGIN)
+                skill.toCastable(this).cast(getMMOPlayerData());
+
+        // Call Scripts
+        for (var script : getProfess().getScripts())
+            if (script.getTrigger() == TriggerType.LOGIN) script.getTriggeredSkill().cast(getMMOPlayerData());
+    }
+
+    private void onProfileSessionReady() {
+        this.setupSkillTrees(); // TODO move to sessionReady?
+        this.applyTemporaryTriggers(); // TODO move to sessionReady?
+        this.castOnLoginScripts();
+
+        // Set health again
+        UtilityMethods.setHealth(getPlayer(), lastHealth);
     }
 
     public int getPointsSpent(@NotNull SkillTree skillTree) {
@@ -509,7 +537,9 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         super.onSaved(reason);
 
         // Saves player health before saveData as the player will be considered offline into it if it is async
-        health = getPlayer().getHealth();
+        lastHealth = getPlayer().getHealth();
+
+        if (reason == SaveReason.AUTOSAVE) return;
 
         // Remove from party if it is MMO Party Module
         if (MMOCore.plugin.partyModule instanceof MMOCorePartyModule) {
@@ -1063,7 +1093,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     @Deprecated
     @Override
     public double getHealth() {
-        return isOnline() ? getPlayer().getHealth() : health;
+        return lastHealth;
     }
 
     @Override
@@ -1080,8 +1110,9 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return stellium;
     }
 
+    @Deprecated
     public double getCachedHealth() {
-        return health;
+        return lastHealth;
     }
 
     public PlayerStats getStats() {
@@ -1093,7 +1124,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     }
 
     public void setHealth(double amount) {
-        this.health = amount;
+        this.lastHealth = amount;
     }
 
     public void setMana(double amount) {

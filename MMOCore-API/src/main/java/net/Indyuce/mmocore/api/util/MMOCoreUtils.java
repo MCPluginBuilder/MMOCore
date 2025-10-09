@@ -62,7 +62,10 @@ public class MMOCoreUtils {
      * @param maxStat Maximum value of resource
      * @return Clamped resource value. If the provided current value is 0,
      * this function will return the maximum resource value.
+     * @deprecated Not used anymore
+     * @see UtilityMethods#setHealth(LivingEntity, double)
      */
+    @Deprecated
     public static double fixResource(double current, double maxStat) {
         return current == 0 ? maxStat : Math.max(0, Math.min(current, maxStat));
     }
@@ -125,6 +128,7 @@ public class MMOCoreUtils {
         return material == Material.PLAYER_HEAD || material == Material.PLAYER_WALL_HEAD;
     }
 
+    @Deprecated
     public static void addAllItemFlags(@NotNull ItemMeta meta) {
         meta.addItemFlags(ItemFlag.values());
 

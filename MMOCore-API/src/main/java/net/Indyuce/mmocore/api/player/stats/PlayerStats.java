@@ -15,6 +15,7 @@ import net.Indyuce.mmocore.experience.Profession;
 import net.Indyuce.mmocore.player.stats.StatInfo;
 import net.Indyuce.mmocore.skill.ClassSkill;
 
+// TODO merge with PlayerData? not really needed class
 public class PlayerStats {
     private final PlayerData data;
 
@@ -67,8 +68,9 @@ public class PlayerStats {
         return data.getProfess().calculateBaseStat(stat, profession == null ? data.getLevel() : data.getCollectionSkills().getLevel(profession), data);
     }
 
-    public void updateStats() {
-        updateStats(false);
+    @Deprecated
+    public void updateStats(boolean ignored) {
+        this.updateStats();
     }
 
     private static final String MODIFIER_KEY = "MMOCoreClass";
@@ -77,14 +79,8 @@ public class PlayerStats {
      * Used to update MMOCore stat modifiers due to class and send them over to
      * MythicLib. Must be ran everytime the player levels up, changes class or
      * when the plugin reloads.
-     * <p>
-     * Login scripts are a pretty special case of scripts/skills since they are
-     * not loaded yet when MythicLib triggers them naturally. Therefore, they
-     * need to be cast as soon as they are loaded into the MMOCore player data.
-     *
-     * @param castLoginScripts Should login scripts be cast
      */
-    public synchronized void updateStats(boolean castLoginScripts) {
+    public synchronized void updateStats() {
 
         // Update player stats
         getMap().bufferUpdates(() -> {
@@ -115,18 +111,5 @@ public class PlayerStats {
         skillMap.removeModifiers("MMOCoreClassScript");
         for (PassiveSkill script : data.getProfess().getScripts())
             if (script.getType() != TriggerType.LOGIN) skillMap.addModifier(script);
-
-        // If data hasn't been synchronized yet, cast LOGIN scripts
-        if (castLoginScripts) {
-
-            // Call class login skills
-            for (ClassSkill skill : data.getProfess().getSkills())
-                if (skill.getSkill().getTrigger() == TriggerType.LOGIN)
-                    skill.toCastable(data).cast(data.getMMOPlayerData());
-
-            // Call class login scripts
-            for (PassiveSkill skill : data.getProfess().getScripts())
-                if (skill.getType() == TriggerType.LOGIN) skill.getTriggeredSkill().cast(data.getMMOPlayerData());
-        }
     }
 }
