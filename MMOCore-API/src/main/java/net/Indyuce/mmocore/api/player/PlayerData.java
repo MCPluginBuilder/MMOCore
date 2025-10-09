@@ -238,6 +238,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     protected void onSessionReady() {
 
         // Update class stats and all
+        this.setupSkillTrees();
+        this.applyTemporaryTriggers();
         this.getStats().updateStats();
 
         getMMOPlayerData().getProfileSession().addOpenCallback(session -> this.onProfileSessionReady());
@@ -256,8 +258,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     }
 
     private void onProfileSessionReady() {
-        this.setupSkillTrees(); // TODO move to sessionReady?
-        this.applyTemporaryTriggers(); // TODO move to sessionReady?
         this.castOnLoginScripts();
 
         // Set health again
