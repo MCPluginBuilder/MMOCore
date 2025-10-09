@@ -37,6 +37,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SkillTreeViewer extends EditableInventory {
     protected DisplayMap icons;
@@ -313,8 +314,8 @@ public class SkillTreeViewer extends EditableInventory {
                 if (str.contains("{node-lore}")) {
                     lore.remove(i);
                     List<String> shaded = node.getLore(inv.playerData);
-                    var _i = i;
-                    shaded.forEach(s -> lore.add(_i, str.replace("{node-lore}", s)));
+                    var _i = new AtomicInteger(i);
+                    shaded.forEach(s -> lore.add(_i.getAndIncrement(), str.replace("{node-lore}", s)));
                     i += shaded.size();
                 } else if (str.contains("{strong-parents}")) {
                     lore.remove(i);
