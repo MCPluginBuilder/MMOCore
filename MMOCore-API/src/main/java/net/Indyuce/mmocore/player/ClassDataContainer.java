@@ -25,7 +25,7 @@ public interface ClassDataContainer {
 
     int getSkillTreeReallocationPoints();
 
-    double getHealth();
+    double getLastHealth();
 
     double getMana();
 

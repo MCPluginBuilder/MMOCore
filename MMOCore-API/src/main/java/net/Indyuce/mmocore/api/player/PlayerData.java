@@ -101,7 +101,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
      * plugin-scope to check if some item is class-specific and
      * should be reset when switching class
      */
-    @Deprecated
     private final Set<String> waypoints = new HashSet<>();
     private final Map<String, Integer> skills = new HashMap<>();
     private final Map<Integer, BoundSkillInfo> boundSkills = new HashMap<>();
@@ -198,11 +197,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         attributes.reload();
     }
 
-    @Deprecated
-    public void setupRemovableTrigger() {
-        applyTemporaryTriggers();
-    }
-
     /**
      * Some triggers are marked with the {@link Removable} interface as
      * they are non-permanent triggers, and they need to be re-applied
@@ -269,11 +263,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return skillTreePointsSpent.getOrDefault(skillTree, 0);
     }
 
-    @Deprecated
-    public int getPointSpent(SkillTree skillTree) {
-        return getPointsSpent(skillTree);
-    }
-
     public void setSkillTreePoints(@NotNull String treeId, int points) {
         if (points <= 0) skillTreePoints.remove(treeId);
         else skillTreePoints.put(treeId, points);
@@ -321,11 +310,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         final Map<String, Integer> mapped = new HashMap<>();
         this.nodeLevels.forEach((node, level) -> mapped.put(node.getFullId(), level));
         return mapped;
-    }
-
-    @Deprecated
-    public void clearSkillTrees() {
-        resetSkillTrees();
     }
 
     public void resetSkillTrees() {
@@ -402,11 +386,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         node.getTree().setupNodeStates(this);
     }
 
-    @Deprecated
-    public int getSkillTreePoint(String treeId) {
-        return getSkillTreePoints(treeId);
-    }
-
     public int getSkillTreePoints(@NotNull String treeId) {
         return skillTreePoints.getOrDefault(treeId, 0);
     }
@@ -422,11 +401,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     public NodeState getNodeState(SkillTreeNode node) {
         return nodeStates.get(node);
-    }
-
-    @Deprecated
-    public NodeState getNodeStatus(SkillTreeNode node) {
-        return getNodeState(node);
     }
 
     public boolean hasNodeState(@NotNull SkillTreeNode node) {
@@ -525,11 +499,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     public void setUnlockedItems(Set<String> unlockedItems) {
         this.unlockedItems.clear();
         this.unlockedItems.addAll(unlockedItems);
-    }
-
-    @Deprecated
-    public void resetTimesClaimed() {
-        tableItemClaims.clear();
     }
 
     @Override
@@ -679,16 +648,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         else tableItemClaims.put(itemKey, times);
     }
 
-    @Deprecated
-    public void setClaims(ExperienceObject object, ExperienceTable table, ExperienceItem item, int times) {
-        setClaims(object.getKey() + "." + table.getId() + "." + item.getId(), times);
-    }
-
-    @Deprecated
-    public int getClaims(ExperienceObject object, ExperienceTable table, ExperienceItem item) {
-        return getClaims(object.getKey() + "." + table.getId() + "." + item.getId());
-    }
-
     public Map<String, Integer> getItemClaims() {
         return tableItemClaims;
     }
@@ -816,14 +775,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     public void lockWaypoint(Waypoint waypoint) {
         waypoints.remove(waypoint.getId());
-    }
-
-    /**
-     * @deprecated Provide a heal reason with {@link #heal(double, PlayerResourceUpdateEvent.UpdateReason)}
-     */
-    @Deprecated
-    public void heal(double heal) {
-        this.heal(heal, PlayerResourceUpdateEvent.UpdateReason.OTHER);
     }
 
     public void heal(double heal, PlayerResourceUpdateEvent.UpdateReason reason) {
@@ -1021,14 +972,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return profess == null ? MMOCore.plugin.classManager.getDefaultClass() : profess;
     }
 
-    /**
-     * @deprecated Provide reason with {@link #giveMana(double, PlayerResourceUpdateEvent.UpdateReason)}
-     */
-    @Deprecated
-    public void giveMana(double amount) {
-        giveMana(amount, PlayerResourceUpdateEvent.UpdateReason.OTHER);
-    }
-
     public void giveMana(double amount, PlayerResourceUpdateEvent.UpdateReason reason) {
 
         // Avoid calling useless event
@@ -1042,14 +985,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
         // Use updated amount from Bukkit event
         mana = Math.max(0, Math.min(mana + event.getAmount(), max));
-    }
-
-    /**
-     * @deprecated Provide reason with {@link #giveStamina(double, PlayerResourceUpdateEvent.UpdateReason)}
-     */
-    @Deprecated
-    public void giveStamina(double amount) {
-        giveStamina(amount, PlayerResourceUpdateEvent.UpdateReason.OTHER);
     }
 
     public void giveStamina(double amount, PlayerResourceUpdateEvent.UpdateReason reason) {
@@ -1067,14 +1002,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         stamina = Math.max(0, Math.min(stamina + event.getAmount(), max));
     }
 
-    /**
-     * @deprecated Provide reason with {@link #giveStellium(double, PlayerResourceUpdateEvent.UpdateReason)}
-     */
-    @Deprecated
-    public void giveStellium(double amount) {
-        giveStellium(amount, PlayerResourceUpdateEvent.UpdateReason.OTHER);
-    }
-
     public void giveStellium(double amount, PlayerResourceUpdateEvent.UpdateReason reason) {
 
         // Avoid calling useless event
@@ -1090,9 +1017,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         stellium = Math.max(0, Math.min(stellium + event.getAmount(), max));
     }
 
-    @Deprecated
     @Override
-    public double getHealth() {
+    public double getLastHealth() {
         return lastHealth;
     }
 
@@ -1108,20 +1034,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     @Override
     public double getStellium() {
         return stellium;
-    }
-
-    @Deprecated
-    public double getCachedHealth() {
-        return lastHealth;
-    }
-
-    /**
-     * @deprecated
-     * @see #setLastHealth(double)
-     */
-    @Deprecated
-    public void setHealth(double amount) {
-        this.lastHealth = amount;
     }
 
     public PlayerStats getStats() {
@@ -1148,23 +1060,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         stellium = Math.max(0, Math.min(amount, getStats().getStat("MAX_STELLIUM")));
     }
 
-    @Deprecated
-    public boolean isFullyLoaded() {
-        return isSynchronized();
-    }
-
-    @Deprecated
-    public void setFullyLoaded() {
-        markAsSynchronized();
-    }
-
     public boolean isCasting() {
         return skillCasting != null;
-    }
-
-    @Deprecated
-    public boolean setSkillCasting(@NotNull SkillCastingInstance skillCasting) {
-        return setSkillCasting();
     }
 
     /**
@@ -1214,38 +1111,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return true;
     }
 
-    @Deprecated
-    public void displayActionBar(@NotNull String message) {
-        displayActionBar(message, false);
-    }
-
-    @Deprecated
-    public void displayActionBar(@NotNull String message, boolean raw) {
-
-        // TODO add an option to disable action-bar properly in all casting modes
-        if (ChatColor.stripColor(message).isEmpty()) return;
-
-        // TODO move raw/not raw decision to MythicLib
-        var handler = getMMOPlayerData().getActionBar();
-        if (!raw) {
-            handler.show(ActionBarPriority.NORMAL, message);
-        } else {
-            if (!handler.canShow(ActionBarPriority.NORMAL)) return;
-            handler.show(ActionBarPriority.NORMAL, "");
-            MythicLib.plugin.getVersion().getWrapper().sendActionBarRaw(getPlayer(), message);
-        }
-    }
-
-    @Deprecated
-    public void setAttribute(PlayerAttribute attribute, int value) {
-        setAttribute(attribute.getId(), value);
-    }
-
-    @Deprecated
-    public void setAttribute(String id, int value) {
-        attributes.getInstance(id).setBase(value);
-    }
-
     @Override
     public Map<String, Integer> mapAttributeLevels() {
         return getAttributes().mapPoints();
@@ -1265,16 +1130,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     public void resetSkillLevel(String skill) {
         skills.remove(skill);
-    }
-
-    @Deprecated
-    public boolean hasSkillUnlocked(RegisteredSkill skill) {
-        return getProfess().hasSkill(skill.getHandler().getId()) && hasSkillUnlocked(getProfess().getSkill(skill.getHandler().getId()));
-    }
-
-    @Deprecated
-    public boolean hasSkillUnlocked(ClassSkill skill) {
-        return hasUnlockedLevel(skill);
     }
 
     /**
@@ -1345,11 +1200,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return found != null ? found.getClassSkill() : null;
     }
 
-    @Deprecated
-    public void setBoundSkill(int slot, ClassSkill skill) {
-        bindSkill(slot, skill);
-    }
-
     /**
      * Binds a skill to the player.
      *
@@ -1406,29 +1256,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return getCombat().isInCombat();
     }
 
-    /**
-     * Loops through all the subclasses available to the player and
-     * checks if they could potentially upgrade to one of these
-     *
-     * @return If the player can change its current class to
-     *         a subclass
-     */
-    @Deprecated
-    public boolean canChooseSubclass() {
-        for (Subclass subclass : getProfess().getSubclasses())
-            if (getLevel() >= subclass.getLevel()) return true;
-        return false;
-    }
-
-    /**
-     * Everytime a player does a combat action, like taking
-     * or dealing damage to an entity, this method is called.
-     */
-    @Deprecated
-    public void updateCombat() {
-        getCombat().update();
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -1441,6 +1268,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     public int hashCode() {
         return getMMOPlayerData().hashCode();
     }
+
+    //region Static methods
 
     public static PlayerData get(@NotNull MMOPlayerData playerData) {
         return get(playerData.getPlayer());
@@ -1489,4 +1318,187 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     public static Collection<PlayerData> getAll() {
         return MMOCore.plugin.playerDataManager.getLoaded();
     }
+
+    //endregion
+
+    //region Deprecated
+
+    /**
+     * @see #setLastHealth(double)
+     * @deprecated
+     */
+    @Deprecated
+    public void setHealth(double amount) {
+        this.lastHealth = amount;
+    }
+
+    @Deprecated
+    public double getHealth() {
+        return getLastHealth();
+    }
+
+    @Deprecated
+    public double getCachedHealth() {
+        return getLastHealth();
+    }
+
+    /**
+     * @deprecated Provide reason with {@link #giveStellium(double, PlayerResourceUpdateEvent.UpdateReason)}
+     */
+    @Deprecated
+    public void giveStellium(double amount) {
+        giveStellium(amount, PlayerResourceUpdateEvent.UpdateReason.OTHER);
+    }
+
+    /**
+     * @deprecated Provide reason with {@link #giveStamina(double, PlayerResourceUpdateEvent.UpdateReason)}
+     */
+    @Deprecated
+    public void giveStamina(double amount) {
+        giveStamina(amount, PlayerResourceUpdateEvent.UpdateReason.OTHER);
+    }
+
+    /**
+     * @deprecated Provide reason with {@link #giveMana(double, PlayerResourceUpdateEvent.UpdateReason)}
+     */
+    @Deprecated
+    public void giveMana(double amount) {
+        giveMana(amount, PlayerResourceUpdateEvent.UpdateReason.OTHER);
+    }
+
+    @Deprecated
+    public void setupRemovableTrigger() {
+        applyTemporaryTriggers();
+    }
+
+    @Deprecated
+    public int getPointSpent(SkillTree skillTree) {
+        return getPointsSpent(skillTree);
+    }
+
+    @Deprecated
+    public int getSkillTreePoint(String treeId) {
+        return getSkillTreePoints(treeId);
+    }
+
+    @Deprecated
+    public void clearSkillTrees() {
+        resetSkillTrees();
+    }
+
+    @Deprecated
+    public void resetTimesClaimed() {
+        tableItemClaims.clear();
+    }
+
+    @Deprecated
+    public void setClaims(ExperienceObject object, ExperienceTable table, ExperienceItem item, int times) {
+        setClaims(object.getKey() + "." + table.getId() + "." + item.getId(), times);
+    }
+
+    @Deprecated
+    public int getClaims(ExperienceObject object, ExperienceTable table, ExperienceItem item) {
+        return getClaims(object.getKey() + "." + table.getId() + "." + item.getId());
+    }
+
+    /**
+     * @see #heal(double, PlayerResourceUpdateEvent.UpdateReason)
+     * @deprecated Provide a heal reason with {@link #heal(double, PlayerResourceUpdateEvent.UpdateReason)}
+     */
+    @Deprecated
+    public void heal(double heal) {
+        this.heal(heal, PlayerResourceUpdateEvent.UpdateReason.OTHER);
+    }
+
+    @Deprecated
+    public NodeState getNodeStatus(SkillTreeNode node) {
+        return getNodeState(node);
+    }
+
+    @Deprecated
+    public boolean setSkillCasting(@NotNull SkillCastingInstance skillCasting) {
+        return setSkillCasting();
+    }
+
+    @Deprecated
+    public boolean isFullyLoaded() {
+        return isSynchronized();
+    }
+
+    @Deprecated
+    public void setFullyLoaded() {
+        markAsSynchronized();
+    }
+
+    @Deprecated
+    public void setBoundSkill(int slot, ClassSkill skill) {
+        bindSkill(slot, skill);
+    }
+
+    /**
+     * Loops through all the subclasses available to the player and
+     * checks if they could potentially upgrade to one of these
+     *
+     * @return If the player can change its current class to
+     *         a subclass
+     */
+    @Deprecated
+    public boolean canChooseSubclass() {
+        for (Subclass subclass : getProfess().getSubclasses())
+            if (getLevel() >= subclass.getLevel()) return true;
+        return false;
+    }
+
+    @Deprecated
+    public boolean hasSkillUnlocked(RegisteredSkill skill) {
+        return getProfess().hasSkill(skill.getHandler().getId()) && hasSkillUnlocked(getProfess().getSkill(skill.getHandler().getId()));
+    }
+
+    @Deprecated
+    public boolean hasSkillUnlocked(ClassSkill skill) {
+        return hasUnlockedLevel(skill);
+    }
+
+    /**
+     * Everytime a player does a combat action, like taking
+     * or dealing damage to an entity, this method is called.
+     */
+    @Deprecated
+    public void updateCombat() {
+        getCombat().update();
+    }
+
+    @Deprecated
+    public void displayActionBar(@NotNull String message) {
+        displayActionBar(message, false);
+    }
+
+    @Deprecated
+    public void displayActionBar(@NotNull String message, boolean raw) {
+
+        // TODO add an option to disable action-bar properly in all casting modes
+        if (ChatColor.stripColor(message).isEmpty()) return;
+
+        // TODO move raw/not raw decision to MythicLib
+        var handler = getMMOPlayerData().getActionBar();
+        if (!raw) {
+            handler.show(ActionBarPriority.NORMAL, message);
+        } else {
+            if (!handler.canShow(ActionBarPriority.NORMAL)) return;
+            handler.show(ActionBarPriority.NORMAL, "");
+            MythicLib.plugin.getVersion().getWrapper().sendActionBarRaw(getPlayer(), message);
+        }
+    }
+
+    @Deprecated
+    public void setAttribute(PlayerAttribute attribute, int value) {
+        setAttribute(attribute.getId(), value);
+    }
+
+    @Deprecated
+    public void setAttribute(String id, int value) {
+        attributes.getInstance(id).setBase(value);
+    }
+
+    //endregion
 }

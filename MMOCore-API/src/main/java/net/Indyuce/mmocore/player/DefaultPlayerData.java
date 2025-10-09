@@ -52,7 +52,7 @@ public class DefaultPlayerData implements ClassDataContainer {
     }
 
     @Override
-    public double getHealth() {
+    public double getLastHealth() {
         return health;
     }
 

@@ -145,7 +145,7 @@ public class YAMLPlayerDataHandler extends YAMLSynchronizedDataHandler<PlayerDat
         config.set("guild", data.hasGuild() ? data.getGuild().getId() : null);
         config.set("skill-tree-reallocation-points", data.getSkillTreeReallocationPoints());
         config.set("skill", null);
-        config.set("health", data.getHealth());
+        config.set("health", data.getLastHealth());
         config.set("mana", data.getMana());
         config.set("stellium", data.getStellium());
         config.set("stamina", data.getStamina());
@@ -192,7 +192,7 @@ public class YAMLPlayerDataHandler extends YAMLSynchronizedDataHandler<PlayerDat
             config.set("class-info." + key + ".attribute-realloc-points", info.getAttributeReallocationPoints());
             config.set("class-info." + key + ".skill-tree-reallocation-points", info.getSkillTreeReallocationPoints());
             config.set("class-info." + key + ".skill-reallocation-points", info.getSkillReallocationPoints());
-            config.set("class-info." + key + ".health", info.getHealth());
+            config.set("class-info." + key + ".health", info.getLastHealth());
             config.set("class-info." + key + ".mana", info.getMana());
             config.set("class-info." + key + ".stamina", info.getStamina());
             config.set("class-info." + key + ".stellium", info.getStellium());

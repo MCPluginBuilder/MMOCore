@@ -105,7 +105,7 @@ public class SQLDataHandler extends SQLSynchronizedDataHandler<PlayerData, Offli
         updater.addData("attribute_points", data.getAttributePoints());
         updater.addData("attribute_realloc_points", data.getAttributeReallocationPoints());
         updater.addData("skill_tree_reallocation_points", data.getSkillTreeReallocationPoints());
-        updater.addData("health", data.getHealth());
+        updater.addData("health", data.getLastHealth());
         updater.addData("mana", data.getMana());
         updater.addData("stellium", data.getStellium());
         updater.addData("stamina", data.getStamina());
@@ -146,7 +146,7 @@ public class SQLDataHandler extends SQLSynchronizedDataHandler<PlayerData, Offli
             classinfo.addProperty("attribute-realloc-points", info.getAttributeReallocationPoints());
             classinfo.addProperty("skill-reallocation-points", info.getSkillReallocationPoints());
             classinfo.addProperty("skill-tree-reallocation-points", info.getSkillTreeReallocationPoints());
-            classinfo.addProperty("health", info.getHealth());
+            classinfo.addProperty("health", info.getLastHealth());
             classinfo.addProperty("mana", info.getMana());
             classinfo.addProperty("stamina", info.getStamina());
             classinfo.addProperty("stellium", info.getStellium());

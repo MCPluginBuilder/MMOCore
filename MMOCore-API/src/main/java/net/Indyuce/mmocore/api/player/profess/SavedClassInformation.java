@@ -118,7 +118,7 @@ public class SavedClassInformation implements ClassDataContainer {
         this.skillTreeReallocationPoints = data.getSkillTreeReallocationPoints();
         this.skillReallocationPoints = data.getSkillReallocationPoints();
         this.experience = data.getExperience();
-        this.health = data.getHealth();
+        this.health = data.getLastHealth();
         this.mana = data.getMana();
         this.stellium = data.getStellium();
         this.stamina = data.getStamina();
@@ -158,7 +158,7 @@ public class SavedClassInformation implements ClassDataContainer {
     }
 
     @Override
-    public double getHealth() {
+    public double getLastHealth() {
         return health;
     }
 
