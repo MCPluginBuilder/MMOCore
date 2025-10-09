@@ -1115,6 +1115,15 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return lastHealth;
     }
 
+    /**
+     * @deprecated
+     * @see #setLastHealth(double)
+     */
+    @Deprecated
+    public void setHealth(double amount) {
+        this.lastHealth = amount;
+    }
+
     public PlayerStats getStats() {
         return playerStats;
     }
@@ -1123,7 +1132,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return attributes;
     }
 
-    public void setHealth(double amount) {
+    public void setLastHealth(double amount) {
         this.lastHealth = amount;
     }
 

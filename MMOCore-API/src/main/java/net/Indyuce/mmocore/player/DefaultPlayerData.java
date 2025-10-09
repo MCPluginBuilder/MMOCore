@@ -1,6 +1,5 @@
 package net.Indyuce.mmocore.player;
 
-import io.lumine.mythic.lib.version.Attributes;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -145,8 +144,7 @@ public class DefaultPlayerData implements ClassDataContainer {
         player.setAttributeReallocationPoints(attrReallocPoints);
         player.setSkillTreeReallocationPoints(skillTreeReallocPoints);
         player.setSkillReallocationPoints(skillReallocPoints);
-        if (player.isOnline())
-            player.getPlayer().setHealth(Math.min(health, player.getPlayer().getAttribute(Attributes.MAX_HEALTH).getValue()));
+        player.setLastHealth(health);
         player.setMana(mana);
         player.setStamina(stamina);
         player.setStellium(stellium);

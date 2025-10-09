@@ -342,7 +342,7 @@ public class SavedClassInformation implements ClassDataContainer {
 
         // This needs to be done at the end to make sure the MAX_HEALTH/MAX_MANA/... stats are loaded.
         UtilityMethods.setHealth(player.getPlayer(), health);
-        player.setHealth(health);
+        player.setLastHealth(health);
         player.setMana(mana);
         player.setStellium(stellium);
         player.setStamina(stamina);
