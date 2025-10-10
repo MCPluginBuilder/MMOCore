@@ -1,6 +1,6 @@
 package net.Indyuce.mmocore.api.player.profess;
 
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 
 public class Subclass {
 	private final PlayerClass profess;

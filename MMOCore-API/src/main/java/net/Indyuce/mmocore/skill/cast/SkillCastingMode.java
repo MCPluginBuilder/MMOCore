@@ -1,11 +1,11 @@
 package net.Indyuce.mmocore.skill.cast;
 
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.skill.cast.handler.KeyCombos;
 import net.Indyuce.mmocore.skill.cast.handler.SkillBar;
 import net.Indyuce.mmocore.skill.cast.handler.SkillCastingDisabled;
 import net.Indyuce.mmocore.skill.cast.handler.SkillScroller;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;

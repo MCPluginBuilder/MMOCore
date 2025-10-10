@@ -1,13 +1,13 @@
 package net.Indyuce.mmocore.api.quest.trigger;
 
 import io.lumine.mythic.lib.api.MMOLineConfig;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.util.math.formula.RandomAmount;
 import net.Indyuce.mmocore.experience.EXPSource;
 import net.Indyuce.mmocore.experience.SimpleExperienceObject;
 import net.Indyuce.mmocore.experience.dispenser.ExperienceDispenser;
-import org.apache.commons.lang.Validate;
 import org.jetbrains.annotations.NotNull;
 
 public class ExperienceTrigger extends Trigger {

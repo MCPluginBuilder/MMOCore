@@ -1,12 +1,12 @@
 package net.Indyuce.mmocore.command;
 
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.eco.Withdraw;
 import net.Indyuce.mmocore.command.api.RegisteredCommand;
 import net.Indyuce.mmocore.command.api.ToggleableCommand;
 import net.Indyuce.mmocore.player.Message;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;

@@ -1,13 +1,13 @@
 package net.Indyuce.mmocore.skill.binding;
 
 import io.lumine.mythic.lib.api.MMOLineConfig;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.quest.trigger.SkillModifierTrigger;
 import net.Indyuce.mmocore.api.quest.trigger.Trigger;
 import net.Indyuce.mmocore.player.Unlockable;
 import net.Indyuce.mmocore.skill.ClassSkill;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.Nullable;

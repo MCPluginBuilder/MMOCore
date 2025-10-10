@@ -228,10 +228,12 @@ friend-sent-request:
   sound: ENTITY_EXPERIENCE_ORB_PICKUP
 friend-now: '&eYou are now friends with &6{player}&e.'
 friend-request:
-  - '{"text":""}'
-  - '{"text":"&6{player} &ejust sent you a friend request!"}'
-  - '[{"text":"        "},{"text":"&8[&a&lACCEPT&8]","clickEvent":{"action":"run_command","value":"/friends accept {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick to accept!"}},{"text":"&r             "},{"text":"&8[&c&lDENY&8]","clickEvent":{"action":"run_command","value":"/friends deny {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick to deny."}}]'
-  - '{"text":""}'
+  json: true
+  format:
+    - '{"text":""}'
+    - '{"text":"&6{player} &ejust sent you a friend request!"}'
+    - '[{"text":"        "},{"text":"&8[&a&lACCEPT&8]","clickEvent":{"action":"run_command","value":"/friends accept {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick to accept!"}},{"text":"&r             "},{"text":"&8[&c&lDENY&8]","clickEvent":{"action":"run_command","value":"/friends deny {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick to deny."}}]'
+    - '{"text":""}'
 
 ###################################################
 # Parties
@@ -242,10 +244,12 @@ party-send-invite:
   message: '&eYou sent a party invite to &6{player}&e.'
   sound: ENTITY_EXPERIENCE_ORB_PICKUP
 party-invite:
-  - '{"text":""}'
-  - '{"text":"&6{player} &ehas invited you to their party!"}'
-  - '[{"text":"        "},{"text":"&8[&a&lACCEPT&8]","clickEvent":{"action":"run_command","value":"/party accept {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick to accept!"}},{"text":"&r             "},{"text":"&8[&c&lDENY&8]","clickEvent":{"action":"run_command","value":"/party deny {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick to deny."}}]'
-  - '{"text":""}'
+  json: true
+  format:
+    - '{"text":""}'
+    - '{"text":"&6{player} &ehas invited you to their party!"}'
+    - '[{"text":"        "},{"text":"&8[&a&lACCEPT&8]","clickEvent":{"action":"run_command","value":"/party accept {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick to accept!"}},{"text":"&r             "},{"text":"&8[&c&lDENY&8]","clickEvent":{"action":"run_command","value":"/party deny {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick to deny."}}]'
+    - '{"text":""}'
 party-joined: '&eYou successfully joined &6{owner}&e''s party.'
 party-joined-other: '&6{player}&e joined your party!'
 party-created:
@@ -288,10 +292,12 @@ guild-not-online-player:
   sound: ENTITY_VILLAGER_NO
 already-in-guild: '&c{player} is already in your guild.'
 guild-invite:
-  - '{"text":""}'
-  - '{"text":"&6{player} &ehas invited you to their guild!"}'
-  - '[{"text":"        "},{"text":"&8[&a&lACCEPT&8]","clickEvent":{"action":"run_command","value":"/guild accept {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick to accept!"}},{"text":"&r             "},{"text":"&8[&c&lDENY&8]","clickEvent":{"action":"run_command","value":"/guild deny {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick to deny."}}]'
-  - '{"text":""}'
+  json: true
+  format:
+    - '{"text":""}'
+    - '{"text":"&6{player} &ehas invited you to their guild!"}'
+    - '[{"text":"        "},{"text":"&8[&a&lACCEPT&8]","clickEvent":{"action":"run_command","value":"/guild accept {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick to accept!"}},{"text":"&r             "},{"text":"&8[&c&lDENY&8]","clickEvent":{"action":"run_command","value":"/guild deny {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick to deny."}}]'
+    - '{"text":""}'
 guild-is-full: '&cSorry, your guild is full.'
 guild-joined: '&eYou successfully joined &6{owner}&e''s guild.'
 guild-joined-other: '&6{player}&e joined your guild!'

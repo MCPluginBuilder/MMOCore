@@ -1,10 +1,10 @@
 package net.Indyuce.mmocore.skill.cast;
 
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.skill.binding.BoundSkillInfo;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;

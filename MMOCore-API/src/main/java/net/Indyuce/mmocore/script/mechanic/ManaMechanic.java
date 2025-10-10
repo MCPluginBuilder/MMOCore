@@ -5,9 +5,9 @@ import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.api.event.PlayerResourceUpdateEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import org.apache.commons.lang.Validate;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 

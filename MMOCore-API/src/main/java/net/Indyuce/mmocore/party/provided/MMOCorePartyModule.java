@@ -1,12 +1,12 @@
 package net.Indyuce.mmocore.party.provided;
 
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.social.PartyChatEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.party.AbstractParty;
 import net.Indyuce.mmocore.party.PartyModule;
 import net.Indyuce.mmocore.player.Message;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;

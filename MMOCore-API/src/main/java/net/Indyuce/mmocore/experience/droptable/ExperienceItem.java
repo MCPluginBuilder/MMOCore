@@ -1,12 +1,12 @@
 package net.Indyuce.mmocore.experience.droptable;
 
 import io.lumine.mythic.lib.api.MMOLineConfig;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.quest.trigger.Trigger;
 import net.Indyuce.mmocore.api.quest.trigger.api.Removable;
 import net.Indyuce.mmocore.api.quest.trigger.api.Temporary;
-import org.apache.commons.lang.Validate;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.ArrayList;

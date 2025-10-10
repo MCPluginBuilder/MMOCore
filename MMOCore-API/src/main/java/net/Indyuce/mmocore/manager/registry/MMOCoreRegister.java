@@ -1,7 +1,7 @@
 package net.Indyuce.mmocore.manager.registry;
 
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.manager.MMOCoreManager;
-import org.apache.commons.lang.Validate;
 
 import java.util.Collection;
 import java.util.HashMap;

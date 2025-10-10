@@ -1,6 +1,5 @@
 package net.Indyuce.mmocore.api.player.profess;
 
-import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.gson.JsonElement;
 import io.lumine.mythic.lib.gson.JsonObject;
 import net.Indyuce.mmocore.MMOCore;

@@ -1,11 +1,11 @@
 package net.Indyuce.mmocore.api.quest.objective;
 
 import io.lumine.mythic.lib.api.MMOLineConfig;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.quest.ObjectiveProgress;
 import net.Indyuce.mmocore.api.quest.QuestProgress;
 import net.Indyuce.mmocore.api.quest.trigger.Trigger;
-import org.apache.commons.lang.Validate;
 import org.bukkit.boss.BarColor;
 import org.bukkit.configuration.ConfigurationSection;
 

@@ -2,7 +2,7 @@ package net.Indyuce.mmocore.api.player.profess.resource;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.util.AltChar;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 

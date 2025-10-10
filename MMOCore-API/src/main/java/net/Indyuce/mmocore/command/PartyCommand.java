@@ -1,5 +1,6 @@
 package net.Indyuce.mmocore.command;
 
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.MMOCommandEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
@@ -9,7 +10,6 @@ import net.Indyuce.mmocore.command.api.ToggleableCommand;
 import net.Indyuce.mmocore.manager.InventoryManager;
 import net.Indyuce.mmocore.party.provided.MMOCorePartyModule;
 import net.Indyuce.mmocore.party.provided.PartyInvite;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;

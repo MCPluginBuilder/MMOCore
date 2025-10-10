@@ -2,13 +2,13 @@ package net.Indyuce.mmocore.api.player.attribute;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.stat.modifier.StatModifier;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.experience.EXPSource;
 import net.Indyuce.mmocore.experience.ExpCurve;
 import net.Indyuce.mmocore.experience.ExperienceObject;
 import net.Indyuce.mmocore.experience.droptable.ExperienceTable;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
