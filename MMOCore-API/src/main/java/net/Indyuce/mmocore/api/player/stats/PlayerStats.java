@@ -85,13 +85,13 @@ public class PlayerStats {
         // Update player stats
         getMap().bufferUpdates(() -> {
             for (String stat : MMOCore.plugin.statManager.getRegistered()) {
-                final StatInstance instance = getMap().getInstance(stat);
+                final var instance = getMap().getInstance(stat);
 
                 // Remove modifiers due to class
                 instance.removeIf(MODIFIER_KEY::equals);
 
                 // Add newest one
-                final double total = getBase(instance.getStat()) - instance.getBase();
+                final double total = getBase(instance.getStat()) - instance.getDefaultBase();
                 if (total != 0)
                     instance.registerModifier(new StatModifier(MODIFIER_KEY, instance.getStat(), total, ModifierType.FLAT, EquipmentSlot.OTHER, ModifierSource.OTHER));
             }
