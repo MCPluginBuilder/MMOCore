@@ -1,8 +1,9 @@
 package net.Indyuce.mmocore.command.rpg.booster;
 
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
+import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
 import net.Indyuce.mmocore.MMOCore;
+import net.Indyuce.mmocore.command.Arguments;
 import net.Indyuce.mmocore.experience.Booster;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -14,12 +15,11 @@ public class RemoveCommandTreeNode extends CommandTreeNode {
 	public RemoveCommandTreeNode(CommandTreeNode parent) {
 		super(parent, "remove");
 
-		addParameter(new Parameter("<id>",
-				(explorer, list) -> MMOCore.plugin.boosterManager.getActive().forEach(booster -> list.add("" + booster.getUniqueId().toString()))));
+		addArgument(Arguments.BOOSTER);
 	}
 
 	@Override
-	public CommandResult execute(CommandSender sender, String[] args) {
+	public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
 		if (args.length < 3)
 			return CommandResult.THROW_USAGE;
 

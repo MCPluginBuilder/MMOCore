@@ -1,9 +1,10 @@
 package net.Indyuce.mmocore.command.rpg.admin;
 
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
-import net.Indyuce.mmocore.MMOCore;
+import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
+import io.lumine.mythic.lib.command.argument.Argument;
 import net.Indyuce.mmocore.api.player.PlayerData;
+import net.Indyuce.mmocore.command.Arguments;
 import net.Indyuce.mmocore.command.api.CommandVerbose;
 import net.Indyuce.mmocore.skill.ClassSkill;
 import net.Indyuce.mmocore.skill.binding.BoundSkillInfo;
@@ -23,18 +24,18 @@ public class SlotCommandTreeNode extends CommandTreeNode {
         addChild(new BindSlotCommandTreeNode(this, "bind"));
     }
 
-    public class LockSlotCommandTreeNode extends CommandTreeNode {
+    static class LockSlotCommandTreeNode extends CommandTreeNode {
         private final boolean lock;
 
         public LockSlotCommandTreeNode(CommandTreeNode parent, String id, boolean lock) {
             super(parent, id);
             this.lock = lock;
-            addParameter(Parameter.PLAYER);
-            addParameter(Parameter.AMOUNT);
+            addArgument(Argument.PLAYER);
+            addArgument(Arguments.INDEX);
         }
 
         @Override
-        public CommandResult execute(CommandSender sender, String[] args) {
+        public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
             if (args.length < 5)
                 return CommandResult.THROW_USAGE;
             Player player = Bukkit.getPlayer(args[3]);
@@ -83,20 +84,18 @@ public class SlotCommandTreeNode extends CommandTreeNode {
         }
     }
 
-
-    public class BindSlotCommandTreeNode extends CommandTreeNode {
+    static class BindSlotCommandTreeNode extends CommandTreeNode {
 
         public BindSlotCommandTreeNode(CommandTreeNode parent, String id) {
             super(parent, id);
-            addParameter(Parameter.PLAYER);
-            addParameter(Parameter.AMOUNT);
-            addParameter(new Parameter("<skill>",
-                    (explorer, list) -> MMOCore.plugin.skillManager.getAll().forEach(skill -> list.add(skill.getHandler().getId().toUpperCase()))));
+            addArgument(Argument.PLAYER);
+            addArgument(Arguments.INDEX);
+            addArgument(Arguments.SKILL);
 
         }
 
         @Override
-        public CommandResult execute(CommandSender sender, String[] args) {
+        public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
             if (args.length < 6)
                 return CommandResult.THROW_USAGE;
             Player player = Bukkit.getPlayer(args[3]);
@@ -128,12 +127,12 @@ public class SlotCommandTreeNode extends CommandTreeNode {
 
         public UnbindSlotCommandTreeNode(CommandTreeNode parent, String id) {
             super(parent, id);
-            addParameter(Parameter.PLAYER);
-            addParameter(Parameter.AMOUNT);
+            addArgument(Argument.PLAYER);
+            addArgument(Argument.AMOUNT_INT);
         }
 
         @Override
-        public CommandResult execute(CommandSender sender, String[] args) {
+        public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
             if (args.length < 5)
                 return CommandResult.THROW_USAGE;
             Player player = Bukkit.getPlayer(args[3]);
@@ -158,7 +157,7 @@ public class SlotCommandTreeNode extends CommandTreeNode {
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
         return CommandResult.THROW_USAGE;
     }
 }

@@ -1,7 +1,8 @@
 package net.Indyuce.mmocore.command.rpg.admin;
 
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
+import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
+import io.lumine.mythic.lib.command.argument.Argument;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.command.api.CommandVerbose;
@@ -16,38 +17,41 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 public class SkillTreePointsCommandTreeNode extends CommandTreeNode {
-    BiFunction<PlayerData, String,Integer> get;
+    BiFunction<PlayerData, String, Integer> get;
 
     public SkillTreePointsCommandTreeNode(CommandTreeNode parent, TriConsumer<PlayerData, Integer, String> set,
-                                          TriConsumer<PlayerData, Integer, String> give, BiFunction<PlayerData, String,Integer> get) {
+                                          TriConsumer<PlayerData, Integer, String> give, BiFunction<PlayerData, String, Integer> get) {
         super(parent, "skill-tree-points");
+
         addChild(new ActionCommandTreeNode(this, "give", give));
         addChild(new ActionCommandTreeNode(this, "set", set));
         this.get = get;
     }
 
-    @Override
-    public CommandResult execute(CommandSender commandSender, String[] strings) {
-        return CommandResult.THROW_USAGE;
-    }
-
     public class ActionCommandTreeNode extends CommandTreeNode {
         private final TriConsumer<PlayerData, Integer, String> action;
 
-
         public ActionCommandTreeNode(CommandTreeNode parent, String id, TriConsumer<PlayerData, Integer, String> action) {
             super(parent, id);
+
             this.action = action;
-            addParameter(Parameter.PLAYER);
-            addParameter(Parameter.AMOUNT);
-            addParameter(new Parameter("<type>", ((explorer, list) -> {
+
+            addArgument(Argument.PLAYER);
+            addArgument(Argument.AMOUNT_INT);
+            addArgument(new Argument<>("point_type", (explorer, list) -> {
                 MMOCore.plugin.skillTreeManager.getAll().forEach(tree -> list.add(tree.getId()));
                 list.add("global");
-            })));
+            }, (explorer, input) -> {
+                if (input.equalsIgnoreCase("global")) return "global";
+                for (var skillTree : MMOCore.plugin.skillTreeManager.getAll())
+                    if (skillTree.getId().equalsIgnoreCase(input))
+                        return skillTree.getId();
+                throw new IllegalArgumentException("Not 'global' or could not find skill tree with ID " + input);
+            }));
         }
 
         @Override
-        public CommandResult execute(CommandSender sender, String[] args) {
+        public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
             if (args.length < 6)
                 return CommandResult.THROW_USAGE;
             Player player = Bukkit.getPlayer(args[3]);

@@ -1,7 +1,8 @@
 package net.Indyuce.mmocore.command.rpg.waypoint;
 
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
+import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
+import io.lumine.mythic.lib.command.argument.Argument;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.manager.InventoryManager;
 import org.bukkit.Bukkit;
@@ -13,11 +14,11 @@ public class OpenCommandTreeNode extends CommandTreeNode {
 	public OpenCommandTreeNode(CommandTreeNode parent) {
 		super(parent, "open");
 
-		addParameter(Parameter.PLAYER);
+		addArgument(Argument.PLAYER);
 	}
 
 	@Override
-	public CommandResult execute(CommandSender sender, String[] args) {
+	public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
 		if (args.length < 3)
 			return CommandResult.THROW_USAGE;
 

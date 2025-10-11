@@ -1,12 +1,13 @@
 package net.Indyuce.mmocore.command.rpg.admin;
 
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
+import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
+import io.lumine.mythic.lib.command.argument.Argument;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import net.Indyuce.mmocore.command.MMOCoreCommandTreeRoot;
+import net.Indyuce.mmocore.command.Arguments;
 import net.Indyuce.mmocore.command.api.CommandVerbose;
 import net.Indyuce.mmocore.experience.EXPSource;
 import net.Indyuce.mmocore.experience.PlayerProfessions;
@@ -41,13 +42,13 @@ public class ExperienceCommandTreeNode extends CommandTreeNode {
 			this.main = main;
 			this.profession = profession;
 
-			addParameter(Parameter.PLAYER);
-			addParameter(MMOCoreCommandTreeRoot.PROFESSION);
-			addParameter(Parameter.AMOUNT);
+			addArgument(Argument.PLAYER);
+			addArgument(Arguments.PROFESSION);
+			addArgument(Argument.AMOUNT_INT);
 		}
 
 		@Override
-		public CommandResult execute(CommandSender sender, String[] args) {
+		public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
 			if (args.length < 6)
 				return CommandResult.THROW_USAGE;
 
@@ -91,7 +92,7 @@ public class ExperienceCommandTreeNode extends CommandTreeNode {
 
 
 	@Override
-	public CommandResult execute(CommandSender sender, String[] args) {
+	public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
 		return CommandResult.THROW_USAGE;
 	}
 }

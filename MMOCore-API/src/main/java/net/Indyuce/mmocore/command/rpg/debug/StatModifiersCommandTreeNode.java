@@ -3,23 +3,25 @@ package net.Indyuce.mmocore.command.rpg.debug;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.stat.StatInstance;
 import io.lumine.mythic.lib.api.stat.modifier.StatModifier;
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
+import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
+import io.lumine.mythic.lib.command.argument.Argument;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 
 public class StatModifiersCommandTreeNode extends CommandTreeNode {
     public StatModifiersCommandTreeNode(CommandTreeNode parent) {
         super(parent, "statmods");
 
-        addParameter(new Parameter("<stat>", (explorer, list) -> list.add("STAT_ID")));
+        addArgument(Argument.STAT);
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
         if (args.length < 3)
             return CommandResult.THROW_USAGE;
 

@@ -1,7 +1,8 @@
 package net.Indyuce.mmocore.command.rpg.admin;
 
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
+import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
+import io.lumine.mythic.lib.command.argument.Argument;
 import io.lumine.mythic.lib.data.SaveReason;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
@@ -17,11 +18,11 @@ public class SaveDataTreeNode extends CommandTreeNode {
     public SaveDataTreeNode(CommandTreeNode parent) {
         super(parent, "savedata");
 
-        addParameter(Parameter.PLAYER);
+        addArgument(Argument.PLAYER);
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
         if (args.length < 3)
             return CommandResult.THROW_USAGE;
 

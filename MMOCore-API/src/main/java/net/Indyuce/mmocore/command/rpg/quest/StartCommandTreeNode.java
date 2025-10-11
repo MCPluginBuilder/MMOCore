@@ -1,12 +1,13 @@
 package net.Indyuce.mmocore.command.rpg.quest;
 
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
+import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
+import io.lumine.mythic.lib.command.argument.Argument;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.quest.PlayerQuests;
 import net.Indyuce.mmocore.api.quest.Quest;
-import net.Indyuce.mmocore.command.MMOCoreCommandTreeRoot;
+import net.Indyuce.mmocore.command.Arguments;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -16,12 +17,12 @@ public class StartCommandTreeNode extends CommandTreeNode {
 	public StartCommandTreeNode(CommandTreeNode parent) {
 		super(parent, "start");
 
-		addParameter(Parameter.PLAYER);
-		addParameter(MMOCoreCommandTreeRoot.QUEST);
+		addArgument(Argument.PLAYER);
+		addArgument(Arguments.QUEST);
 	}
 
 	@Override
-	public CommandResult execute(CommandSender sender, String[] args) {
+	public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
 		if (args.length < 4)
 			return CommandResult.THROW_USAGE;
 

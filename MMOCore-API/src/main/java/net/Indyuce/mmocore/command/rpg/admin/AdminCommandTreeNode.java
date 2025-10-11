@@ -1,9 +1,8 @@
 package net.Indyuce.mmocore.command.rpg.admin;
 
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
+import io.lumine.mythic.lib.command.CommandTreeNode;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.profess.resource.PlayerResource;
-import org.bukkit.command.CommandSender;
 
 public class AdminCommandTreeNode extends CommandTreeNode {
     public AdminCommandTreeNode(CommandTreeNode parent) {
@@ -32,10 +31,5 @@ public class AdminCommandTreeNode extends CommandTreeNode {
         addChild(new SkillTreePointsCommandTreeNode(this, (playerData, integer, s) -> playerData.setSkillTreePoints(s, integer), (playerData, integer, s) -> playerData.giveSkillTreePoints(s, integer), PlayerData::getSkillTreePoints));
         for (PlayerResource res : PlayerResource.values())
             addChild(new ResourceCommandTreeNode(res.name().toLowerCase(), this, res));
-    }
-
-    @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
-        return CommandResult.THROW_USAGE;
     }
 }

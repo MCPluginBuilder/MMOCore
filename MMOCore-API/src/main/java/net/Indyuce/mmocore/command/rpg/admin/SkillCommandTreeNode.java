@@ -1,9 +1,11 @@
 package net.Indyuce.mmocore.command.rpg.admin;
 
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
+import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
+import io.lumine.mythic.lib.command.argument.Argument;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
+import net.Indyuce.mmocore.command.Arguments;
 import net.Indyuce.mmocore.command.api.CommandVerbose;
 import net.Indyuce.mmocore.skill.ClassSkill;
 import net.Indyuce.mmocore.skill.RegisteredSkill;
@@ -32,14 +34,14 @@ public class SkillCommandTreeNode extends CommandTreeNode {
             super(parent, type);
 
             this.change = change;
-            addParameter(Parameter.PLAYER);
-            addParameter(new Parameter("<skill>",
-                    (explorer, list) -> MMOCore.plugin.skillManager.getAll().forEach(skill -> list.add(skill.getHandler().getId().toUpperCase()))));
-            addParameter(Parameter.AMOUNT);
+
+            addArgument(Argument.PLAYER);
+            addArgument(Arguments.SKILL);
+            addArgument(Arguments.INDEX.withKey("skill_level"));
         }
 
         @Override
-        public CommandResult execute(CommandSender sender, String[] args) {
+        public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
             if (args.length < 6)
                 return CommandResult.THROW_USAGE;
 
@@ -88,14 +90,15 @@ public class SkillCommandTreeNode extends CommandTreeNode {
 
         public LockSkillCommandTreeNode(CommandTreeNode parent, String id, boolean lock) {
             super(parent, id);
+
             this.lock = lock;
-            addParameter(Parameter.PLAYER);
-            addParameter(new Parameter("<skill>",
-                    (explorer, list) -> MMOCore.plugin.skillManager.getAll().forEach(skill -> list.add(skill.getHandler().getId().toUpperCase()))));
+
+            addArgument(Argument.PLAYER);
+            addArgument(Arguments.SKILL);
         }
 
         @Override
-        public CommandResult execute(CommandSender sender, String[] args) {
+        public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
             if (args.length < 5)
                 return CommandResult.THROW_USAGE;
             Player player = Bukkit.getPlayer(args[3]);
@@ -131,7 +134,7 @@ public class SkillCommandTreeNode extends CommandTreeNode {
 
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
         return CommandResult.THROW_USAGE;
     }
 }

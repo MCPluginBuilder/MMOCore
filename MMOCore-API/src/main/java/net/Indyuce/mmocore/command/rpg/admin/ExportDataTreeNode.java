@@ -1,6 +1,7 @@
 package net.Indyuce.mmocore.command.rpg.admin;
 
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
+import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
 import io.lumine.mythic.lib.data.DataExport;
 import io.lumine.mythic.lib.data.sql.SQLDataSource;
 import net.Indyuce.mmocore.MMOCore;
@@ -20,7 +21,7 @@ public class ExportDataTreeNode extends CommandTreeNode {
 
     @Override
     @NotNull
-    public CommandResult execute(CommandSender sender, String[] strings) {
+    public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
 
         // Export YAML to SQL
         final boolean result = new DataExport<>(MMOCore.plugin.playerDataManager, sender).start(

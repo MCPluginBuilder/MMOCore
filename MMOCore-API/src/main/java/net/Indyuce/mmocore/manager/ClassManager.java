@@ -10,6 +10,7 @@ import net.Indyuce.mmocore.api.player.profess.event.trigger.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -29,6 +30,7 @@ public class ClassManager implements MMOCoreManager {
      */
     private final Set<EventTriggerHandler> triggerHandlers = new HashSet<>();
 
+    @SuppressWarnings("deprecation")
     public ClassManager() {
         registerEvent(new LevelUpEventTrigger());
         registerEvent(new AttackEventTrigger());
@@ -52,6 +54,7 @@ public class ClassManager implements MMOCoreManager {
         return map.containsKey(id);
     }
 
+    @Nullable
     public PlayerClass get(String id) {
         return map.get(id);
     }

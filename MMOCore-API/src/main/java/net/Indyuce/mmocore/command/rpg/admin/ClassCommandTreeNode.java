@@ -1,12 +1,14 @@
 package net.Indyuce.mmocore.command.rpg.admin;
 
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
+import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
+import io.lumine.mythic.lib.command.argument.Argument;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerChangeClassEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.profess.PlayerClass;
 import net.Indyuce.mmocore.api.player.profess.SavedClassInformation;
+import net.Indyuce.mmocore.command.Arguments;
 import net.Indyuce.mmocore.command.api.CommandVerbose;
 import net.Indyuce.mmocore.player.Message;
 import org.bukkit.Bukkit;
@@ -18,13 +20,12 @@ public class ClassCommandTreeNode extends CommandTreeNode {
 	public ClassCommandTreeNode(CommandTreeNode parent) {
 		super(parent, "class");
 
-		addParameter(Parameter.PLAYER);
-		addParameter(
-				new Parameter("<class>", (explorer, list) -> MMOCore.plugin.classManager.getAll().forEach(profess -> list.add(profess.getId()))));
+		addArgument(Argument.PLAYER);
+		addArgument(Arguments.CLASS);
 	}
 
 	@Override
-	public CommandResult execute(CommandSender sender, String[] args) {
+	public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
 		if (args.length < 4)
 			return CommandResult.THROW_USAGE;
 

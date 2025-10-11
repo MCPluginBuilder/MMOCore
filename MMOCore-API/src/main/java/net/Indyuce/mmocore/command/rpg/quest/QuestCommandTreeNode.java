@@ -1,6 +1,7 @@
 package net.Indyuce.mmocore.command.rpg.quest;
 
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
+import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
 import org.bukkit.command.CommandSender;
 
 public class QuestCommandTreeNode extends CommandTreeNode {
@@ -14,7 +15,7 @@ public class QuestCommandTreeNode extends CommandTreeNode {
 	}
 
 	@Override
-	public CommandResult execute(CommandSender sender, String[] args) {
+	public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
 		return CommandResult.THROW_USAGE;
 	}
 }

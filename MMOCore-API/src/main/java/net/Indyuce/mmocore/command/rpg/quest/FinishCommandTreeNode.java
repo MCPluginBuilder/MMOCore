@@ -1,7 +1,8 @@
 package net.Indyuce.mmocore.command.rpg.quest;
 
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
+import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
+import io.lumine.mythic.lib.command.argument.Argument;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.quest.PlayerQuests;
 import org.bukkit.Bukkit;
@@ -13,11 +14,11 @@ public class FinishCommandTreeNode extends CommandTreeNode {
 	public FinishCommandTreeNode(CommandTreeNode parent) {
 		super(parent, "finish");
 
-		addParameter(Parameter.PLAYER);
+		addArgument(Argument.PLAYER);
 	}
 
 	@Override
-	public CommandResult execute(CommandSender sender, String[] args) {
+	public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
 		if (args.length < 3)
 			return CommandResult.THROW_USAGE;
 

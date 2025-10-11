@@ -1,11 +1,13 @@
 package net.Indyuce.mmocore.command.rpg.admin;
 
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
+import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
+import io.lumine.mythic.lib.command.argument.Argument;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.attribute.PlayerAttribute;
 import net.Indyuce.mmocore.api.player.attribute.PlayerAttributes;
+import net.Indyuce.mmocore.command.Arguments;
 import net.Indyuce.mmocore.command.api.CommandVerbose;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -28,14 +30,13 @@ public class AttributeCommandTreeNode extends CommandTreeNode {
 
 			this.c = take ? -1 : 1;
 
-			addParameter(Parameter.PLAYER);
-			addParameter(new Parameter("<attribute>",
-					(explorer, list) -> MMOCore.plugin.attributeManager.getAll().forEach(attribute -> list.add(attribute.getId()))));
-			addParameter(Parameter.AMOUNT);
+			addArgument(Argument.PLAYER);
+			addArgument(Arguments.ATTRIBUTE);
+			addArgument(Argument.AMOUNT_INT);
 		}
 
 		@Override
-		public CommandResult execute(CommandSender sender, String[] args) {
+		public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
 			if (args.length < 6)
 				return CommandResult.THROW_USAGE;
 
@@ -66,10 +67,5 @@ public class AttributeCommandTreeNode extends CommandTreeNode {
 					+ " now has " + ChatColor.GOLD + instance.getBase() + ChatColor.YELLOW + " " + attribute.getName() + ".");
 			return CommandResult.SUCCESS;
 		}
-	}
-
-	@Override
-	public CommandResult execute(CommandSender sender, String[] args) {
-		return CommandResult.THROW_USAGE;
 	}
 }

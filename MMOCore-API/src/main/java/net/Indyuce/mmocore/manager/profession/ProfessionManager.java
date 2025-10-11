@@ -7,6 +7,7 @@ import net.Indyuce.mmocore.experience.Profession;
 import net.Indyuce.mmocore.manager.MMOCoreManager;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -40,6 +41,7 @@ public class ProfessionManager implements MMOCoreManager {
 				}
 	}
 
+	@Nullable
 	public Profession get(String id) {
 		return professions.get(id);
 	}

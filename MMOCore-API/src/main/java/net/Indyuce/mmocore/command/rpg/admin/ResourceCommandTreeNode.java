@@ -1,7 +1,8 @@
 package net.Indyuce.mmocore.command.rpg.admin;
 
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
+import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
+import io.lumine.mythic.lib.command.argument.Argument;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.profess.resource.PlayerResource;
 import net.Indyuce.mmocore.api.quest.trigger.ManaTrigger;
@@ -34,12 +35,12 @@ public class ResourceCommandTreeNode extends CommandTreeNode {
 
 			this.action = action;
 
-			addParameter(Parameter.PLAYER);
-			addParameter(Parameter.AMOUNT);
+			addArgument(Argument.PLAYER);
+			addArgument(Argument.AMOUNT_DOUBLE);
 		}
 
 		@Override
-		public CommandResult execute(CommandSender sender, String[] args) {
+		public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
 			if (args.length < 5)
 				return CommandResult.THROW_USAGE;
 
@@ -67,7 +68,7 @@ public class ResourceCommandTreeNode extends CommandTreeNode {
 	}
 
 	@Override
-	public CommandResult execute(CommandSender sender, String[] args) {
+	public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
 		return CommandResult.THROW_USAGE;
 	}
 }

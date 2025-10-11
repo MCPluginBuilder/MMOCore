@@ -1,9 +1,11 @@
 package net.Indyuce.mmocore.command.rpg.cast;
 
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
+import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
+import io.lumine.mythic.lib.command.argument.Argument;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.api.player.PlayerData;
+import net.Indyuce.mmocore.command.Arguments;
 import net.Indyuce.mmocore.skill.ClassSkill;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -18,12 +20,12 @@ public class FirstCommandTreeNode extends CommandTreeNode {
     public FirstCommandTreeNode(CommandTreeNode parent) {
         super(parent, "first");
 
-        addParameter(Parameter.PLAYER);
-        addParameter(SpecificCommandTreeNode.INTEGER);
+        addArgument(Argument.PLAYER);
+        addArgument(Arguments.INDEX);
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
         if (args.length < 3) return CommandResult.THROW_USAGE;
 
         Player player = Bukkit.getPlayer(args[2]);

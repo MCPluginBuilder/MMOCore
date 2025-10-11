@@ -1,8 +1,9 @@
 package net.Indyuce.mmocore.command.rpg;
 
 import io.lumine.mythic.lib.api.util.SmartGive;
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
+import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
+import io.lumine.mythic.lib.command.argument.Argument;
 import net.Indyuce.mmocore.util.item.CurrencyItemBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -10,17 +11,16 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-
 public class CoinsCommandTreeNode extends CommandTreeNode {
     public CoinsCommandTreeNode(CommandTreeNode parent) {
         super(parent, "coins");
 
-        addParameter(Parameter.PLAYER);
-        addParameter(Parameter.AMOUNT);
+        addArgument(Argument.PLAYER);
+        addArgument(Argument.AMOUNT_INT);
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
         if (args.length < 3)
             return CommandResult.THROW_USAGE;
 

@@ -1,27 +1,25 @@
 package net.Indyuce.mmocore.command.rpg;
 
 import io.lumine.mythic.lib.api.util.SmartGive;
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
+import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
+import io.lumine.mythic.lib.command.argument.Argument;
 import net.Indyuce.mmocore.util.item.CurrencyItemBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.Arrays;
-
 public class NoteCommandTreeNode extends CommandTreeNode {
 	public NoteCommandTreeNode(CommandTreeNode parent) {
 		super(parent, "note");
 
-		addParameter(Parameter.PLAYER);
-		addParameter(new Parameter("<worth>",
-				(explorer, list) -> list.addAll(Arrays.asList("10", "20", "30", "40", "50", "60", "70", "80", "90", "100"))));
+		addArgument(Argument.PLAYER);
+		addArgument(Argument.AMOUNT_INT.withKey("worth"));
 	}
 
 	@Override
-	public CommandResult execute(CommandSender sender, String[] args) {
+	public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
 		if (args.length < 3)
 			return CommandResult.THROW_USAGE;
 

@@ -1,7 +1,8 @@
 package net.Indyuce.mmocore.command.rpg.admin;
 
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
+import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
+import io.lumine.mythic.lib.command.argument.Argument;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.attribute.PlayerAttribute;
@@ -31,7 +32,7 @@ public class ResetCommandTreeNode extends CommandTreeNode {
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
         return CommandResult.THROW_USAGE;
     }
 
@@ -39,11 +40,11 @@ public class ResetCommandTreeNode extends CommandTreeNode {
         public ResetAllCommandTreeNode(CommandTreeNode parent) {
             super(parent, "all");
 
-            addParameter(Parameter.PLAYER);
+            addArgument(Argument.PLAYER);
         }
 
         @Override
-        public CommandResult execute(CommandSender sender, String[] args) {
+        public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
             if (args.length < 4) return CommandResult.THROW_USAGE;
 
             Player player = Bukkit.getPlayer(args[3]);
@@ -74,11 +75,11 @@ class ResetWaypointsCommandTreeNode extends CommandTreeNode {
     public ResetWaypointsCommandTreeNode(CommandTreeNode parent) {
         super(parent, "waypoints");
 
-        addParameter(Parameter.PLAYER);
+        addArgument(Argument.PLAYER);
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
         if (args.length < 4) return CommandResult.THROW_USAGE;
 
         Player player = Bukkit.getPlayer(args[3]);
@@ -101,11 +102,11 @@ class ResetQuestsCommandTreeNode extends CommandTreeNode {
     public ResetQuestsCommandTreeNode(CommandTreeNode parent) {
         super(parent, "quests");
 
-        addParameter(Parameter.PLAYER);
+        addArgument(Argument.PLAYER);
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
         if (args.length < 4) return CommandResult.THROW_USAGE;
 
         Player player = Bukkit.getPlayer(args[3]);
@@ -129,11 +130,11 @@ class ResetSkillsCommandTreeNode extends CommandTreeNode {
     public ResetSkillsCommandTreeNode(CommandTreeNode parent) {
         super(parent, "skills");
 
-        addParameter(Parameter.PLAYER);
+        addArgument(Argument.PLAYER);
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
         if (args.length < 4) return CommandResult.THROW_USAGE;
 
         Player player = Bukkit.getPlayer(args[3]);
@@ -158,11 +159,11 @@ class ResetSkillTreesCommandTreeNode extends CommandTreeNode {
     public ResetSkillTreesCommandTreeNode(CommandTreeNode parent) {
         super(parent, "skill-trees");
 
-        addParameter(Parameter.PLAYER);
+        addArgument(Argument.PLAYER);
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
         if (args.length < 4) return CommandResult.THROW_USAGE;
 
         Player player = Bukkit.getPlayer(args[3]);
@@ -186,12 +187,12 @@ class ResetAttributesCommandTreeNode extends CommandTreeNode {
     public ResetAttributesCommandTreeNode(CommandTreeNode parent) {
         super(parent, "attributes");
 
-        addParameter(Parameter.PLAYER);
-        addParameter(new Parameter("(-reallocate)", (explore, list) -> list.add("-reallocate")));
+        addArgument(Argument.PLAYER);
+        addArgument(new Argument<>("-reallocate", (explore, list) -> list.add("-reallocate"), (explore, input) -> input, explorer -> ""));
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
         if (args.length < 4) return CommandResult.THROW_USAGE;
 
         Player player = Bukkit.getPlayer(args[3]);
@@ -232,11 +233,11 @@ class ResetLevelsCommandTreeNode extends CommandTreeNode {
     public ResetLevelsCommandTreeNode(CommandTreeNode parent) {
         super(parent, "levels");
 
-        addParameter(Parameter.PLAYER);
+        addArgument(Argument.PLAYER);
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
         if (args.length < 4) return CommandResult.THROW_USAGE;
 
         Player player = Bukkit.getPlayer(args[3]);
@@ -270,11 +271,11 @@ class ResetClassesCommandTreeNode extends CommandTreeNode {
     public ResetClassesCommandTreeNode(CommandTreeNode parent) {
         super(parent, "classes");
 
-        addParameter(Parameter.PLAYER);
+        addArgument(Argument.PLAYER);
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
         if (args.length < 4) return CommandResult.THROW_USAGE;
 
         Player player = Bukkit.getPlayer(args[3]);

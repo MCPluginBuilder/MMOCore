@@ -15,8 +15,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.stream.Collectors;
-
 public class SkillTreesCommand extends RegisteredCommand {
     public SkillTreesCommand(ConfigurationSection config) {
         super(config, ToggleableCommand.SKILL_TREES);
@@ -56,11 +54,8 @@ public class SkillTreesCommand extends RegisteredCommand {
                 return false;
             }
 
-            if (data.getProfess().getSkillTrees()
-                    .stream()
-                    .filter(skillTree -> UtilityMethods.ymlName(skillTree.getId()).equals(UtilityMethods.ymlName(args[0])))
-                    .collect(Collectors.toList())
-                    .size() != 0) {
+            if (!(data.getProfess().getSkillTrees()
+                    .stream().noneMatch(skillTree -> UtilityMethods.ymlName(skillTree.getId()).equals(UtilityMethods.ymlName(args[0]))))) {
                 InventoryManager.SPECIFIC_TREE_VIEW.get(UtilityMethods.ymlName(args[0])).newInventory(data).open();
                 return true;
             } else {

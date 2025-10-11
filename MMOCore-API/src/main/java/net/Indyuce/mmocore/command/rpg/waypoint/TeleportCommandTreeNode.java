@@ -1,8 +1,10 @@
 package net.Indyuce.mmocore.command.rpg.waypoint;
 
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
+import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
+import io.lumine.mythic.lib.command.argument.Argument;
 import net.Indyuce.mmocore.MMOCore;
+import net.Indyuce.mmocore.command.Arguments;
 import net.Indyuce.mmocore.waypoint.Waypoint;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -13,12 +15,12 @@ public class TeleportCommandTreeNode extends CommandTreeNode {
 	public TeleportCommandTreeNode(CommandTreeNode parent) {
 		super(parent, "teleport");
 
-		addParameter(new Parameter("<waypoint>", (explorer, list) -> MMOCore.plugin.waypointManager.getAll().forEach(way -> list.add(way.getId()))));
-		addParameter(Parameter.PLAYER);
+		addArgument(Arguments.WAYPOINT);
+		addArgument(Argument.PLAYER);
 	}
 
 	@Override
-	public CommandResult execute(CommandSender sender, String[] args) {
+	public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
 		if (args.length < 4)
 			return CommandResult.THROW_USAGE;
 

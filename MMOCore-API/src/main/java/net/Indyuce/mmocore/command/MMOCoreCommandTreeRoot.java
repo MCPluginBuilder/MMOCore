@@ -1,8 +1,6 @@
 package net.Indyuce.mmocore.command;
 
-import io.lumine.mythic.lib.command.api.CommandTreeRoot;
-import io.lumine.mythic.lib.command.api.Parameter;
-import net.Indyuce.mmocore.MMOCore;
+import io.lumine.mythic.lib.command.CommandTreeRoot;
 import net.Indyuce.mmocore.command.rpg.CastCommandTreeNode;
 import net.Indyuce.mmocore.command.rpg.CoinsCommandTreeNode;
 import net.Indyuce.mmocore.command.rpg.NoteCommandTreeNode;
@@ -16,13 +14,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.TabCompleter;
 
 public class MMOCoreCommandTreeRoot extends CommandTreeRoot implements CommandExecutor, TabCompleter {
-	public static final Parameter PROFESSION = new Parameter("<profession/main>", (explorer, list) -> {
-		MMOCore.plugin.professionManager.getAll().forEach(profession -> list.add(profession.getId()));
-		list.add("main");
-	});
-	public static final Parameter QUEST = new Parameter("<quest>",
-			(explorer, list) -> MMOCore.plugin.questManager.getAll().forEach(quest -> list.add(quest.getId())));
-
 	public MMOCoreCommandTreeRoot() {
 		super("mmocore", "mmocore.admin");
 

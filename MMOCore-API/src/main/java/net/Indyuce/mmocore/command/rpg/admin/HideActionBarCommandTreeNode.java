@@ -1,7 +1,8 @@
 package net.Indyuce.mmocore.command.rpg.admin;
 
-import io.lumine.mythic.lib.command.api.CommandTreeNode;
-import io.lumine.mythic.lib.command.api.Parameter;
+import io.lumine.mythic.lib.command.CommandTreeExplorer;
+import io.lumine.mythic.lib.command.CommandTreeNode;
+import io.lumine.mythic.lib.command.argument.Argument;
 import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import org.bukkit.Bukkit;
@@ -13,12 +14,12 @@ public class HideActionBarCommandTreeNode extends CommandTreeNode {
     public HideActionBarCommandTreeNode(CommandTreeNode parent) {
         super(parent, "hideab");
 
-        addParameter(Parameter.PLAYER);
-        addParameter(Parameter.AMOUNT);
+        addArgument(Argument.PLAYER);
+        addArgument(Argument.DURATION_TICKS);
     }
 
     @Override
-    public CommandResult execute(CommandSender sender, String[] args) {
+    public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
         if (args.length < 4)
             return CommandResult.THROW_USAGE;
 
