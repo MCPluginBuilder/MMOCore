@@ -2,6 +2,7 @@ package net.Indyuce.mmocore.api.load;
 
 import io.lumine.mythic.lib.api.MMOLineConfig;
 import net.Indyuce.mmocore.api.block.BlockType;
+import net.Indyuce.mmocore.api.block.NoteBlockType;
 import net.Indyuce.mmocore.api.block.SkullBlockType;
 import net.Indyuce.mmocore.api.block.VanillaBlockType;
 import net.Indyuce.mmocore.api.quest.objective.*;
@@ -198,6 +199,9 @@ public class DefaultMMOLoader extends MMOLoader {
 
         if (config.getKey().equalsIgnoreCase("vanilla"))
             return new VanillaBlockType(config);
+
+        if (config.getKey().equalsIgnoreCase("note_block"))
+            return new NoteBlockType(config);
 
         if (config.getKey().equalsIgnoreCase("skull") || config.getKey().equals("head") || config.getKey().equals("playerhead"))
             return new SkullBlockType(config);

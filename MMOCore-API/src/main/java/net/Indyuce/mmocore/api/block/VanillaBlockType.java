@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.block.data.BlockData;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
@@ -43,8 +44,8 @@ public class VanillaBlockType implements BlockType {
         Location loc = block.getLocation();
         block.getLocation().getBlock().setType(type);
 
-        BlockData state = block.getLocation().getBlock().getBlockData();
-        if (age > 0 && state instanceof Ageable) {
+        BlockData state;
+        if (age > 0 && (state = block.getLocation().getBlock().getBlockData()) instanceof Ageable) {
             ((Ageable) state).setAge(age);
             loc.getBlock().setBlockData(state);
         }
@@ -59,7 +60,7 @@ public class VanillaBlockType implements BlockType {
     }
 
     @Override
-    public String display() {
+    public @NotNull String display() {
         return "Vanilla{" + type.name() + "}";
     }
 

@@ -3,15 +3,13 @@ package net.Indyuce.mmocore.manager.profession;
 import io.lumine.mythic.lib.api.MMOLineConfig;
 import io.papermc.lib.PaperLib;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.block.BlockInfo;
-import net.Indyuce.mmocore.api.block.BlockType;
-import net.Indyuce.mmocore.api.block.SkullBlockType;
-import net.Indyuce.mmocore.api.block.VanillaBlockType;
+import net.Indyuce.mmocore.api.block.*;
 import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import net.Indyuce.mmocore.loot.chest.condition.Condition;
 import net.Indyuce.mmocore.loot.chest.condition.ConditionInstance;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
@@ -53,6 +51,7 @@ public class CustomBlockManager extends SpecificProfessionManager {
 		super("on-mine");
 
 		registerBlockType(block -> MMOCoreUtils.isPlayerHead(block.getType()) ? Optional.of(new SkullBlockType(block)) : Optional.empty());
+		registerBlockType(block -> block.getType()== Material.NOTE_BLOCK ? Optional.of(new NoteBlockType(block)) : Optional.empty());
 	}
 
 	public void registerBlockType(Function<Block, Optional<BlockType>> function) {

@@ -7,6 +7,7 @@ import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
@@ -49,7 +50,7 @@ public class SkullBlockType implements BlockType {
     }
 
     @Override
-    public String display() {
+    public @NotNull String display() {
         return "Skull{" + value + "}";
     }
 
