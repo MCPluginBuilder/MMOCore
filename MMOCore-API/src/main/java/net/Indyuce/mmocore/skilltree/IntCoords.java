@@ -8,20 +8,25 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class IntegerCoordinates {
+public class IntCoords {
     private final int x, y;
 
-    public IntegerCoordinates(int x, int y) {
+    public IntCoords(int x, int y) {
         this.x = x;
         this.y = y;
     }
 
     @Deprecated
-    public IntegerCoordinates(String str) {
+    public IntCoords(String str) {
         String[] split = str.split("\\.");
         Validate.isTrue(split.length == 2, "Invalid format");
         x = Integer.parseInt(split[0]);
         y = Integer.parseInt(split[1]);
+    }
+
+    @NotNull
+    public IntCoords offset(int x, int y) {
+        return new IntCoords(this.x + x, this.y + y);
     }
 
     public int getX() {
@@ -33,15 +38,15 @@ public class IntegerCoordinates {
     }
 
     @NotNull
-    public IntegerCoordinates add(@NotNull IntegerCoordinates other) {
-        return new IntegerCoordinates(x + other.x, y + other.y);
+    public IntCoords add(@NotNull IntCoords other) {
+        return new IntCoords(x + other.x, y + other.y);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        IntegerCoordinates that = (IntegerCoordinates) o;
+        IntCoords that = (IntCoords) o;
         return x == that.x && y == that.y;
     }
 
@@ -56,18 +61,18 @@ public class IntegerCoordinates {
     }
 
     @NotNull
-    public static IntegerCoordinates from(@Nullable Object object) {
+    public static IntCoords from(@Nullable Object object) {
         Validate.notNull(object, "Could not read coordinates");
 
         if (object instanceof ConfigurationSection) {
             final ConfigurationSection config = (ConfigurationSection) object;
-            return new IntegerCoordinates(config.getInt("x"), config.getInt("y"));
+            return new IntCoords(config.getInt("x"), config.getInt("y"));
         }
 
         if (object instanceof String) {
             final String[] split = ((String) object).split("[:.,]");
             Validate.isTrue(split.length > 1, "Must provide two coordinates, X and Y, got " + Arrays.asList(split));
-            return new IntegerCoordinates(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
+            return new IntCoords(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
         }
 
         throw new RuntimeException("Needs either a string or configuration section");

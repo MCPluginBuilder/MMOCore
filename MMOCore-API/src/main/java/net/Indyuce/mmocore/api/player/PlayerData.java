@@ -51,8 +51,8 @@ import net.Indyuce.mmocore.skill.binding.BoundSkillInfo;
 import net.Indyuce.mmocore.skill.binding.SkillSlot;
 import net.Indyuce.mmocore.skill.cast.SkillCastingInstance;
 import net.Indyuce.mmocore.skill.cast.SkillCastingMode;
-import net.Indyuce.mmocore.skilltree.NodeState;
-import net.Indyuce.mmocore.skilltree.SkillTreeNode;
+import net.Indyuce.mmocore.skilltree.*;
+import net.Indyuce.mmocore.skilltree.display.PathState;
 import net.Indyuce.mmocore.skilltree.tree.SkillTree;
 import net.Indyuce.mmocore.util.Language;
 import net.Indyuce.mmocore.waypoint.Waypoint;
@@ -111,25 +111,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     private final Map<String, SavedClassInformation> classSlots = new HashMap<>();
     private final Map<PlayerActivity, Long> lastActivity = new HashMap<>();
     private final CombatHandler combat = new CombatHandler(this);
-
-    /**
-     * Cached data
-     * <p>
-     * Current state of each node. This does not get saved in the player database
-     * as it can be inferred from the skill tree node levels map.
-     */
-    private final Map<SkillTreeNode, NodeState> nodeStates = new HashMap<>();
-
-    private final Map<SkillTreeNode, Integer> nodeLevels = new HashMap<>();
-    private final Map<String, Integer> skillTreePoints = new HashMap<>();
-
-    /**
-     * Cached data
-     * <p>
-     * Amount of points spent in each tree. This does not get saved in the
-     * player database as it can be inferred from the skill tree node levels map.
-     */
-    private final Map<SkillTree, Integer> skillTreePointsSpent = new HashMap<>();
 
     /**
      * Saves the NSK's of the items that have been unlocked in the format "namespace:key".
@@ -228,13 +209,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
                 node.getExperienceTable().applyTemporaryTriggers(this, node);
     }
 
-    private void setupSkillTrees() {
-
-        // Node states setup
-        for (SkillTree skillTree : getProfess().getSkillTrees())
-            skillTree.setupNodeStates(this);
-    }
-
     @Override
     protected void onSessionReady() {
 
@@ -268,6 +242,58 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         setStellium(lastStellium, PlayerResourceUpdateEvent.UpdateReason.CHOOSE_CLASS);
     }
 
+    @Override
+    public Map<Integer, String> mapBoundSkills() {
+        Map<Integer, String> result = new HashMap<>();
+        for (int slot : boundSkills.keySet())
+            result.put(slot, boundSkills.get(slot).getClassSkill().getSkill().getHandler().getId());
+        return result;
+    }
+
+    public void resetTriggerStats() {
+        getMMOPlayerData().getStatMap().getInstances().forEach(statInstance -> statInstance.removeIf(Trigger.STAT_MODIFIER_KEY::equals));
+        getMMOPlayerData().getSkillModifierMap().removeModifiers(Trigger.STAT_MODIFIER_KEY);
+    }
+
+    //region Skill trees
+
+    /**
+     * Current state of each node. This does not get saved in the player database
+     * as it can be inferred from the skill tree node levels map. This is used
+     * mainly for displaying the skill tree in the GUI.
+     */
+    private final Map<SkillTreeNode, NodeState> nodeStates = new HashMap<>();
+
+    /**
+     * Current state of each path. This does not get saved in the player database
+     * as it can be inferred from the skill tree node levels map. This is used
+     * mainly for displaying the skill tree in the GUI.
+     */
+    private final Map<ParentInformation, PathState> edgeStates = new HashMap<>();
+
+    private final Map<SkillTreeNode, Integer> nodeLevels = new HashMap<>();
+    private final Map<String, Integer> skillTreePoints = new HashMap<>();
+
+    /**
+     * Cached data
+     * <p>
+     * Amount of points spent in each tree. This does not get saved in the
+     * player database as it can be inferred from the skill tree node levels map.
+     */
+    private final Map<SkillTree, Integer> skillTreePointsSpent = new HashMap<>();
+
+    @Override
+    public int getSkillTreeReallocationPoints() {
+        return skillTreeReallocationPoints;
+    }
+
+    private void setupSkillTrees() {
+
+        // Node states setup
+        for (SkillTree skillTree : getProfess().getSkillTrees())
+            skillTree.resolveStates(this);
+    }
+
     public int getPointsSpent(@NotNull SkillTree skillTree) {
         return skillTreePointsSpent.getOrDefault(skillTree, 0);
     }
@@ -276,11 +302,11 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     private static String asKey(@Nullable SkillTree skillTree) {
         return skillTree == null ? Arguments.SKILL_TREE_GLOBAL_KEY : skillTree.getId();
     }
-    
+
     public void setSkillTreePoints(@NotNull SkillTree skillTree, int points) {
         setSkillTreePoints(asKey(skillTree), points);
     }
-    
+
     public void setSkillTreePoints(@NotNull String skillTreeId, int points) {
         if (points <= 0) skillTreePoints.remove(skillTreeId);
         else skillTreePoints.put(skillTreeId, points);
@@ -295,15 +321,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     }
 
     /**
-     * Counts the number of points spent in that skill tree
-     * @deprecated 
-     * @see #getPointsSpent(SkillTree) 
-     */
-    public int countSkillTreePoints(@NotNull SkillTree skillTree) {
-        return nodeLevels.keySet().stream().filter(node -> node.getTree().equals(skillTree)).mapToInt(node -> nodeLevels.get(node) * node.getPointConsumption()).sum();
-    }
-
-    /**
      * Make a copy to make sure that the object
      * created is independent of the state of playerData.
      */
@@ -312,24 +329,11 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return new HashMap<>(skillTreePoints);
     }
 
-    @Override
-    public Map<Integer, String> mapBoundSkills() {
-        Map<Integer, String> result = new HashMap<>();
-        for (int slot : boundSkills.keySet())
-            result.put(slot, boundSkills.get(slot).getClassSkill().getSkill().getHandler().getId());
-        return result;
-    }
-
     public Set<Map.Entry<String, Integer>> getNodeLevelsEntrySet() {
         HashMap<String, Integer> nodeLevelsString = new HashMap<>();
         for (SkillTreeNode node : nodeLevels.keySet())
             nodeLevelsString.put(node.getFullId(), nodeLevels.get(node));
         return nodeLevelsString.entrySet();
-    }
-
-    public void resetTriggerStats() {
-        getMMOPlayerData().getStatMap().getInstances().forEach(statInstance -> statInstance.removeIf(Trigger.STAT_MODIFIER_KEY::equals));
-        getMMOPlayerData().getSkillModifierMap().removeModifiers(Trigger.STAT_MODIFIER_KEY);
     }
 
     @Override
@@ -349,6 +353,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         // Skill trees progress
         nodeLevels.clear();
         nodeStates.clear(); // Cache data
+        edgeStates.clear();
         skillTreePointsSpent.clear();
         tableItemClaims.keySet().removeIf(s -> s.startsWith(SkillTreeNode.KEY_PREFIX)); // Clear node claim count
 
@@ -360,13 +365,14 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         setupSkillTrees();
     }
 
-    public void clearNodeStates(@NotNull SkillTree skillTree) {
-        for (SkillTreeNode node : skillTree.getNodes()) nodeStates.remove(node);
+    public void clearStates(@NotNull SkillTree skillTree) {
+        for (var node : skillTree.getNodes()) nodeStates.remove(node);
+        // TODO clear path states.
     }
 
-    // TODO move to UI...?
     @NotNull
     public NodeIncrementResult canIncrementNodeLevel(@NotNull SkillTreeNode node) {
+        // TODO move to UI...?
         final var nodeState = nodeStates.get(node);
 
         // Node is maxed out
@@ -395,10 +401,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         final int newLevel = addNodeLevels(node, 1);
         node.updateAdvancement(this, newLevel); // Claim the node exp table
 
-        // Update node state
-        // TODO check/remove: USELESS LINE? since node states are updated afterwards
-        // nodeStates.compute(node, (key, status) -> status == NodeState.UNLOCKABLE ? NodeState.UNLOCKED : status);
-
         // Consume skill tree points
         final AtomicInteger cost = new AtomicInteger(node.getPointConsumption());
         skillTreePoints.computeIfPresent(node.getTree().getId(), (key, points) -> {
@@ -408,9 +410,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         });
         if (cost.get() > 0) withdrawSkillTreePoints("global", cost.get());
 
-        // Reload node states from full skill tree
-        clearNodeStates(node.getTree());
-        node.getTree().setupNodeStates(this);
+        // Reload node/path states from full skill tree
+        node.getTree().resolveStates(this);
     }
 
     public int getSkillTreePoints(@Nullable SkillTree skillTree) {
@@ -426,12 +427,20 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         skillTreePoints.computeIfPresent(treeId, (ignored, points) -> cost >= points ? null : points - cost);
     }
 
-    public void setNodeState(SkillTreeNode node, NodeState nodeState) {
+    public void setNodeState(@NotNull SkillTreeNode node, @NotNull NodeState nodeState) {
         nodeStates.put(node, nodeState);
     }
 
-    public NodeState getNodeState(SkillTreeNode node) {
+    public void setPathState(@NotNull ParentInformation edge, @NotNull PathState pathState) {
+        edgeStates.put(edge, pathState);
+    }
+
+    public NodeState getNodeState(@NotNull SkillTreeNode node) {
         return nodeStates.get(node);
+    }
+
+    public PathState getPathState(@NotNull ParentInformation path) {
+        return edgeStates.get(path);
     }
 
     public boolean hasNodeState(@NotNull SkillTreeNode node) {
@@ -461,9 +470,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         for (SkillTreeNode node : skillTree.getNodes()) {
             node.resetAdvancement(this, true);
             setNodeLevel(node, 0);
-            nodeStates.remove(node);
         }
-        skillTree.setupNodeStates(this);
+        skillTree.resolveStates(this);
     }
 
     @NotNull
@@ -474,6 +482,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     public boolean hasNodeStates() {
         return !nodeStates.isEmpty();
     }
+
+    //endregion Skill trees
 
     @Override
     public Map<String, Integer> getNodeTimesClaimed() {
@@ -650,11 +660,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return attributeReallocationPoints;
     }
 
-    @Override
-    public int getSkillTreeReallocationPoints() {
-        return skillTreeReallocationPoints;
-    }
-
     public int getClaims(@NotNull ExperienceObject object, @NotNull ExperienceItem item) {
         final ExperienceTable table = object.getExperienceTable();
         return getClaims(object.getKey() + "." + table.getId() + "." + item.getId());
@@ -698,11 +703,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return guild != null;
     }
 
-    @Deprecated
-    public void setLevel(int level) {
-        setLevel(level, PlayerLevelChangeEvent.Reason.UNKNOWN);
-    }
-
     public void setLevel(int level, @NotNull PlayerLevelChangeEvent.Reason reason) {
 
         final var oldLevel = this.level;
@@ -716,11 +716,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
             getStats().updateStats();
             refreshVanillaExp();
         }
-    }
-
-    @Deprecated
-    public void takeLevels(int value) {
-        setLevel(level - value, PlayerLevelChangeEvent.Reason.UNKNOWN);
     }
 
     public void giveLevels(int value, @NotNull EXPSource source) {
@@ -1399,15 +1394,42 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     //region Deprecated
 
     @Deprecated
+    public void takeLevels(int value) {
+        setLevel(level - value, PlayerLevelChangeEvent.Reason.UNKNOWN);
+    }
+
+    @Deprecated
+    public void setLevel(int level) {
+        setLevel(level, PlayerLevelChangeEvent.Reason.UNKNOWN);
+    }
+
+    @Deprecated
+    public void clearNodeStates(@NotNull SkillTree skillTree) {
+        clearStates(skillTree);
+    }
+
+    /**
+     * @see #setMana(double, PlayerResourceUpdateEvent.UpdateReason)
+     * @deprecated
+     */
+    @Deprecated
     public void setMana(double amount) {
         setMana(amount, PlayerResourceUpdateEvent.UpdateReason.UNKNOWN);
     }
 
+    /**
+     * @see #setStamina(double, PlayerResourceUpdateEvent.UpdateReason)
+     * @deprecated
+     */
     @Deprecated
     public void setStamina(double amount) {
         setStamina(amount, PlayerResourceUpdateEvent.UpdateReason.UNKNOWN);
     }
 
+    /**
+     * @see #setStellium(double, PlayerResourceUpdateEvent.UpdateReason)
+     * @deprecated
+     */
     @Deprecated
     public void setStellium(double amount) {
         setStellium(amount, PlayerResourceUpdateEvent.UpdateReason.UNKNOWN);
@@ -1539,11 +1561,19 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return false;
     }
 
+    /**
+     * @see #hasUnlockedLevel(ClassSkill)
+     * @deprecated
+     */
     @Deprecated
     public boolean hasSkillUnlocked(RegisteredSkill skill) {
         return getProfess().hasSkill(skill.getHandler().getId()) && hasSkillUnlocked(getProfess().getSkill(skill.getHandler().getId()));
     }
 
+    /**
+     * @see #hasUnlockedLevel(ClassSkill)
+     * @deprecated
+     */
     @Deprecated
     public boolean hasSkillUnlocked(ClassSkill skill) {
         return hasUnlockedLevel(skill);
@@ -1552,6 +1582,9 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     /**
      * Everytime a player does a combat action, like taking
      * or dealing damage to an entity, this method is called.
+     *
+     * @see #getCombat()
+     * @deprecated
      */
     @Deprecated
     public void updateCombat() {
@@ -1560,7 +1593,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     @Deprecated
     public void displayActionBar(@NotNull String message) {
-        displayActionBar(message, false);
+        getMMOPlayerData().getActionBar().show(ActionBarPriority.NORMAL, message);
     }
 
     @Deprecated
@@ -1580,14 +1613,33 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         }
     }
 
+    /**
+     * @see #getAttributes()
+     * @deprecated
+     */
     @Deprecated
     public void setAttribute(PlayerAttribute attribute, int value) {
         setAttribute(attribute.getId(), value);
     }
 
+    /**
+     * @see #getAttributes()
+     * @deprecated
+     */
     @Deprecated
     public void setAttribute(String id, int value) {
         attributes.getInstance(id).setBase(value);
+    }
+
+    /**
+     * Counts the number of points spent in that skill tree
+     *
+     * @see #getPointsSpent(SkillTree)
+     * @deprecated
+     */
+    @Deprecated
+    public int countSkillTreePoints(@NotNull SkillTree skillTree) {
+        return nodeLevels.keySet().stream().filter(node -> node.getTree().equals(skillTree)).mapToInt(node -> nodeLevels.get(node) * node.getPointConsumption()).sum();
     }
 
     //endregion

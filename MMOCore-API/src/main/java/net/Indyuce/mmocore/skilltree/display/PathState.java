@@ -1,10 +1,5 @@
-package net.Indyuce.mmocore.skilltree;
+package net.Indyuce.mmocore.skilltree.display;
 
-import net.Indyuce.mmocore.api.player.PlayerData;
-
-/**
- * @see SkillTreePath#getStatus(PlayerData)
- */
 public enum PathState {
 
     /**

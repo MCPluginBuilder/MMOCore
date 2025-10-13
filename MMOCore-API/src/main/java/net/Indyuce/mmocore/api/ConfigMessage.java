@@ -1,6 +1,7 @@
 package net.Indyuce.mmocore.api;
 
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
@@ -162,7 +163,7 @@ public class ConfigMessage {
 
         // Handle special case with player data + action bar
         if (playerData != null && playerData.isOnline() && actionbar) {
-            playerData.displayActionBar(rawMessage, raw);
+            playerData.getMMOPlayerData().getActionBar().show(ActionBarPriority.NORMAL, rawMessage);
             return;
         }
 

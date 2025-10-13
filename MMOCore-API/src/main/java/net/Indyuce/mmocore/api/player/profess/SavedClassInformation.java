@@ -332,7 +332,7 @@ public class SavedClassInformation implements ClassDataContainer {
             for (SkillTreeNode node : skillTree.getNodes())
                 player.setNodeLevel(node, nodeLevels.getOrDefault(node.getFullId(), 0));
 
-            skillTree.setupNodeStates(player);
+            skillTree.resolveStates(player);
         }
 
         // Add the values to the times claimed table and claims the corresponding stat triggers.
