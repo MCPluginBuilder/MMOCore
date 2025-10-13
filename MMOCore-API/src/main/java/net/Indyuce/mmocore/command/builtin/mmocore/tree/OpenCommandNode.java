@@ -40,6 +40,6 @@ public class OpenCommandNode extends CommandTreeNode {
         }
 
         InventoryManager.SPECIFIC_TREE_VIEW.get(UtilityMethods.kebabCase(skillTree.getId())).newInventory(playerData).open();
-        return explorer.success("Skill tree &6" + skillTree.getIcons() + "&e opened for player &6" + player.getName());
+        return explorer.success("Skill tree &6" + skillTree.getName() + "&e opened for player &6" + player.getName());
     }
 }
