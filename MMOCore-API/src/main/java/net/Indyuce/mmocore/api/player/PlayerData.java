@@ -1035,7 +1035,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
         // Experience hologram
         if (hologramLocation != null)
-            MMOCoreUtils.displayIndicator(hologramLocation, Language.EXP_HOLOGRAM.getFormat().replace("exp", MythicLib.plugin.getMMOConfig().decimal.format(event.getExperience())));
+            MMOCoreUtils.displayIndicator(hologramLocation, Language.EXP_HOLOGRAM.getFormat().replace("{exp}", MythicLib.plugin.getMMOConfig().decimal.format(event.getExperience())));
 
         experience = Math.max(0, experience + event.getExperience());
 
