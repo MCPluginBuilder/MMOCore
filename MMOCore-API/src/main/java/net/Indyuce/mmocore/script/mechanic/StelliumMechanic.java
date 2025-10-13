@@ -30,11 +30,8 @@ public class StelliumMechanic extends TargetMechanic {
     public void cast(SkillMetadata meta, Entity target) {
         Validate.isTrue(target instanceof Player, "Target is not a player");
         PlayerData targetData = PlayerData.get(target.getUniqueId());
-        if (operation == Operation.GIVE)
-            targetData.giveStellium(amount.evaluate(meta), reason);
-        else if (operation == Operation.SET)
-            targetData.setStellium(amount.evaluate(meta));
-        else if (operation == Operation.TAKE)
-            targetData.giveStellium(-amount.evaluate(meta), reason);
+        if (operation == Operation.GIVE) targetData.giveStellium(amount.evaluate(meta), reason);
+        else if (operation == Operation.SET) targetData.setStellium(amount.evaluate(meta), reason);
+        else if (operation == Operation.TAKE) targetData.giveStellium(-amount.evaluate(meta), reason);
     }
 }

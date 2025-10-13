@@ -193,9 +193,8 @@ public class MMOCore extends MMOPlugin {
                 for (PlayerData player : PlayerData.getAll())
                     if (player.isOnline() && !player.getPlayer().isDead())
                         for (PlayerResource resource : PlayerResource.values()) {
-                            double regenAmount = player.getProfess().getHandler(resource).getRegen(player);
-                            if (regenAmount != 0)
-                                resource.regen(player, regenAmount);
+                            final var regenAmount = player.getProfess().getHandler(resource).getRegen(player);
+                            if (regenAmount != 0) resource.regen(player, regenAmount);
                         }
             }
         }.runTaskTimer(MMOCore.plugin, 100, 20);

@@ -30,11 +30,8 @@ public class ManaMechanic extends TargetMechanic {
     public void cast(SkillMetadata meta, Entity target) {
         Validate.isTrue(target instanceof Player, "Target is not a player");
         PlayerData targetData = PlayerData.get(target.getUniqueId());
-        if (operation == Operation.GIVE)
-            targetData.giveMana(amount.evaluate(meta), reason);
-        else if (operation == Operation.SET)
-            targetData.setMana(amount.evaluate(meta));
-        else if (operation == Operation.TAKE)
-            targetData.giveMana(-amount.evaluate(meta), reason);
+        if (operation == Operation.GIVE) targetData.giveMana(amount.evaluate(meta), reason);
+        else if (operation == Operation.SET) targetData.setMana(amount.evaluate(meta), reason);
+        else if (operation == Operation.TAKE) targetData.giveMana(-amount.evaluate(meta), reason);
     }
 }

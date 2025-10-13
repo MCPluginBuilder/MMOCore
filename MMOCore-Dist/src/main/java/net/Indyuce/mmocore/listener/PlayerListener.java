@@ -49,11 +49,11 @@ public class PlayerListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void resourceBukkitInterface(PlayerResourceUpdateEvent event) {
         if (event.getResource() == PlayerResource.HEALTH) {
-            final EntityRegainHealthEvent bukkitEvent = new EntityRegainHealthEvent(event.getPlayer(), event.getAmount(), RegainReason.CUSTOM);
+            final var bukkitEvent = new EntityRegainHealthEvent(event.getPlayer(), event.getDifference(), RegainReason.CUSTOM);
             Bukkit.getPluginManager().callEvent(bukkitEvent);
 
             // Update event values
-            event.setAmount(bukkitEvent.getAmount());
+            event.setNewAmount(event.getOldAmount() + bukkitEvent.getAmount());
             event.setCancelled(bukkitEvent.isCancelled());
         }
     }

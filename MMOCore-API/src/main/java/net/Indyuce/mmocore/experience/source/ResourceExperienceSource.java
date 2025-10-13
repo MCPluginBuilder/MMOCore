@@ -10,8 +10,7 @@ import net.Indyuce.mmocore.experience.dispenser.ExperienceDispenser;
 import net.Indyuce.mmocore.experience.source.type.SpecificExperienceSource;
 import net.Indyuce.mmocore.manager.profession.ExperienceSourceManager;
 import org.bukkit.event.EventHandler;
-
-import static org.bukkit.event.EventPriority.HIGHEST;
+import org.bukkit.event.EventPriority;
 
 public class ResourceExperienceSource extends SpecificExperienceSource<PlayerResource> {
     private final PlayerResource resource;
@@ -43,16 +42,16 @@ public class ResourceExperienceSource extends SpecificExperienceSource<PlayerRes
 
     private static class Manager extends ExperienceSourceManager<ResourceExperienceSource> {
 
-        @EventHandler(priority = HIGHEST, ignoreCancelled = true)
+        @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
         public void onResource(PlayerResourceUpdateEvent event) {
             if (!UtilityMethods.isRealPlayer(event.getPlayer())) return;
 
             PlayerData playerData = PlayerData.get(event.getPlayer());
-            if (event.getAmount() >= 0) return;
+            if (event.getDifference() >= 0) return;
 
             for (ResourceExperienceSource source : getSources())
                 if (source.matchesParameter(playerData, event.getResource()))
-                    source.giveExperience(playerData, -event.getAmount(), null);
+                    source.giveExperience(playerData, -event.getDifference(), null);
         }
     }
 }
