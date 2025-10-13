@@ -4,6 +4,7 @@ import io.lumine.mythic.lib.command.CommandTreeExplorer;
 import io.lumine.mythic.lib.command.CommandTreeNode;
 import io.lumine.mythic.lib.command.argument.Argument;
 import net.Indyuce.mmocore.MMOCore;
+import net.Indyuce.mmocore.api.event.PlayerLevelChangeEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.attribute.PlayerAttribute;
 import net.Indyuce.mmocore.api.player.attribute.PlayerAttributes;
@@ -254,14 +255,14 @@ class ResetLevelsCommandTreeNode extends CommandTreeNode {
     static void resetLevels(@NotNull PlayerData data) {
 
         // Class
-        data.setLevel(MMOCore.plugin.playerDataManager.getDefaultData().getLevel());
+        data.setLevel(MMOCore.plugin.playerDataManager.getDefaultData().getLevel(), PlayerLevelChangeEvent.Reason.RESET);
         data.setExperience(0);
         data.getProfess().resetAdvancement(data, true);
 
         // Professions
         for (Profession profession : MMOCore.plugin.professionManager.getAll()) {
             data.getCollectionSkills().setExperience(profession, 0);
-            data.getCollectionSkills().setLevel(profession, 0);
+            data.getCollectionSkills().setLevel(profession, 0, PlayerLevelChangeEvent.Reason.RESET);
             profession.resetAdvancement(data, true);
         }
     }
@@ -291,7 +292,7 @@ class ResetClassesCommandTreeNode extends CommandTreeNode {
 
     static void resetClasses(@NotNull PlayerData data) {
         MMOCore.plugin.classManager.getAll().forEach(data::unloadClassInfo);
-        MMOCore.plugin.playerDataManager.getDefaultData().apply(data);
+        MMOCore.plugin.playerDataManager.getDefaultData().apply(data, PlayerLevelChangeEvent.Reason.RESET);
         data.setClass(MMOCore.plugin.classManager.getDefaultClass());
     }
 }

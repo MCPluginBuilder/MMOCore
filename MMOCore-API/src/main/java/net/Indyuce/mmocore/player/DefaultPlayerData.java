@@ -1,7 +1,9 @@
 package net.Indyuce.mmocore.player;
 
+import net.Indyuce.mmocore.api.event.PlayerLevelChangeEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -135,8 +137,13 @@ public class DefaultPlayerData implements ClassDataContainer {
         return new HashMap<>();
     }
 
-    public void apply(PlayerData player) {
-        player.setLevel(level);
+    @Deprecated
+    public void apply(PlayerData playerData) {
+        this.apply(playerData, PlayerLevelChangeEvent.Reason.UNKNOWN);
+    }
+
+    public void apply(@NotNull PlayerData player, @NotNull PlayerLevelChangeEvent.Reason reason) {
+        player.setLevel(level, reason);
         player.setExperience(0);
         player.setClassPoints(classPoints);
         player.setSkillPoints(skillPoints);

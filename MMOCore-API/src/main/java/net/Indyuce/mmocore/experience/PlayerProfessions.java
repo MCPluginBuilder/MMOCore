@@ -8,7 +8,7 @@ import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.VParticle;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerExperienceGainEvent;
-import net.Indyuce.mmocore.api.event.PlayerLevelUpEvent;
+import net.Indyuce.mmocore.api.event.PlayerLevelChangeEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import net.Indyuce.mmocore.loot.chest.particle.SmallParticleEffect;
@@ -129,12 +129,27 @@ public class PlayerProfessions {
         return MMOCore.plugin.professionManager.has(id) ? MMOCore.plugin.professionManager.get(id).getExpCurve().getExperience(getLevel(id) + 1) : 0;
     }
 
+    @Deprecated
     public void setLevel(Profession profession, int value) {
-        level.put(profession.getId(), value);
+        setLevel(profession, value, PlayerLevelChangeEvent.Reason.UNKNOWN);
     }
 
-    public void takeLevels(Profession profession, int value) {
-        int current = level.getOrDefault(profession.getId(), 1);
+    public void setLevel(@NotNull Profession profession, int newLevel, @NotNull PlayerLevelChangeEvent.Reason reason) {
+        final var previousValue = level.put(profession.getId(), Math.max(1, newLevel));
+        final var oldLevel = previousValue == null ? 1 : Math.max(1, previousValue);
+
+        // Data loaded async (sync event, clashes) => no event called
+        if (reason != PlayerLevelChangeEvent.Reason.CHOOSE_PROFILE)
+            Bukkit.getPluginManager().callEvent(new PlayerLevelChangeEvent(playerData, profession, oldLevel, newLevel, reason));
+
+        if (getPlayerData().getMMOPlayerData().isPlaying()) {
+            playerData.getStats().updateStats();
+        }
+    }
+
+    @Deprecated
+    public void takeLevels(@NotNull Profession profession, int value) {
+        int current = Math.max(1, level.getOrDefault(profession.getId(), 1));
         level.put(profession.getId(), Math.max(1, current - value));
     }
 
@@ -181,7 +196,7 @@ public class PlayerProfessions {
         // Apply buffs AFTER splitting exp
         value *= (1 + playerData.getStats().getStat("ADDITIONAL_EXPERIENCE_" + UtilityMethods.enumName(profession.getId())) / 100) * MMOCore.plugin.boosterManager.getMultiplier(profession);
 
-        var event = new PlayerExperienceGainEvent(playerData, profession, value, source);
+        final var event = new PlayerExperienceGainEvent(playerData, profession, value, source);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) return;
 
@@ -189,54 +204,55 @@ public class PlayerProfessions {
         if (hologramLocation != null && profession.getOption(Profession.ProfessionOption.EXP_HOLOGRAMS))
             MMOCoreUtils.displayIndicator(hologramLocation.add(.5, 1.5, .5), Language.EXP_HOLOGRAM.getFormat().replace("{exp}", MythicLib.plugin.getMMOConfig().decimal.format(event.getExperience())));
 
-        exp.put(profession.getId(), Math.max(0, exp.getOrDefault(profession.getId(), 0d) + event.getExperience()));
-        int level, oldLevel = getLevel(profession);
-        double needed, exp;
+        var currentExp = Math.max(0d, exp.getOrDefault(profession.getId(), 0d) + event.getExperience());
+        final var oldLevel = getLevel(profession);
+        int newLevel = oldLevel;
+        double experienceNeeded;
 
         /*
          * Loop for exp overload when leveling up, will continue
-         * looping until exp is 0 or max level has been reached
+         * looping until exp is 0 or max newLevel has been reached
          */
-        boolean check = false;
-        while ((exp = this.exp.get(profession.getId())) >= (needed = profession.getExpCurve().getExperience((level = getLevel(profession)) + 1))) {
+        while (currentExp >= (experienceNeeded = profession.getExpCurve().getExperience(newLevel))) {
+
             if (hasReachedMaxLevel(profession)) {
-                setExperience(profession, 0);
-                check = true;
+                currentExp = 0;
                 break;
             }
 
-            this.exp.put(profession.getId(), exp - needed);
-            this.level.put(profession.getId(), level + 1);
-            check = true;
+            currentExp -= experienceNeeded;
+            newLevel++;
 
             // Give main class exp
             try {
-                var mainExpGiven = profession.getExperience().evaluate(level, playerData);
-                playerData.giveExperience(mainExpGiven, null);
+                var mainExpGiven = profession.getExperience().evaluate(newLevel, playerData);
+                playerData.giveExperience(mainExpGiven, EXPSource.PROFESSION_TO_CLASS);
             } catch (FormulaFailsafeException exception) {
-                exception.log("Could not evaluate profession level-up exp for %s", profession.getId());
+                exception.log("Could not evaluate profession newLevel-up exp for %s", profession.getId());
             }
 
             // Apply profession experience table
-            profession.updateAdvancement(playerData, level);
+            profession.updateAdvancement(playerData, newLevel);
         }
 
-        if (check) {
-            Bukkit.getPluginManager().callEvent(new PlayerLevelUpEvent(playerData, profession, oldLevel, level));
+        this.exp.put(profession.getId(), currentExp);
+
+        if (newLevel > oldLevel) {
+            setLevel(profession, newLevel, PlayerLevelChangeEvent.Reason.LEVEL_UP);
+
             new SmallParticleEffect(playerData.getPlayer(), VParticle.INSTANT_EFFECT.get()); // TODO move to playerMessage
-            Message.PROFESSION_LEVEL_UP.send(playerData, "level", level, "profession", profession.getName());
-            playerData.getStats().updateStats();
+            Message.PROFESSION_LEVEL_UP.send(playerData, "newLevel", newLevel, "profession", profession.getName());
         }
 
         if (playerData.isOnline()) {
 
             // Build exp bar
             StringBuilder bar = new StringBuilder(ChatColor.BOLD.toString());
-            int chars = (int) (exp / needed * 20);
+            int chars = (int) (currentExp / experienceNeeded * 20);
             for (int j = 0; j < 20; j++)
                 bar.append(j == chars ? ChatColor.WHITE.toString() + ChatColor.BOLD : "").append("|");
 
-            var ratioFormatted = MythicLib.plugin.getMMOConfig().decimal.format(exp / needed * 100);
+            var ratioFormatted = MythicLib.plugin.getMMOConfig().decimal.format(currentExp / experienceNeeded * 100);
             Message.EXP_NOTIFICATION.send(playerData,
                     "profession", profession.getName(),
                     "progress", bar.toString(),

@@ -8,6 +8,7 @@ import io.lumine.mythic.lib.gson.JsonElement;
 import io.lumine.mythic.lib.gson.JsonObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
+import net.Indyuce.mmocore.api.event.PlayerLevelChangeEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.profess.PlayerClass;
 import net.Indyuce.mmocore.api.player.profess.SavedClassInformation;
@@ -43,7 +44,7 @@ public class MMOCoreDataSynchronizer extends SQLDataSynchronizer<PlayerData> {
         getData().setSkillTreeReallocationPoints(result.getInt("skill_tree_reallocation_points"));
         getData().setAttributePoints(result.getInt("attribute_points"));
         getData().setAttributeReallocationPoints(result.getInt("attribute_realloc_points"));
-        getData().setLevel(result.getInt("level"));
+        getData().setLevel(result.getInt("level"), PlayerLevelChangeEvent.Reason.CHOOSE_PROFILE);
         getData().setExperience(result.getDouble("experience"));
 
         if (!isEmpty(result.getString("class")))
@@ -133,7 +134,7 @@ public class MMOCoreDataSynchronizer extends SQLDataSynchronizer<PlayerData> {
 
     @Override
     public void loadEmptyData() {
-        MMOCore.plugin.playerDataManager.getDefaultData().apply(getData());
+        MMOCore.plugin.playerDataManager.getDefaultData().apply(getData(), PlayerLevelChangeEvent.Reason.CHOOSE_PROFILE);
         UtilityMethods.debug(MMOCore.plugin, "SQL", "Loaded DEFAULT data for: '" + getData().getUniqueId() + "' as no saved data was found.");
     }
 }

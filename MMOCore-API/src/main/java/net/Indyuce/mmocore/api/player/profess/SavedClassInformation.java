@@ -3,6 +3,7 @@ package net.Indyuce.mmocore.api.player.profess;
 import io.lumine.mythic.lib.gson.JsonElement;
 import io.lumine.mythic.lib.gson.JsonObject;
 import net.Indyuce.mmocore.MMOCore;
+import net.Indyuce.mmocore.api.event.PlayerLevelChangeEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.attribute.PlayerAttribute;
 import net.Indyuce.mmocore.player.ClassDataContainer;
@@ -10,6 +11,7 @@ import net.Indyuce.mmocore.skill.RegisteredSkill;
 import net.Indyuce.mmocore.skilltree.SkillTreeNode;
 import net.Indyuce.mmocore.skilltree.tree.SkillTree;
 import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -282,7 +284,7 @@ public class SavedClassInformation implements ClassDataContainer {
      * @param profess Target player class
      * @param player  Player changing class
      */
-    public void load(PlayerClass profess, PlayerData player) {
+    public void load(@NotNull PlayerClass profess, @NotNull PlayerData player) {
 
         /*
          * Saves current class info inside a SavedClassInformation, only
@@ -308,7 +310,7 @@ public class SavedClassInformation implements ClassDataContainer {
          * Reads this class info, applies it to the player. set class after
          * changing level so the player stats can be calculated based on new level
          */
-        player.setLevel(level);
+        player.setLevel(level, PlayerLevelChangeEvent.Reason.CHOOSE_CLASS);
         player.setExperience(experience);
         player.setSkillPoints(skillPoints);
         player.setAttributePoints(attributePoints);

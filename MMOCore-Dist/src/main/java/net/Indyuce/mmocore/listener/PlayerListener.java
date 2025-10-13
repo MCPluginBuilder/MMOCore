@@ -3,6 +3,8 @@ package net.Indyuce.mmocore.listener;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.event.PlayerAttackEvent;
 import net.Indyuce.mmocore.MMOCore;
+import net.Indyuce.mmocore.api.event.PlayerLevelChangeEvent;
+import net.Indyuce.mmocore.api.event.PlayerLevelUpEvent;
 import net.Indyuce.mmocore.api.event.PlayerResourceUpdateEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.profess.resource.PlayerResource;
@@ -54,5 +56,12 @@ public class PlayerListener implements Listener {
             event.setAmount(bukkitEvent.getAmount());
             event.setCancelled(bukkitEvent.isCancelled());
         }
+    }
+
+    @SuppressWarnings("deprecation")
+    @EventHandler
+    public void backwardsCompatibilityEvent(PlayerLevelChangeEvent event) {
+        if (event.getReason() == PlayerLevelChangeEvent.Reason.LEVEL_UP)
+            Bukkit.getPluginManager().callEvent(new PlayerLevelUpEvent(event.getData(), event.getProfession(), event.getOldLevel(), event.getNewLevel()));
     }
 }

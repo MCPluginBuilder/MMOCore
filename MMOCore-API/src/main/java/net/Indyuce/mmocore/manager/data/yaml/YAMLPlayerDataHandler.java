@@ -3,6 +3,7 @@ package net.Indyuce.mmocore.manager.data.yaml;
 import io.lumine.mythic.lib.data.yaml.YAMLSynchronizedDataHandler;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
+import net.Indyuce.mmocore.api.event.PlayerLevelChangeEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.profess.PlayerClass;
 import net.Indyuce.mmocore.api.player.profess.SavedClassInformation;
@@ -43,7 +44,7 @@ public class YAMLPlayerDataHandler extends YAMLSynchronizedDataHandler<PlayerDat
 
         // Load default data
         if (!config.contains("class-points")) {
-            MMOCore.plugin.playerDataManager.getDefaultData().apply(data);
+            MMOCore.plugin.playerDataManager.getDefaultData().apply(data, PlayerLevelChangeEvent.Reason.CHOOSE_PROFILE);
             return;
         }
 
@@ -53,7 +54,7 @@ public class YAMLPlayerDataHandler extends YAMLSynchronizedDataHandler<PlayerDat
         data.setSkillTreeReallocationPoints(config.getInt("skill-tree-reallocation-points"));
         data.setAttributePoints(config.getInt("attribute-points"));
         data.setAttributeReallocationPoints(config.getInt("attribute-realloc-points"));
-        data.setLevel(config.getInt("level"));
+        data.setLevel(config.getInt("level"), PlayerLevelChangeEvent.Reason.CHOOSE_PROFILE);
         data.setExperience(config.getDouble("experience"));
         if (config.contains("class")) data.setClass(MMOCore.plugin.classManager.get(config.getString("class")));
 

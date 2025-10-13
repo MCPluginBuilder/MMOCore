@@ -3,7 +3,7 @@ package net.Indyuce.mmocore.listener;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerChangeClassEvent;
-import net.Indyuce.mmocore.api.event.PlayerLevelUpEvent;
+import net.Indyuce.mmocore.api.event.PlayerLevelChangeEvent;
 import net.Indyuce.mmocore.script.trigger.MMOCoreTriggerType;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -29,13 +29,14 @@ public class ClassScriptListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onLevelUp(PlayerLevelUpEvent event) {
+    public void onLevelUp(PlayerLevelChangeEvent event) {
 
         // With delay
-        Bukkit.getScheduler().runTask(MMOCore.plugin, () -> {
-            final MMOPlayerData caster = event.getData().getMMOPlayerData();
-            caster.triggerSkills(MMOCoreTriggerType.LEVEL_UP, null);
-        });
+        if (event.getReason() == PlayerLevelChangeEvent.Reason.LEVEL_UP)
+            Bukkit.getScheduler().runTask(MMOCore.plugin, () -> {
+                final MMOPlayerData caster = event.getData().getMMOPlayerData();
+                caster.triggerSkills(MMOCoreTriggerType.LEVEL_UP, null);
+            });
     }
 
    /* @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)

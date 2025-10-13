@@ -5,6 +5,7 @@ import net.Indyuce.mmocore.experience.EXPSource;
 import net.Indyuce.mmocore.experience.Profession;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class PlayerExperienceGainEvent extends PlayerDataEvent implements Cancellable {
@@ -17,11 +18,11 @@ public class PlayerExperienceGainEvent extends PlayerDataEvent implements Cancel
     private double experience;
     private boolean cancelled;
 
-    public PlayerExperienceGainEvent(PlayerData player, double experience, EXPSource source) {
+    public PlayerExperienceGainEvent(@NotNull PlayerData player, double experience, @NotNull EXPSource source) {
         this(player, null, experience, source);
     }
 
-    public PlayerExperienceGainEvent(PlayerData player, @Nullable Profession profession, double experience, EXPSource source) {
+    public PlayerExperienceGainEvent(@NotNull PlayerData player, @Nullable Profession profession, double experience, @NotNull EXPSource source) {
         super(player);
 
         this.profession = profession;
@@ -56,16 +57,18 @@ public class PlayerExperienceGainEvent extends PlayerDataEvent implements Cancel
         return profession != null;
     }
 
+    @Nullable
     public Profession getProfession() {
         return profession;
     }
 
+    @NotNull
     public EXPSource getSource() {
         return source;
     }
 
     @Override
-    public HandlerList getHandlers() {
+    public @NotNull HandlerList getHandlers() {
         return handlers;
     }
 

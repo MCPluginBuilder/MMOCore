@@ -675,19 +675,32 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return guild != null;
     }
 
+    @Deprecated
     public void setLevel(int level) {
-        this.level = Math.max(1, level);
-        if (isOnline()) {
-            if (isSynchronized()) getStats().updateStats();
+        setLevel(level, PlayerLevelChangeEvent.Reason.UNKNOWN);
+    }
+
+    public void setLevel(int level, @NotNull PlayerLevelChangeEvent.Reason reason) {
+
+        final var oldLevel = this.level;
+        final var newLevel = Math.max(1, level);
+        this.level = newLevel;
+
+        if (reason != PlayerLevelChangeEvent.Reason.CHOOSE_PROFILE) // No event, data is loaded async
+            Bukkit.getPluginManager().callEvent(new PlayerLevelChangeEvent(this, null, oldLevel, newLevel, reason));
+
+        if (getMMOPlayerData().isPlaying()) {
+            getStats().updateStats();
             refreshVanillaExp();
         }
     }
 
+    @Deprecated
     public void takeLevels(int value) {
-        setLevel(level - value);
+        setLevel(level - value, PlayerLevelChangeEvent.Reason.UNKNOWN);
     }
 
-    public void giveLevels(int value, EXPSource source) {
+    public void giveLevels(int value, @NotNull EXPSource source) {
         long equivalentExp = 0;
         while (value-- > 0) equivalentExp += getProfess().getExpCurve().getExperience(getLevel() + value + 1);
         giveExperience(equivalentExp, source);
@@ -893,7 +906,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
      * @param value  Experience to give the player
      * @param source How the player earned experience
      */
-    public void giveExperience(double value, EXPSource source) {
+    public void giveExperience(double value, @NotNull EXPSource source) {
         giveExperience(value, source, null, true);
     }
 
@@ -906,8 +919,9 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
      *                         If it's null, no hologram will be displayed
      * @param splitExp         Should the exp be split among party members
      */
-    public void giveExperience(double value, @NotNull EXPSource source, @Nullable Location hologramLocation,
-                               boolean splitExp) {
+    public void giveExperience(double value, @NotNull EXPSource source, @Nullable Location hologramLocation, boolean splitExp) {
+
+        // Take exp on negative amounts
         if (value <= 0) {
             experience = Math.max(0, experience + value);
             return;
@@ -931,7 +945,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         // Apply buffs AFTER splitting exp
         value *= (1 + getStats().getStat("ADDITIONAL_EXPERIENCE") / 100) * MMOCore.plugin.boosterManager.getMultiplier(null);
 
-        PlayerExperienceGainEvent event = new PlayerExperienceGainEvent(this, value, source);
+        final var event = new PlayerExperienceGainEvent(this, value, source);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) return;
 
@@ -942,29 +956,35 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         experience = Math.max(0, experience + event.getExperience());
 
         // Calculate the player's next level
-        int oldLevel = level;
-        long needed;
-        while (experience >= (needed = getLevelUpExperience())) {
+        final var oldLevel = level;
+        var newLevel = level;
+        long experienceNeeded;
+
+        /*
+         * Loop for exp overload when leveling up, will continue
+         * looping until exp is 0 or max currentLevel has been reached
+         */
+        while (experience >= (experienceNeeded = getProfess().getExpCurve().getExperience(newLevel + 1))) {
 
             if (hasReachedMaxLevel()) {
                 experience = 0;
                 break;
             }
 
-            experience -= needed;
-            level = getLevel() + 1;
+            experience -= experienceNeeded;
+            newLevel++;
 
             // Apply class experience table
-            getProfess().updateAdvancement(this, level);
+            getProfess().updateAdvancement(this, newLevel);
         }
 
-        if (level > oldLevel) {
-            Bukkit.getPluginManager().callEvent(new PlayerLevelUpEvent(this, null, oldLevel, level));
+        if (newLevel > oldLevel) {
+            setLevel(newLevel, PlayerLevelChangeEvent.Reason.LEVEL_UP); // Update 'level'
+
             if (isOnline()) {
                 Message.LEVEL_UP.send(this, "level", level);
                 new SmallParticleEffect(getPlayer(), VParticle.INSTANT_EFFECT.get()); // TODO move to playerMessage
             }
-            getStats().updateStats();
         }
 
         refreshVanillaExp();
