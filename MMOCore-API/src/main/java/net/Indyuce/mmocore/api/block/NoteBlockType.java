@@ -66,12 +66,7 @@ public class NoteBlockType implements BlockType {
 
     @Override
     public @NotNull String display() {
-        return "NoteBlock{instrument=" + instrument.name() + ", note=" + note + "}";
-    }
-
-    @Override
-    public String toString() {
-        return "{note="+note.getId()+",instr="+instrument.name()+"}";
+        return "NoteBlock{instrument=" + instrument.name() + ", note=" + note.getId() + "}";
     }
 
     @Override

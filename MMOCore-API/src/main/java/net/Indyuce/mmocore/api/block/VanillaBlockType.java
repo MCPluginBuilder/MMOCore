@@ -1,5 +1,6 @@
 package net.Indyuce.mmocore.api.block;
 
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.MMOLineConfig;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.api.block.BlockInfo.RegeneratingBlock;
@@ -24,7 +25,7 @@ public class VanillaBlockType implements BlockType {
     public VanillaBlockType(MMOLineConfig config) {
         config.validate("type");
 
-        type = Material.valueOf(config.getString("type").toUpperCase().replace("-", "_").replace(" ", "_"));
+        type = UtilityMethods.prettyValueOf(Material::valueOf, config.getString("type"), "No material with ID %s");
         age = config.getInt("age", 0);
 
         Validate.isTrue(age >= 0 && age < 8, "Age must be between 0 and 7");
