@@ -4,6 +4,9 @@
 
 level-up:
   sound: ENTITY_PLAYER_LEVELUP,1,2
+  # Runs a script on level up. This script is implemented
+  # inside file MythicLib/scripts/mmocore_scripts.yml
+  script: mmocore_level_up_effect
   message:
     - ''
     - '&eCongratulations, you reached level &6{level}&e!'
@@ -156,6 +159,9 @@ leave-combat: '%&aYou left combat.'
 waypoint:
   unlock:
     message: '&eYou unlocked the &6{waypoint} &ewaypoint!'
+    # Runs a script on waypoint unlock. This script is implemented
+    # inside file MythicLib/scripts/mmocore_scripts.yml
+    script: mmocore_waypoint_unlock_effect
     sound: UI_TOAST_CHALLENGE_COMPLETE,1,1.2
   unlock-book:
     message: '&eYou unlocked the &6{waypoint} &ewaypoint!'

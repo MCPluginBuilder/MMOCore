@@ -2,10 +2,10 @@ package net.Indyuce.mmocore.listener.profession;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.version.Sounds;
 import io.lumine.mythic.lib.version.VParticle;
 import io.lumine.mythic.lib.version.VPotionEffectType;
 import net.Indyuce.mmocore.api.event.CustomBlockMineEvent;
-import net.Indyuce.mmocore.loot.chest.particle.SmallParticleEffect;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -22,10 +22,14 @@ public class PlayerCollectStats implements Listener {
 	public void a(CustomBlockMineEvent event) {
 		Player player = event.getPlayer();
 
+		// TODO de-hardcode these into custom stats using scripts or whatever
+
 		// Give haste if right enchant
 		double h = event.getData().getStats().getStat("GATHERING_HASTE");
 		if (h > 0 && RANDOM.nextDouble() < h * .045) {
-			new SmallParticleEffect(player, VParticle.INSTANT_EFFECT.get());
+			// Not version compliant
+			//new SmallParticleEffect(player, VParticle.FIREWORK.get());
+			player.playSound(player.getLocation(), Sounds.ENTITY_EXPERIENCE_ORB_PICKUP, 0.5f, 1.5f);
 			UtilityMethods.forcePotionEffect(player, VPotionEffectType.HASTE.get(), h / 2, (int) (1 + h / 7));
 		}
 

@@ -5,13 +5,11 @@ import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.gson.JsonElement;
 import io.lumine.mythic.lib.gson.JsonObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
-import io.lumine.mythic.lib.version.VParticle;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerExperienceGainEvent;
 import net.Indyuce.mmocore.api.event.PlayerLevelChangeEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.util.MMOCoreUtils;
-import net.Indyuce.mmocore.loot.chest.particle.SmallParticleEffect;
 import net.Indyuce.mmocore.party.AbstractParty;
 import net.Indyuce.mmocore.player.Message;
 import net.Indyuce.mmocore.util.Language;
@@ -239,11 +237,7 @@ public class PlayerProfessions {
 
         if (newLevel > oldLevel) {
             setLevel(profession, newLevel, PlayerLevelChangeEvent.Reason.LEVEL_UP);
-
-            if (playerData.isOnline()) {
-                new SmallParticleEffect(playerData.getPlayer(), VParticle.INSTANT_EFFECT.get()); // TODO move to playerMessage
-                Message.PROFESSION_LEVEL_UP.send(playerData, "level", newLevel, "profession", profession.getName());
-            }
+            Message.PROFESSION_LEVEL_UP.send(playerData, "level", newLevel, "profession", profession.getName());
         }
 
         if (playerData.isOnline()) {

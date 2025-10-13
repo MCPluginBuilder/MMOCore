@@ -36,7 +36,6 @@ import net.Indyuce.mmocore.experience.droptable.ExperienceItem;
 import net.Indyuce.mmocore.experience.droptable.ExperienceTable;
 import net.Indyuce.mmocore.gui.skilltree.NodeIncrementResult;
 import net.Indyuce.mmocore.guild.provided.Guild;
-import net.Indyuce.mmocore.loot.chest.particle.SmallParticleEffect;
 import net.Indyuce.mmocore.manager.data.OfflinePlayerData;
 import net.Indyuce.mmocore.party.AbstractParty;
 import net.Indyuce.mmocore.party.provided.MMOCorePartyModule;
@@ -51,7 +50,9 @@ import net.Indyuce.mmocore.skill.binding.BoundSkillInfo;
 import net.Indyuce.mmocore.skill.binding.SkillSlot;
 import net.Indyuce.mmocore.skill.cast.SkillCastingInstance;
 import net.Indyuce.mmocore.skill.cast.SkillCastingMode;
-import net.Indyuce.mmocore.skilltree.*;
+import net.Indyuce.mmocore.skilltree.NodeState;
+import net.Indyuce.mmocore.skilltree.ParentInformation;
+import net.Indyuce.mmocore.skilltree.SkillTreeNode;
 import net.Indyuce.mmocore.skilltree.display.PathState;
 import net.Indyuce.mmocore.skilltree.tree.SkillTree;
 import net.Indyuce.mmocore.util.Language;
@@ -808,7 +809,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return waypoint.hasOption(WaypointOption.DEFAULT) || waypoints.contains(waypoint.getId());
     }
 
-    public void unlockWaypoint(Waypoint waypoint) {
+    public void unlockWaypoint(@NotNull Waypoint waypoint) {
+        Message.WAYPOINT_UNLOCK.send(this, "waypoint", waypoint.getName());
         waypoints.add(waypoint.getId());
     }
 
@@ -1064,11 +1066,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
         if (newLevel > oldLevel) {
             setLevel(newLevel, PlayerLevelChangeEvent.Reason.LEVEL_UP); // Update 'level'
-
-            if (isOnline()) {
-                Message.LEVEL_UP.send(this, "level", level);
-                new SmallParticleEffect(getPlayer(), VParticle.INSTANT_EFFECT.get()); // TODO move to playerMessage
-            }
+            Message.LEVEL_UP.send(this, "level", level);
         }
 
         refreshVanillaExp();
