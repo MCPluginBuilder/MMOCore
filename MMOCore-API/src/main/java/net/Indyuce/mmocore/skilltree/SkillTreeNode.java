@@ -278,6 +278,32 @@ public class SkillTreeNode implements ExperienceObject {
     //region Deprecated
 
     @Deprecated
+    public void loadLegacyPathSection(@NotNull ConfigurationSection section) {
+        for (var childId : section.getKeys(false)) {
+            final var child = tree.getNode(childId);
+            Validate.notNull(child, "Could not find child node '" + childId + "' for path");
+
+            // Find corresponding edge
+            ParentInformation edge = null;
+            for (var existingEdge : children)
+                if (existingEdge.getChild().equals(child)) {
+                    edge = existingEdge;
+                    break;
+                }
+            if (edge == null) {
+                MMOCore.log("Could not find parent-child relation between '" + id + "' and '" + childId + "'. Did you forget to add it in the 'parents' or 'children' section?");
+                continue;
+            }
+
+            final var subsection = section.getConfigurationSection(childId);
+            for (var pathKey : subsection.getKeys(false)) {
+                final var coords = IntCoords.from(subsection.get(pathKey));
+                edge.addElement(coords);
+            }
+        }
+    }
+
+    @Deprecated
     public int getParentNeededLevel(SkillTreeNode parent) {
         for (var edge : parents)
             if (edge.getParent().equals(parent)) return edge.getLevel();

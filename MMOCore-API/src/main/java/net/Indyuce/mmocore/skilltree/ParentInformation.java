@@ -74,6 +74,13 @@ public class ParentInformation {
         return shape;
     }
 
+    @Deprecated
+    public void addElement(@NotNull IntCoords coordinates) {
+        Validate.isTrue(!this.elements.containsKey(coordinates), "Path element already present at " + coordinates);
+        this.elements.put(coordinates, null); // Place new
+        this.elements.replaceAll((e, v) -> computePathShape(e)); // Update all
+    }
+
     /**
      * Defines the method for computing the shape of a path element ie
      * whether it goes up, right, up-right, etc. based on the presence

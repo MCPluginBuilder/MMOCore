@@ -65,7 +65,7 @@ public abstract class SkillTree implements RegisteredObject {
                 MMOCore.log(Level.WARNING, "Couldn't load skill tree node " + id + "." + key + ": " + exception.getMessage());
             }
 
-        // Post load all nodes
+        // Post load all nodes (relatives)
         for (var node : nodes.values())
             try {
                 node.getPostLoadAction().performAction();
@@ -74,6 +74,9 @@ public abstract class SkillTree implements RegisteredObject {
                 MMOCore.log(Level.WARNING, "Couldn't post-load skill tree node " + id + "." + node.getId() + ": " + exception.getMessage());
                 exception.printStackTrace(); // TODO remove
             }
+
+        // [Syntax Deprecated] Load legacy "paths" section
+        loadLegacyPaths(config);
 
         // Resolve node shapes
         resolveNodeShapes();
@@ -414,6 +417,29 @@ public abstract class SkillTree implements RegisteredObject {
     }
 
     //region Deprecated
+
+    @Deprecated
+    private void loadLegacyPaths(ConfigurationSection config) {
+
+        int warnings = 0;
+
+        for (var node : nodes.values()) {
+            final var section = config.getConfigurationSection("nodes." + node.getId() + ".paths");
+            if (section == null) continue;
+            if (warnings++ < 3) {
+                // Warn max 3 times
+                MMOCore.log("You are using deprecated syntax for skill tree node '" + id + "' of skill tree '"
+                        + this.getId() + "'. You may update your config to use the 'parents' section instead of the 'paths' section. " +
+                        "Please visit 'https://gitlab.com/phoenix-dvpmt/mmocore/-/wikis/Skill%20Trees' to read about this new syntax");
+            }
+            node.loadLegacyPathSection(section);
+        }
+
+        // Repopulate pathByCoordinate map
+        if (warnings > 0)
+            for (var node : nodes.values())
+                node.getParents().forEach(parentInfo -> parentInfo.getElements().forEach(coords -> this.pathByCoordinate.put(coords, parentInfo)));
+    }
 
     @Deprecated
     public boolean isNode(@NotNull IntCoords coordinates) {
