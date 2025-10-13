@@ -336,7 +336,7 @@ public class SavedClassInformation implements ClassDataContainer {
         }
 
         // Add the values to the times claimed table and claims the corresponding stat triggers.
-        nodeTimesClaimed.forEach((str, val) -> player.setClaims(str, val));
+        nodeTimesClaimed.forEach(player::setClaims);
 
         // Unload current class information
         player.unloadClassInfo(profess);

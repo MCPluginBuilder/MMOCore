@@ -295,8 +295,10 @@ combat-log:
     - WITHER
 
 # Whether or not the default class should save information (level,
-# skills, etc.) when selecting a new class
-save-default-class-info: false
+# skills, etc.) when selecting a new class. Turn this off if you
+# do not plan on using the Default player class if, for instance,
+# players are asked to select a class right away on login.
+save-default-class-info: true
 
 waypoints:
 
