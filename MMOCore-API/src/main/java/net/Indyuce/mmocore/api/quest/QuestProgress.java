@@ -8,7 +8,7 @@ public class QuestProgress {
     private final Quest quest;
     private final PlayerData player;
 
-    private int objective;
+    private int objectiveIndex;
     private ObjectiveProgress objectiveProgress;
 
     public QuestProgress(Quest quest, PlayerData player) {
@@ -19,7 +19,7 @@ public class QuestProgress {
         this.quest = quest;
         this.player = player;
 
-        this.objective = objective;
+        this.objectiveIndex = objective;
         objectiveProgress = nextObjective().newProgress(this);
     }
 
@@ -32,7 +32,7 @@ public class QuestProgress {
     }
 
     public int getObjectiveNumber() {
-        return objective;
+        return objectiveIndex;
     }
 
     public ObjectiveProgress getProgress() {
@@ -40,18 +40,19 @@ public class QuestProgress {
     }
 
     private Objective nextObjective() {
-        return quest.getObjectives().get(objective);
+        return quest.getObjectives().get(objectiveIndex);
     }
 
     public void completeObjective() {
-        objective++;
+        objectiveIndex++;
         objectiveProgress.close();
-        final ObjectiveProgress finishedObjectiveProgress = objectiveProgress;
+        final var finishedObjectiveProgress = objectiveProgress;
 
         // Start next objective, or end quest.
-        if (objective >= quest.getObjectives().size()) player.getQuestData().finishCurrent();
+        if (objectiveIndex >= quest.getObjectives().size()) player.getQuestData().finishCurrent();
         else objectiveProgress = nextObjective().newProgress(this);
 
+        // Update bossbar
         player.getQuestData().updateBossBar();
 
         /*

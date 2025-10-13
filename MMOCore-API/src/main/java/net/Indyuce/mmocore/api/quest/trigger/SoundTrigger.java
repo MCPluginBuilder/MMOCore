@@ -2,9 +2,7 @@ package net.Indyuce.mmocore.api.quest.trigger;
 
 import io.lumine.mythic.lib.api.MMOLineConfig;
 import io.lumine.mythic.lib.message.SoundReader;
-import io.lumine.mythic.lib.version.Sounds;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import org.bukkit.Sound;
 
 public class SoundTrigger extends Trigger {
 	private final SoundReader sound;

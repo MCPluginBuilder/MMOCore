@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.gson.JsonObject;
 import io.lumine.mythic.lib.util.Closeable;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
+import org.apache.commons.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.boss.BarColor;
@@ -24,27 +25,25 @@ import java.util.logging.Level;
 public class PlayerQuests implements Closeable {
     private final PlayerData playerData;
     private final Map<String, Long> finished = new HashMap<>();
-
-    @Nullable
-    private final BossBar bossbar;
     private final NamespacedKey bossbarNamespacedKey;
 
+    @Nullable
+    private BossBar bossbar;
     private QuestProgress current;
 
     public PlayerQuests(PlayerData playerData) {
         this.playerData = playerData;
 
-        if (!MMOCore.plugin.configManager.disableQuestBossBar && playerData.isOnline()) {
-            bossbarNamespacedKey = new NamespacedKey(MMOCore.plugin, "mmocore_quest_progress_" + playerData.getUniqueId().toString());
-            bossbar = Bukkit.createBossBar(bossbarNamespacedKey, "", BarColor.PURPLE, BarStyle.SEGMENTED_20);
-            bossbar.addPlayer(playerData.getPlayer());
-            bossbar.setVisible(false); // Safety
+        bossbarNamespacedKey = new NamespacedKey(MMOCore.plugin, "quest_progress_" + playerData.getUniqueId());
+/*
+        Bukkit.getScheduler().runTaskTimer(MMOCore.plugin, () -> {
 
-            // Bossbar is disabled
-        } else {
-            bossbarNamespacedKey = null;
-            bossbar = null;
-        }
+            Bukkit.broadcastMessage("bossbar=" + bossbar);
+            Bukkit.broadcastMessage("current=" + current);
+
+
+        }, 20, 20);
+        */
     }
 
     public PlayerQuests load(ConfigurationSection config) {
@@ -68,6 +67,8 @@ public class PlayerQuests implements Closeable {
 
         return this;
     }
+
+    //region DB
 
     public void save(ConfigurationSection config) {
         if (current != null) {
@@ -93,7 +94,7 @@ public class PlayerQuests implements Closeable {
         for (String key : finished.keySet())
             fin.addProperty(key, finished.get(key));
 
-        if (finished.size() != 0)
+        if (!finished.isEmpty())
             json.add("finished", fin);
         return json.toString();
     }
@@ -113,6 +114,8 @@ public class PlayerQuests implements Closeable {
             for (Entry<String, JsonElement> entry : jo.getAsJsonObject("finished").entrySet())
                 finished.put(entry.getKey(), entry.getValue().getAsLong());
     }
+
+    //endregion DB
 
     public QuestProgress getCurrent() {
         return current;
@@ -135,6 +138,7 @@ public class PlayerQuests implements Closeable {
     }
 
     public void finishCurrent() {
+        Validate.notNull(current, "No ongoing quest");
         finished.put(current.getQuest().getId(), System.currentTimeMillis());
         start(null);
     }
@@ -147,35 +151,36 @@ public class PlayerQuests implements Closeable {
         return new Date(finished.get(quest.getId()));
     }
 
-    public void start(Quest quest) {
+    public void start(@Nullable Quest quest) {
 
         // Close current objective progress if quest is active
-        closeCurrentQuest();
+        cancelCurrentQuest();
 
         // Apply newest quest
         current = quest == null ? null : quest.generateNewProgress(playerData);
         updateBossBar();
     }
 
-    public void closeCurrentQuest() {
-        if (current == null)
-            return;
+    public void cancelCurrentQuest() {
+        if (current == null) return;
 
         current.getProgress().close();
         current = null;
+    }
+
+    @Deprecated
+    public void closeCurrentQuest() {
+        cancelCurrentQuest();
     }
 
     @Override
     public void close() {
 
         // Remove boss bar
-        if (bossbar != null) {
-            bossbar.removeAll();
-            Bukkit.removeBossBar(bossbarNamespacedKey);
-        }
+        if (bossbar != null) deleteBossbar();
 
-        // Close current objective progress
-        closeCurrentQuest();
+        // Close only progress
+        if (current != null) current.getProgress().close();
     }
 
     public boolean checkCooldownAvailability(Quest quest) {
@@ -193,20 +198,50 @@ public class PlayerQuests implements Closeable {
         return true;
     }
 
-    public void updateBossBar() {
+    //region Bossbar
 
-        // Bossbar is disabled
-        if (bossbar == null)
-            return;
+    private boolean isBossbarRelevant() {
+        return !MMOCore.plugin.configManager.disableQuestBossBar
+                && current != null
+                && current.getQuest().usesBossbar();
+    }
 
-        if (!hasCurrent() || !current.getProgress().getObjective().hasLore()) {
-            bossbar.setVisible(false);
-            return;
-        }
-
+    private void initializeBossbar() {
+        Validate.isTrue(this.bossbar == null, "Tried to create a new bossbar while one already exists");
+        this.bossbar = Bukkit.createBossBar(bossbarNamespacedKey, "", BarColor.PURPLE, BarStyle.SEGMENTED_20);
+        bossbar.addPlayer(playerData.getPlayer());
         bossbar.setVisible(true);
+    }
+
+    private void deleteBossbar() {
+        Validate.notNull(this.bossbar, "Bossbar is null");
+
+        bossbar.removeAll();
+        Bukkit.removeBossBar(bossbarNamespacedKey);
+        this.bossbar = null;
+    }
+
+    public void updateBossBar() {
+        final var flag = isBossbarRelevant();
+        final var enabled = bossbar != null;
+
+        // Initialize/remove if needed
+        if (enabled && !flag) deleteBossbar();
+        else if (!enabled && flag) initializeBossbar();
+
+        // Bossbar
+        if (bossbar == null) return;
+
+        final var bossbarProgress = current.getQuest().isObjectiveBossbar()
+                // Fine tuned progress
+                ? current.getProgress().getProgress()
+                // Based on objective number
+                : (double) current.getObjectiveNumber() / current.getQuest().getObjectives().size();
+
         bossbar.setColor(current.getProgress().getObjective().getBarColor());
         bossbar.setTitle(current.getFormattedLore());
-        bossbar.setProgress((double) current.getObjectiveNumber() / current.getQuest().getObjectives().size());
+        bossbar.setProgress(bossbarProgress);
     }
+
+    //endregion
 }

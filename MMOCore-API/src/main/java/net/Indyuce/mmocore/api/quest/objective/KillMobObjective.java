@@ -23,26 +23,32 @@ public class KillMobObjective extends Objective {
 	}
 
 	@Override
-	public ObjectiveProgress newProgress(QuestProgress questProgress) {
-		return new KillMobProgress(questProgress, this);
+	public KillMobProgress newProgress(QuestProgress questProgress) {
+		return new KillMobProgress(questProgress);
 	}
 
 	public class KillMobProgress extends ObjectiveProgress implements Listener {
 		private int count;
 
-		public KillMobProgress(QuestProgress questProgress, Objective objective) {
-			super(questProgress, objective);
+		public KillMobProgress(QuestProgress questProgress) {
+			super(questProgress, KillMobObjective.this);
 		}
 
-		@EventHandler
-		public void a(PlayerKillEntityEvent event) {
-			if(!getPlayer().isOnline()) return;
-			if (event.getTarget().getType() == type && event.getPlayer().equals(getPlayer().getPlayer())) {
-				count++;
-				getQuestProgress().getPlayer().getQuestData().updateBossBar();
-				if (count >= required)
-					getQuestProgress().completeObjective();
-			}
+        @EventHandler
+        public void a(PlayerKillEntityEvent event) {
+            if (!getPlayer().isOnline()) return;
+
+            if (event.getTarget().getType() == type && event.getPlayer().equals(getPlayer().getPlayer())) {
+                count++;
+                getQuestProgress().getPlayer().getQuestData().updateBossBar();
+                if (count >= required)
+                    getQuestProgress().completeObjective();
+            }
+        }
+
+		@Override
+		public double getProgress() {
+			return (double) count / required;
 		}
 
 		@Override

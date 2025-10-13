@@ -31,13 +31,13 @@ public class ClickonObjective extends Objective {
 	}
 
 	@Override
-	public ObjectiveProgress newProgress(QuestProgress questProgress) {
-		return new GotoProgress(questProgress, this);
+	public GotoProgress newProgress(QuestProgress questProgress) {
+		return new GotoProgress(questProgress);
 	}
 
 	public class GotoProgress extends ObjectiveProgress implements Listener {
-		public GotoProgress(QuestProgress questProgress, Objective objective) {
-			super(questProgress, objective);
+		public GotoProgress(QuestProgress questProgress) {
+			super(questProgress, ClickonObjective.this);
 		}
 
 		@EventHandler
@@ -49,6 +49,11 @@ public class ClickonObjective extends Objective {
 			if (getPlayer().isOnline() && player.equals(getPlayer().getPlayer()))
 				if (player.getWorld().equals(loc.getWorld()) && event.getClickedBlock().getLocation().distanceSquared(loc) < rangeSquared)
 					getQuestProgress().completeObjective();
+		}
+
+		@Override
+		public double getProgress() {
+			return 1d;
 		}
 
 		@Override

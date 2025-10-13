@@ -54,6 +54,11 @@ public class MineBlockObjective extends Objective {
 			}
 		}
 
+		@Override
+		public double getProgress() {
+			return (double) count / required;
+		}
+
 		@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
 		public void b(CustomBlockMineEvent event) {
 			if(!getQuestProgress().getPlayer().isOnline()) return;

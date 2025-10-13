@@ -20,6 +20,7 @@ public class Quest implements PreloadedObject {
 	private final List<Objective> objectives = new ArrayList<>();
 	private final List<String> lore;
 	private final int mainLevelRestriction;
+	private final boolean useBossbar, objectiveBossbar;
 	private final Map<Profession, Integer> levelRestrictions = new HashMap<>();
 
 	// Cooldown in millis
@@ -40,6 +41,8 @@ public class Quest implements PreloadedObject {
 		cooldown = (long) (config.contains("delay") ? config.getDouble("delay") * 60 * 60 * 1000 : -1);
 		name = config.getString("name");
 		lore = config.getStringList("lore");
+		objectiveBossbar = config.getBoolean("bossbar.objective", true);
+		useBossbar = config.getBoolean("bossbar.enabled", true);
 
 		mainLevelRestriction = config.getInt("level-req.main");
 
@@ -78,6 +81,14 @@ public class Quest implements PreloadedObject {
 
 	public String getId() {
 		return id;
+	}
+
+	public boolean usesBossbar() {
+		return useBossbar;
+	}
+
+	public boolean isObjectiveBossbar() {
+		return objectiveBossbar;
 	}
 
 	public String getName() {

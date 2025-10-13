@@ -19,6 +19,14 @@ parent: []
 # Put it to 0 to make it instantly redoable.
 delay: 0
 
+bossbar:
+    # Enable bossbar during the quest
+    enabled: true
+    # If true, it will display the percent of progress of the
+    # current objective. If false, it will display the percent of
+    # total quest progress (for instance, 33% = 1/3 objectives completed).
+    objective: true
+
 # Objectives the player needs to
 # complete. Once they're all complete,
 # the quest will end.
