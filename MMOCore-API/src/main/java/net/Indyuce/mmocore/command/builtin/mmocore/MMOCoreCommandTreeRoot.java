@@ -7,7 +7,7 @@ import net.Indyuce.mmocore.command.builtin.mmocore.clazz.ClassCommandTreeNode;
 import net.Indyuce.mmocore.command.builtin.mmocore.debug.DebugCommandTreeNode;
 import net.Indyuce.mmocore.command.builtin.mmocore.quest.QuestCommandTreeNode;
 import net.Indyuce.mmocore.command.builtin.mmocore.skill.SkillCommandTreeNode;
-import net.Indyuce.mmocore.command.builtin.mmocore.tree.SkillTreeCommandNode;
+import net.Indyuce.mmocore.command.builtin.mmocore.skilltree.SkillTreeCommandNode;
 import net.Indyuce.mmocore.command.builtin.mmocore.waypoint.WaypointsCommandTreeNode;
 
 public class MMOCoreCommandTreeRoot extends CommandTreeRoot {

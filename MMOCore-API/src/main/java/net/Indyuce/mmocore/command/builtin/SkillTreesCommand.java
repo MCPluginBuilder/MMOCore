@@ -15,6 +15,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class SkillTreesCommand extends CommandTreeRoot {
     private final Argument<SkillTree> argType;
@@ -35,7 +36,7 @@ public class SkillTreesCommand extends CommandTreeRoot {
             return CommandResult.FAILURE;
         }
 
-        final var opened = explorer.parse(argType); // null == global
+        final @Nullable var opened = explorer.parse(argType); // null == global
         if (MMOCoreUtils.callLegacyCommandEvent(data, this)) return CommandResult.FAILURE;
 
         // Global skill tree view

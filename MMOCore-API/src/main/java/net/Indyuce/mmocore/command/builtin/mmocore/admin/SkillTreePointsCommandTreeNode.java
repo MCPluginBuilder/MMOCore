@@ -11,6 +11,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.BiFunction;
 
@@ -49,7 +50,7 @@ public class SkillTreePointsCommandTreeNode extends CommandTreeNode {
         public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
             final var player = explorer.parse(argPlayer);
             final var amount = explorer.parse(argAmount);
-            final var skillTree = explorer.parse(argType);
+            final @Nullable var skillTree = explorer.parse(argType);
 
             final var skillTreeName = skillTree == null ? "global" : skillTree.getId();
             final var data = PlayerData.get(player);

@@ -1,4 +1,4 @@
-package net.Indyuce.mmocore.command.builtin.mmocore.tree;
+package net.Indyuce.mmocore.command.builtin.mmocore.skilltree;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.command.CommandTreeExplorer;
@@ -11,27 +11,36 @@ import net.Indyuce.mmocore.skilltree.tree.SkillTree;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class OpenCommandNode extends CommandTreeNode {
-    private final Argument<SkillTree> argTree;
     private final Argument<Player> argPlayer;
+    private final Argument<SkillTree> argTree;
 
     public OpenCommandNode(CommandTreeNode parent) {
         super(parent, "open");
 
         argPlayer = addArgument(Argument.PLAYER);
-        argTree = addArgument(Arguments.SKILL_TREE_OR_GLOBAL);
+        argTree = addArgument(Arguments.SKILL_TREE_OR_GLOBAL).withFallback(explorer -> null);
     }
 
     @Override
     public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
         final var player = explorer.parse(argPlayer);
-        final var skillTree = explorer.parse(argTree);
+        final @Nullable var skillTree = explorer.parse(argTree);
 
         final var playerData = PlayerData.get(player);
         final var skillTrees = playerData.getProfess().getSkillTrees();
         if (skillTrees.isEmpty()) {
             return explorer.fail("Player class " + playerData.getProfess().getName() + " of " + player.getName() + " has no skill tree");
+        }
+
+        final var skillTreeName = skillTree == null ? "Global" : skillTree.getName();
+
+        // Global skill tree view
+        if (skillTree == null) {
+            InventoryManager.TREE_VIEW.newInventory(playerData).open();
+            return explorer.success("Skill tree &6" + skillTreeName + "&e opened for player &6" + player.getName());
         }
 
         // Specific skill tree view
@@ -40,6 +49,6 @@ public class OpenCommandNode extends CommandTreeNode {
         }
 
         InventoryManager.SPECIFIC_TREE_VIEW.get(UtilityMethods.kebabCase(skillTree.getId())).newInventory(playerData).open();
-        return explorer.success("Skill tree &6" + skillTree.getName() + "&e opened for player &6" + player.getName());
+        return explorer.success("Skill tree &6" + skillTreeName + "&e opened for player &6" + player.getName());
     }
 }
