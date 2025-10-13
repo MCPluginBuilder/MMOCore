@@ -68,13 +68,14 @@ public class MMOCorePartyModule implements PartyModule, Listener {
 
         event.setCancelled(true);
 
-        // Running it in a delayed task is recommended
+        // Run it on main server thread
         Bukkit.getScheduler().runTask(MMOCore.plugin, () -> {
-            var rawMessage = event.getMessage().substring(MMOCore.plugin.configManager.partyChatPrefix.length());
-            var message = Message.PARTY_CHAT.prepare("player", data.getPlayer().getName(), "message", rawMessage);
-            var called = new PartyChatEvent(party, data, message.getRawContent());
+            final var rawMessage = event.getMessage().substring(MMOCore.plugin.configManager.partyChatPrefix.length());
+            final var called = new PartyChatEvent(party, data, rawMessage);
             Bukkit.getPluginManager().callEvent(called);
-            if (!called.isCancelled()) party.getOnlineMembers().forEach(member -> message.send(member.getPlayer()));
+            if (called.isCancelled() || called.getMessage() == null) return;
+
+            party.getOnlineMembers().forEach(member -> Message.PARTY_CHAT.send(member.getPlayer(), "player", data.getPlayer().getName(), "message", called.getMessage()));
         });
     }
 

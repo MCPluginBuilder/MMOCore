@@ -228,7 +228,7 @@ public class PlayerProfessions {
                 var mainExpGiven = profession.getExperience().evaluate(newLevel, playerData);
                 playerData.giveExperience(mainExpGiven, EXPSource.PROFESSION_TO_CLASS);
             } catch (FormulaFailsafeException exception) {
-                exception.log("Could not evaluate profession newLevel-up exp for %s", profession.getId());
+                exception.log("Could not evaluate profession level-up exp for %s", profession.getId());
             }
 
             // Apply profession experience table
@@ -240,8 +240,10 @@ public class PlayerProfessions {
         if (newLevel > oldLevel) {
             setLevel(profession, newLevel, PlayerLevelChangeEvent.Reason.LEVEL_UP);
 
-            new SmallParticleEffect(playerData.getPlayer(), VParticle.INSTANT_EFFECT.get()); // TODO move to playerMessage
-            Message.PROFESSION_LEVEL_UP.send(playerData, "newLevel", newLevel, "profession", profession.getName());
+            if (playerData.isOnline()) {
+                new SmallParticleEffect(playerData.getPlayer(), VParticle.INSTANT_EFFECT.get()); // TODO move to playerMessage
+                Message.PROFESSION_LEVEL_UP.send(playerData, "level", newLevel, "profession", profession.getName());
+            }
         }
 
         if (playerData.isOnline()) {

@@ -78,7 +78,7 @@ public class PvPModeListener implements Listener {
             if (event.getDamage() > 0) {
                 final var left = targetData.getCombat().getInvulnerableTill() - System.currentTimeMillis();
                 final var leftFormatted = MythicLib.plugin.getMMOConfig().decimal.format(left / 1000d);
-                Message.PVP_MODE_CANNOT_HIT_INVULNERABLE_TARGET.prepare("left", leftFormatted).send(source);
+                Message.PVP_MODE_CANNOT_HIT_INVULNERABLE_TARGET.send(source, "left", leftFormatted);
             }
             event.setCancelled(true);
             return;
@@ -89,7 +89,7 @@ public class PvPModeListener implements Listener {
             if (event.getDamage() > 0) {
                 final var left = sourceData.getCombat().getInvulnerableTill() - System.currentTimeMillis();
                 final var leftFormatted = MythicLib.plugin.getMMOConfig().decimal.format(left / 1000d);
-                Message.PVP_MODE_CANNOT_HIT_INVULNERABLE_SELF.prepare("left", leftFormatted).send(source);
+                Message.PVP_MODE_CANNOT_HIT_INVULNERABLE_SELF.send(source, "left", leftFormatted);
             }
             event.setCancelled(true);
             return;

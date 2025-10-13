@@ -42,8 +42,7 @@ public class WithdrawCommand extends RegisteredCommand {
             else amount = Integer.parseInt(args[args.length - 1]);
             Validate.isTrue(amount >= 0);
         } catch (IllegalArgumentException exception) {
-            if (sender instanceof Player)
-                Message.WITHDRAW_INVALID_AMOUNT.prepare("arg", args[0]).send((MMOPlayerData) sender);
+            if (sender instanceof Player) Message.WITHDRAW_INVALID_AMOUNT.send((Player) sender, "arg", args[0]);
             else sender.sendMessage(ChatColor.RED + "Please specify a valid number.");
             return true;
         }

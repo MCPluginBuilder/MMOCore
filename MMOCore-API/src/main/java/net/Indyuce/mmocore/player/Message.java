@@ -2,7 +2,6 @@ package net.Indyuce.mmocore.player;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.message.PlayerMessage;
-import io.lumine.mythic.lib.message.ReadyMessage;
 import io.lumine.mythic.lib.message.type.EmptyMessage;
 import io.lumine.mythic.lib.util.config.YamlFile;
 import io.lumine.mythic.lib.util.config.YamlUtils;
@@ -204,14 +203,8 @@ public enum Message {
         this.candidates = array;
     }
 
-    @NotNull
-    public ReadyMessage prepare(@NotNull Object... placeholders) {
-        return this.wrapped.prepare(null, placeholders);
-    }
-
     public <T extends Player> void send(@NotNull Iterable<T> players, @NotNull Object... placeholders) {
-        final var message = this.wrapped.prepare(null, placeholders);
-        for (var player : players) message.send(player);
+        for (var player : players) this.send(player, placeholders);
     }
 
     public void send(@NotNull Player player, @NotNull Object... placeholders) {
