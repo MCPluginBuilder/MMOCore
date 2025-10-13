@@ -325,28 +325,6 @@ resource-bar-colors:
   stamina-half: 'DARK_GREEN'
   stamina-empty: 'WHITE'
 
-# Whether the admin commands should display
-# the result of the command when ran.
-# For Example: "Players Level is now 10."
-#
-# Accepted Values:
-#   true    - Always verbose
-#   player  - Only verbose when ran from a player
-#   console - Only verbose when ran from console
-#   false   - Never verbose
-command-verbose:
-  attribute: true
-  skill: true
-  class: true
-  experience: true
-  level: true
-  nocd: true
-  skill-tree-points: true
-  points: true
-  reset: true
-  resource: true
-  waypoint: true
-
 # Requires WorldGuard to work. Do NOT enable unless
 # you have WG to avoid weird interact rule issues!
 #

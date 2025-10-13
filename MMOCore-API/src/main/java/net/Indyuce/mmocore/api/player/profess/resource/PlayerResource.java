@@ -5,7 +5,7 @@ import net.Indyuce.mmocore.api.event.PlayerResourceUpdateEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.profess.ClassOption;
 import net.Indyuce.mmocore.api.quest.trigger.ManaTrigger;
-import net.Indyuce.mmocore.command.rpg.admin.ResourceCommandTreeNode;
+import net.Indyuce.mmocore.command.builtin.mmocore.admin.ResourceCommandTreeNode;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;

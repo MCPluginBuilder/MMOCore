@@ -428,7 +428,7 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
         return skillSlots;
     }
 
-    @NotNull
+    @Nullable
     public ClassSkill getSkill(RegisteredSkill skill) {
         return getSkill(skill.getHandler().getId());
     }

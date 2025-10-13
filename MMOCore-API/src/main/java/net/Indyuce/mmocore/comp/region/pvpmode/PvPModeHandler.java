@@ -12,7 +12,7 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.comp.flags.CustomFlag;
 import io.lumine.mythic.lib.comp.flags.WorldGuardFlags;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.command.PvpModeCommand;
+import net.Indyuce.mmocore.player.CombatHandler;
 import net.Indyuce.mmocore.player.Message;
 
 import java.util.Objects;
@@ -52,7 +52,7 @@ public class PvPModeHandler extends MMOCoreFlagHandler {
         if (!newPvpMode && lastPvpMode) {
 
             // Apply cooldown
-            playerData.getMMOPlayerData().getCooldownMap().applyCooldown(PvpModeCommand.COOLDOWN_KEY, MMOCore.plugin.configManager.pvpModeRegionLeaveCooldown);
+            playerData.getMMOPlayerData().getCooldownMap().applyCooldown(CombatHandler.COOLDOWN_KEY, MMOCore.plugin.configManager.pvpModeRegionLeaveCooldown);
 
             // Send message
             if (canSendMessage()) {
@@ -72,7 +72,7 @@ public class PvPModeHandler extends MMOCoreFlagHandler {
         } else if (newPvpMode && !lastPvpMode) {
 
             // Apply cooldown
-            playerData.getMMOPlayerData().getCooldownMap().applyCooldown(PvpModeCommand.COOLDOWN_KEY, MMOCore.plugin.configManager.pvpModeRegionEnterCooldown);
+            playerData.getMMOPlayerData().getCooldownMap().applyCooldown(CombatHandler.COOLDOWN_KEY, MMOCore.plugin.configManager.pvpModeRegionEnterCooldown);
 
             // Apply invulnerability
             final boolean applyInvulnerability = playerData.getCombat().isInPvpMode() && playerData.getCombat().canQuitPvpMode();

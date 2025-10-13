@@ -76,9 +76,7 @@ public class RPGPlaceholders extends PlaceholderExpansion {
             String id = identifier.substring(12);
             RegisteredSkill skill = MMOCore.plugin.skillManager.getSkillOrThrow(id);
             return String.valueOf(playerData.getSkillLevel(skill));
-        }
-
-        else if (identifier.startsWith("skill_tree_points_")) {
+        } else if (identifier.startsWith("skill_tree_points_")) {
             int length = "skill_tree_points_".length();
             String id = identifier.substring(length);
             return String.valueOf(PlayerData.get(player).getSkillTreePoints(id));
@@ -106,7 +104,8 @@ public class RPGPlaceholders extends PlaceholderExpansion {
             final String parameterId = ids[0];
             final String skillId = ids[1];
             final RegisteredSkill skill = Objects.requireNonNull(MMOCore.plugin.skillManager.getSkill(skillId), "Could not find skill with ID '" + skillId + "'");
-            final CastableSkill castable = playerData.getProfess().getSkill(skill).toCastable(playerData);
+            final ClassSkill classSkill = Objects.requireNonNull(playerData.getProfess().getSkill(skill), "Class " + playerData.getProfess().getName() + " does not have skill with ID '" + skillId + "'");
+            final CastableSkill castable = classSkill.toCastable(playerData);
             final double value = playerData.getMMOPlayerData().getSkillModifierMap().calculateValue(castable, parameterId);
             return MythicLib.plugin.getMMOConfig().decimal.format(value);
         } else if (identifier.startsWith("attribute_points_spent_")) {
@@ -128,11 +127,9 @@ public class RPGPlaceholders extends PlaceholderExpansion {
             for (double j = 1; j < 20; j++)
                 format.append(ratio >= j ? ChatColor.RED : ratio >= j - .5 ? ChatColor.DARK_RED : ChatColor.DARK_GRAY).append(AltChar.listSquare);
             return format.toString();
-        }
-
-        else if (identifier.equals("class_id"))
+        } else if (identifier.equals("class_id"))
             return playerData.getProfess().getId();
-         else if (identifier.equals("class"))
+        else if (identifier.equals("class"))
             return playerData.getProfess().getName();
 
         else if (identifier.startsWith("profession_percent_")) {

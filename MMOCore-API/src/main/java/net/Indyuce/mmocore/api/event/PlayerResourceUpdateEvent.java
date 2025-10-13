@@ -5,7 +5,7 @@ import net.Indyuce.mmocore.api.player.profess.resource.PlayerResource;
 import net.Indyuce.mmocore.api.quest.trigger.ManaTrigger;
 import net.Indyuce.mmocore.api.quest.trigger.StaminaTrigger;
 import net.Indyuce.mmocore.api.quest.trigger.StelliumTrigger;
-import net.Indyuce.mmocore.command.rpg.admin.ResourceCommandTreeNode;
+import net.Indyuce.mmocore.command.builtin.mmocore.admin.ResourceCommandTreeNode;
 import net.Indyuce.mmocore.skill.list.Neptune_Gift;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;

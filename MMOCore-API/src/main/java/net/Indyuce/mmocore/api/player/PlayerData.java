@@ -27,6 +27,7 @@ import net.Indyuce.mmocore.api.quest.PlayerQuests;
 import net.Indyuce.mmocore.api.quest.trigger.Trigger;
 import net.Indyuce.mmocore.api.quest.trigger.api.Removable;
 import net.Indyuce.mmocore.api.util.MMOCoreUtils;
+import net.Indyuce.mmocore.command.Arguments;
 import net.Indyuce.mmocore.experience.EXPSource;
 import net.Indyuce.mmocore.experience.ExperienceObject;
 import net.Indyuce.mmocore.experience.PlayerProfessions;
@@ -271,15 +272,33 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return skillTreePointsSpent.getOrDefault(skillTree, 0);
     }
 
-    public void setSkillTreePoints(@NotNull String treeId, int points) {
-        if (points <= 0) skillTreePoints.remove(treeId);
-        else skillTreePoints.put(treeId, points);
+    @NotNull
+    private static String asKey(@Nullable SkillTree skillTree) {
+        return skillTree == null ? Arguments.SKILL_TREE_GLOBAL_KEY : skillTree.getId();
+    }
+    
+    public void setSkillTreePoints(@NotNull SkillTree skillTree, int points) {
+        setSkillTreePoints(asKey(skillTree), points);
+    }
+    
+    public void setSkillTreePoints(@NotNull String skillTreeId, int points) {
+        if (points <= 0) skillTreePoints.remove(skillTreeId);
+        else skillTreePoints.put(skillTreeId, points);
+    }
+
+    public void giveSkillTreePoints(@Nullable SkillTree skillTree, int val) {
+        giveSkillTreePoints(asKey(skillTree), val);
     }
 
     public void giveSkillTreePoints(@NotNull String id, int val) {
         skillTreePoints.merge(id, Math.max(0, val), (points, ignored) -> Math.max(0, points + val));
     }
 
+    /**
+     * Counts the number of points spent in that skill tree
+     * @deprecated 
+     * @see #getPointsSpent(SkillTree) 
+     */
     public int countSkillTreePoints(@NotNull SkillTree skillTree) {
         return nodeLevels.keySet().stream().filter(node -> node.getTree().equals(skillTree)).mapToInt(node -> nodeLevels.get(node) * node.getPointConsumption()).sum();
     }
@@ -392,6 +411,10 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         // Reload node states from full skill tree
         clearNodeStates(node.getTree());
         node.getTree().setupNodeStates(this);
+    }
+
+    public int getSkillTreePoints(@Nullable SkillTree skillTree) {
+        return getSkillTreePoints(asKey(skillTree));
     }
 
     public int getSkillTreePoints(@NotNull String treeId) {

@@ -108,7 +108,7 @@ public class ClassConfirmation extends AbstractClassSelect {
 
         @Override
         public void onClick(@NotNull ClassConfirmationInventory inv, @NotNull InventoryClickEvent event) {
-            PlayerChangeClassEvent called = new PlayerChangeClassEvent(inv.playerData, inv.profess);
+            PlayerChangeClassEvent called = new PlayerChangeClassEvent(inv.playerData, inv.profess, PlayerChangeClassEvent.Reason.GUI);
             Bukkit.getPluginManager().callEvent(called);
             if (called.isCancelled()) return;
 

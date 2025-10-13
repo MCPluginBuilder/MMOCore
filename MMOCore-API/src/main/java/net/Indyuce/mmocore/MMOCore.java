@@ -12,8 +12,8 @@ import io.lumine.mythic.lib.version.SpigotPlugin;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.attribute.AttributeModifier;
 import net.Indyuce.mmocore.api.player.profess.resource.PlayerResource;
-import net.Indyuce.mmocore.command.MMOCoreCommandTreeRoot;
-import net.Indyuce.mmocore.command.api.ToggleableCommand;
+import net.Indyuce.mmocore.command.builtin.mmocore.MMOCoreCommandTreeRoot;
+import net.Indyuce.mmocore.command.ToggleableCommand;
 import net.Indyuce.mmocore.comp.citizens.CitizenInteractEventListener;
 import net.Indyuce.mmocore.comp.citizens.CitizensMMOLoader;
 import net.Indyuce.mmocore.comp.mythicmobs.MythicHook;
@@ -263,7 +263,7 @@ public class MMOCore extends MMOPlugin {
         nativeGuildManager.load();
 
         // Toggleable Commands
-        ToggleableCommand.register();
+        ToggleableCommand.loadCommands();
 
         // Register MMOCore command what soever
         MMOCoreCommandTreeRoot mmoCoreCommand = new MMOCoreCommandTreeRoot();

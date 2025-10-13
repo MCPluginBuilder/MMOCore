@@ -102,7 +102,7 @@ public class SkillTreeViewer extends EditableInventory {
         @Override
         public Placeholders getPlaceholders(SkillTreeInventory inv, int n) {
             Placeholders holders = new Placeholders();
-            holders.register("skill-tree-points", inv.playerData.getSkillTreePoints(inv.getSkillTree().getId()));
+            holders.register("skill-tree-points", inv.playerData.getSkillTreePoints(inv.getSkillTree()));
             holders.register("global-points", inv.playerData.getSkillTreePoints("global"));
             holders.register("realloc-points", inv.playerData.getSkillTreeReallocationPoints());
             int maxPointSpent = inv.getSkillTree().getMaxPointSpent();

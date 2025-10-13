@@ -76,7 +76,7 @@ no-skill-placeholder: 'No Skill Bound' # Can only be a string
 # PvP Mode
 ###################################################
 pvp-mode:
-  cooldown: '&cPlease wait {remaining} seconds to use this command again.'
+  cooldown: '&cPlease wait {remaining}s before using this command again.'
 
   # When you cannot hit another player
   cannot-hit:
@@ -212,6 +212,9 @@ friend-cant-friend-yourself:
 friend-already:
   message: '&cYou are already friends with {player}.'
   sound: ENTITY_VILLAGER_NO
+friend-no-pending-invite:
+  message: '&cYou do not have any pending friend request.'
+  sound: ENTITY_VILLAGER_NO
 
 friend-request-denied:
   message: '&cYou denied the friend request from &6{player}&c.'
@@ -256,6 +259,9 @@ party-created:
   message: '&eYou successfully created a party.'
   sound: ENTITY_EXPERIENCE_ORB_PICKUP
 
+party-no-pending-invite:
+  message: '&cYou do not have any pending party invite.'
+  sound: ENTITY_VILLAGER_NO
 party-is-full:
   message: '&cSorry, your party is full.'
   sound: ENTITY_VILLAGER_NO
@@ -289,6 +295,9 @@ sent-guild-invite:
   sound: ENTITY_EXPERIENCE_ORB_PICKUP
 guild-not-online-player:
   message: '&c{player} is not online.'
+  sound: ENTITY_VILLAGER_NO
+guild-no-pending-invite:
+  message: '&cYou do not have any pending guild invite.'
   sound: ENTITY_VILLAGER_NO
 already-in-guild: '&c{player} is already in your guild.'
 guild-invite:
@@ -442,7 +451,10 @@ not-skill-tree-reallocation-point:
   message: '&cYou do not have 1 skill tree reallocation point.'
   sound: ENTITY_VILLAGER_NO,1,2
 no-skill-tree:
-  message: '&cYour class doesn''t have any skill tree.'
+  message: '&cYour class does not have any skill tree.'
+  sound: ENTITY_VILLAGER_NO,1,2
+no-class-skill-tree:
+  message: '&cThis skill tree is not available to your class.'
   sound: ENTITY_VILLAGER_NO,1,2
 skill-tree-max-points-spent:
   message: '&cYou reached the maximum points you can spend. You need to reallocate your points to rollback.'

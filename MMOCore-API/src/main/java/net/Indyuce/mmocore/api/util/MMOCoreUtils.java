@@ -3,6 +3,7 @@ package net.Indyuce.mmocore.api.util;
 import com.google.common.collect.MultimapBuilder;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.command.CommandTreeRoot;
 import io.lumine.mythic.lib.gson.JsonArray;
 import io.lumine.mythic.lib.gson.JsonObject;
 import io.lumine.mythic.lib.hologram.Hologram;
@@ -10,6 +11,8 @@ import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.version.VEnchantment;
 import net.Indyuce.mmocore.MMOCore;
+import net.Indyuce.mmocore.api.event.MMOCommandEvent;
+import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.util.Icon;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
@@ -49,6 +52,12 @@ public class MMOCoreUtils {
      */
     public static boolean isInvalid(OfflinePlayer player) {
         return player.getName() == null;
+    }
+
+    public static boolean callLegacyCommandEvent(PlayerData playerData, CommandTreeRoot command) {
+        final var called = new MMOCommandEvent(playerData, command);
+        Bukkit.getServer().getPluginManager().callEvent(called);
+        return called.isCancelled();
     }
 
     @Deprecated
