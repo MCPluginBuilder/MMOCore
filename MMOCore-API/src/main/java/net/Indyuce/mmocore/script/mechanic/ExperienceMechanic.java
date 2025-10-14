@@ -8,19 +8,16 @@ import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.experience.EXPSource;
-import net.Indyuce.mmocore.experience.SimpleExperienceObject;
-import net.Indyuce.mmocore.experience.dispenser.ExperienceDispenser;
+import net.Indyuce.mmocore.experience.Profession;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class ExperienceMechanic extends TargetMechanic {
-    @NotNull
     private final DoubleFormula amount;
-    @NotNull
     private final EXPSource source;
-    @NotNull
-    private final ExperienceDispenser dispenser;
+    @Nullable
+    private final Profession profession;
 
     public ExperienceMechanic(ConfigObject config) {
         super(config);
@@ -31,9 +28,8 @@ public class ExperienceMechanic extends TargetMechanic {
         if (config.contains("profession")) {
             String id = config.getString("profession").toLowerCase().replace("_", "-");
             Validate.isTrue(MMOCore.plugin.professionManager.has(id), "Could not find profession");
-            dispenser = MMOCore.plugin.professionManager.get(id);
-        } else
-            dispenser = new SimpleExperienceObject();
+            profession = MMOCore.plugin.professionManager.get(id);
+        } else profession = null;
         source = config.contains("source") ? EXPSource.valueOf(config.getString("source").toUpperCase()) : EXPSource.QUEST;
     }
 
@@ -41,6 +37,8 @@ public class ExperienceMechanic extends TargetMechanic {
     public void cast(SkillMetadata meta, Entity target) {
         Validate.isTrue(target instanceof Player, "Target is not a player");
         PlayerData targetData = PlayerData.get(target.getUniqueId());
-        dispenser.giveExperience(targetData, amount.evaluate(meta), null, source);
+
+        if (profession != null) profession.giveExperience(targetData, amount.evaluate(meta), null, source);
+        else targetData.getProfess().giveExperience(targetData, amount.evaluate(meta), null, source);
     }
 }
