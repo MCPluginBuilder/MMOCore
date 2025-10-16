@@ -189,6 +189,7 @@ waypoint:
 # Economy features
 ###################################################
 
+gold-pouch-ui-name: 'Gold Pouch'
 deposit:
   success:
     message: '&eYou successfully deposited &6{worth}g&e.'
