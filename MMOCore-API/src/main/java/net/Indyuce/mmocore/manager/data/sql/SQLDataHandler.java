@@ -1,25 +1,44 @@
 package net.Indyuce.mmocore.manager.data.sql;
 
+import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.data.DataLoadResult;
 import io.lumine.mythic.lib.data.SaveReason;
 import io.lumine.mythic.lib.data.sql.SQLDataSource;
 import io.lumine.mythic.lib.data.sql.SQLSynchronizedDataHandler;
 import io.lumine.mythic.lib.gson.JsonArray;
+import io.lumine.mythic.lib.gson.JsonElement;
 import io.lumine.mythic.lib.gson.JsonObject;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
+import net.Indyuce.mmocore.api.event.PlayerLevelChangeEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
+import net.Indyuce.mmocore.api.player.profess.PlayerClass;
 import net.Indyuce.mmocore.api.player.profess.SavedClassInformation;
+import net.Indyuce.mmocore.api.util.MMOCoreUtils;
+import net.Indyuce.mmocore.guild.provided.Guild;
 import net.Indyuce.mmocore.manager.data.OfflinePlayerData;
+import net.Indyuce.mmocore.skill.ClassSkill;
+import net.Indyuce.mmocore.skilltree.SkillTreeNode;
+import net.Indyuce.mmocore.skilltree.tree.SkillTree;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class SQLDataHandler extends SQLSynchronizedDataHandler<PlayerData, OfflinePlayerData> {
+    public static final String DATA_TABLE_NAME = "mmocore_playerdata";
+    public static final String UUID_FIELD_NAME = "uuid";
+
     public SQLDataHandler(SQLDataSource dataSource) {
-        super(dataSource);
+        super(dataSource, DATA_TABLE_NAME, UUID_FIELD_NAME);
     }
 
     private static final String[] NEW_COLUMNS = new String[]{
@@ -39,7 +58,8 @@ public class SQLDataHandler extends SQLSynchronizedDataHandler<PlayerData, Offli
     public void setup() {
 
         // Fully create table
-        getDataSource().executeUpdateAsync("CREATE TABLE IF NOT EXISTS mmocore_playerdata(uuid VARCHAR(36)," +
+        getDataSource().executeUpdateAsync("CREATE TABLE IF NOT EXISTS " + DATA_TABLE_NAME + "("
+                + UUID_FIELD_NAME + " VARCHAR(36)," +
                 "class_points INT(11) DEFAULT 0," +
                 "skill_points INT(11) DEFAULT 0," +
                 "attribute_points INT(11) DEFAULT 0," +
@@ -74,10 +94,11 @@ public class SQLDataHandler extends SQLSynchronizedDataHandler<PlayerData, Offli
         for (int i = 0; i < NEW_COLUMNS.length; i += 2) {
             final String columnName = NEW_COLUMNS[i];
             final String dataType = NEW_COLUMNS[i + 1];
-            getDataSource().getResultAsync("SELECT * FROM information_schema.COLUMNS WHERE TABLE_NAME = 'mmocore_playerdata' AND COLUMN_NAME = '" + columnName + "'", result -> {
+            // TODO prepare
+            getDataSource().getResultAsync("SELECT * FROM information_schema.COLUMNS WHERE TABLE_NAME = '" + DATA_TABLE_NAME + "' AND COLUMN_NAME = '" + columnName + "'", result -> {
                 try {
                     if (!result.next())
-                        getDataSource().executeUpdate("ALTER TABLE mmocore_playerdata ADD COLUMN " + columnName + " " + dataType);
+                        getDataSource().executeUpdate("ALTER TABLE " + DATA_TABLE_NAME + " ADD COLUMN " + columnName + " " + dataType);
                 } catch (SQLException exception) {
                     exception.printStackTrace();
                 }
@@ -85,12 +106,100 @@ public class SQLDataHandler extends SQLSynchronizedDataHandler<PlayerData, Offli
         }
 
         // Modify exp to be a double precision instead
-        getDataSource().executeUpdateAsync("ALTER TABLE mmocore_playerdata MODIFY COLUMN experience DOUBLE PRECISION");
+        getDataSource().executeUpdateAsync("ALTER TABLE " + DATA_TABLE_NAME + " MODIFY COLUMN experience DOUBLE PRECISION");
     }
 
     @Override
-    public MMOCoreDataSynchronizer newDataSynchronizer(PlayerData playerData) {
-        return new MMOCoreDataSynchronizer(this, playerData);
+    protected @NotNull DataLoadResult loadDataFromResultSet(@NotNull PlayerData playerData, @NotNull ResultSet result, boolean force) throws SQLException {
+
+        // Reset stats linked to triggers
+        playerData.resetTriggerStats();
+
+        playerData.setClassPoints(result.getInt("class_points"));
+        playerData.setSkillPoints(result.getInt("skill_points"));
+        playerData.setSkillReallocationPoints(result.getInt("skill_reallocation_points"));
+        playerData.setSkillTreeReallocationPoints(result.getInt("skill_tree_reallocation_points"));
+        playerData.setAttributePoints(result.getInt("attribute_points"));
+        playerData.setAttributeReallocationPoints(result.getInt("attribute_realloc_points"));
+        playerData.setLevel(result.getInt("level"), PlayerLevelChangeEvent.Reason.CHOOSE_PROFILE);
+        playerData.setExperience(result.getDouble("experience"));
+
+        if (!isEmpty(result.getString("class")))
+            playerData.setClass(MMOCore.plugin.classManager.get(result.getString("class")));
+
+        if (!isEmpty(result.getString("times_claimed"))) {
+            JsonObject json = MythicLib.plugin.getGson().fromJson(result.getString("times_claimed"), JsonObject.class);
+            json.entrySet().forEach(entry -> playerData.getItemClaims().put(entry.getKey(), entry.getValue().getAsInt()));
+        }
+        if (!isEmpty(result.getString("skill_tree_points"))) {
+            JsonObject json = MythicLib.plugin.getGson().fromJson(result.getString("skill_tree_points"), JsonObject.class);
+            for (SkillTree skillTree : MMOCore.plugin.skillTreeManager.getAll()) {
+                playerData.setSkillTreePoints(skillTree.getId(), json.has(skillTree.getId()) ? json.get(skillTree.getId()).getAsInt() : 0);
+            }
+            playerData.setSkillTreePoints("global", json.has("global") ? json.get("global").getAsInt() : 0);
+        }
+
+        if (!isEmpty(result.getString("skill_tree_levels"))) {
+            JsonObject json = MythicLib.plugin.getGson().fromJson(result.getString("skill_tree_levels"), JsonObject.class);
+            for (SkillTreeNode skillTreeNode : MMOCore.plugin.skillTreeManager.getAllNodes()) {
+                playerData.setNodeLevel(skillTreeNode, json.has(skillTreeNode.getFullId()) ? json.get(skillTreeNode.getFullId()).getAsInt() : 0);
+            }
+        }
+        Set<String> unlockedItems = new HashSet<>();
+        if (!isEmpty(result.getString("unlocked_items"))) {
+            JsonArray unlockedItemsArray = MythicLib.plugin.getGson().fromJson(result.getString("unlocked_items"), JsonArray.class);
+            for (JsonElement item : unlockedItemsArray)
+                unlockedItems.add(item.getAsString());
+        }
+        playerData.setUnlockedItems(unlockedItems);
+        if (!isEmpty(result.getString("guild"))) {
+            final Guild guild = MMOCore.plugin.nativeGuildManager.getGuild(result.getString("guild"));
+            if (guild != null && guild.hasMember(playerData.getUniqueId())) playerData.setGuild(guild);
+        }
+        if (!isEmpty(result.getString("attributes"))) playerData.getAttributes().load(result.getString("attributes"));
+        if (playerData.isOnline())
+            MMOCore.plugin.attributeManager.getAll().forEach(attribute -> playerData.getAttributes().getInstance(attribute).updateStats());
+        if (!isEmpty(result.getString("professions")))
+            playerData.getCollectionSkills().load(result.getString("professions"));
+        if (!isEmpty(result.getString("quests"))) playerData.getQuestData().load(result.getString("quests"));
+        playerData.getQuestData().updateBossBar();
+        if (!isEmpty(result.getString("waypoints")))
+            playerData.getWaypoints().addAll(MMOCoreUtils.jsonArrayToList(result.getString("waypoints")));
+        if (!isEmpty(result.getString("friends")))
+            MMOCoreUtils.jsonArrayToList(result.getString("friends")).forEach(str -> playerData.getFriends().add(UUID.fromString(str)));
+        if (!isEmpty(result.getString("skills"))) {
+            JsonObject object = MythicLib.plugin.getGson().fromJson(result.getString("skills"), JsonObject.class);
+            for (Map.Entry<String, JsonElement> entry : object.entrySet())
+                playerData.setSkillLevel(entry.getKey(), entry.getValue().getAsInt());
+        }
+        if (!isEmpty(result.getString("bound_skills"))) {
+            JsonObject object = MythicLib.plugin.getGson().fromJson(result.getString("bound_skills"), JsonObject.class);
+            for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
+                ClassSkill skill = playerData.getProfess().getSkill(entry.getValue().getAsString());
+                if (skill != null) playerData.bindSkill(Integer.parseInt(entry.getKey()), skill);
+            }
+        }
+        if (!isEmpty(result.getString("class_info"))) {
+            JsonObject object = MythicLib.plugin.getGson().fromJson(result.getString("class_info"), JsonObject.class);
+            for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
+                try {
+                    PlayerClass profess = MMOCore.plugin.classManager.get(entry.getKey());
+                    Validate.notNull(profess, "Could not find class '" + entry.getKey() + "'");
+                    playerData.applyClassInfo(profess, new SavedClassInformation(entry.getValue().getAsJsonObject()));
+                } catch (IllegalArgumentException exception) {
+                    MMOCore.log(Level.WARNING, "Could not load class info '" + entry.getKey() + "': " + exception.getMessage());
+                }
+            }
+        }
+
+        /*
+         * These should be loaded after to make sure that the
+         * MAX_MANA, MAX_STAMINA & MAX_STELLIUM stats are already loaded.
+         */
+        playerData.loadResources(result.getDouble("health"), result.getDouble("mana"), result.getDouble("stamina"), result.getDouble("stellium"));
+
+        UtilityMethods.debug(MMOCore.plugin, "SQL", String.format("{ class: %s, level: %d }", playerData.getProfess().getId(), playerData.getLevel()));
+        return new DataLoadResult(DataLoadResult.Type.SUCCESS, false, force);
     }
 
     @Override
@@ -189,7 +298,11 @@ public class SQLDataHandler extends SQLSynchronizedDataHandler<PlayerData, Offli
     }
 
     private boolean isEmpty(@Nullable String str) {
-        return str == null || str.equalsIgnoreCase("null") || str.equalsIgnoreCase("{}") || str.equalsIgnoreCase("[]") || str.equalsIgnoreCase("");
+        return str == null
+                || str.isEmpty()
+                || str.equalsIgnoreCase("null")
+                || str.equalsIgnoreCase("{}")
+                || str.equalsIgnoreCase("[]");
     }
 
     @NotNull

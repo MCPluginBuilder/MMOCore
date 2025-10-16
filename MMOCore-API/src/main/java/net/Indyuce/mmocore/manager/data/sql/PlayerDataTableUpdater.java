@@ -16,10 +16,6 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
 
-/**
- * @deprecated Not implemented yet
- */
-@Deprecated
 public class PlayerDataTableUpdater {
     private final PlayerData playerData;
     private final SQLDataSource provider;
@@ -33,7 +29,7 @@ public class PlayerDataTableUpdater {
     }
 
     public void executeRequest(@NotNull SaveReason saveReason) {
-        final String request = "INSERT INTO mmocore_playerdata(uuid, " + formatCollection(requestMap.keySet(), false)
+        final String request = "INSERT INTO " + SQLDataHandler.DATA_TABLE_NAME + "(" + SQLDataHandler.UUID_FIELD_NAME + ", " + formatCollection(requestMap.keySet(), false)
                 + ") VALUES('" + effectiveId + "'," + formatCollection(requestMap.values(), true) + ")" +
                 " ON DUPLICATE KEY UPDATE " + formatMap() + ";";
 

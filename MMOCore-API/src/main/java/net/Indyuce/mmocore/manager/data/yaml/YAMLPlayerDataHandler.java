@@ -1,6 +1,8 @@
 package net.Indyuce.mmocore.manager.data.yaml;
 
+import io.lumine.mythic.lib.data.DataLoadResult;
 import io.lumine.mythic.lib.data.yaml.YAMLSynchronizedDataHandler;
+import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerLevelChangeEvent;
@@ -13,7 +15,6 @@ import net.Indyuce.mmocore.skill.ClassSkill;
 import net.Indyuce.mmocore.skilltree.SkillTreeNode;
 import net.Indyuce.mmocore.skilltree.tree.SkillTree;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class YAMLPlayerDataHandler extends YAMLSynchronizedDataHandler<PlayerData, OfflinePlayerData> {
-    public YAMLPlayerDataHandler(Plugin owning) {
+    public YAMLPlayerDataHandler(MMOPlugin owning) {
         super(owning);
     }
 
@@ -37,7 +38,7 @@ public class YAMLPlayerDataHandler extends YAMLSynchronizedDataHandler<PlayerDat
     }
 
     @Override
-    public void loadFromSection(PlayerData data, ConfigurationSection config) {
+    protected @NotNull DataLoadResult loadFromSection(@NotNull PlayerData data, @NotNull ConfigurationSection config, boolean isSaved) {
 
         // Reset stats linked to triggers.
         data.resetTriggerStats();
@@ -45,7 +46,7 @@ public class YAMLPlayerDataHandler extends YAMLSynchronizedDataHandler<PlayerDat
         // Load default data
         if (!config.contains("class-points")) {
             MMOCore.plugin.playerDataManager.getDefaultData().apply(data, PlayerLevelChangeEvent.Reason.CHOOSE_PROFILE);
-            return;
+            return new DataLoadResult(DataLoadResult.Type.SUCCESS, true, isSaved);
         }
 
         data.setClassPoints(config.getInt("class-points"));
@@ -127,6 +128,8 @@ public class YAMLPlayerDataHandler extends YAMLSynchronizedDataHandler<PlayerDat
         var fixedStamina = config.getDouble("stamina", data.getStats().getStat("MAX_STAMINA"));
         var fixedStellium = config.getDouble("stellium", data.getStats().getStat("MAX_STELLIUM"));
         data.loadResources(fixedHealth, fixedMana, fixedStamina, fixedStellium);
+
+        return new DataLoadResult(DataLoadResult.Type.SUCCESS, false, isSaved);
     }
 
     @Override
