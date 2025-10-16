@@ -7,7 +7,6 @@ import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -52,12 +51,11 @@ public class GoldPouch extends PluginInventory {
             event.setCancelled(true);
 
             // in deposit menu
-            if (event.getSlot() < 18) {
-                int empty = player.getInventory().firstEmpty();
-                if (empty < 0)
-                    return;
+            if (event.getRawSlot() < 18) {
+                final var empty = player.getInventory().firstEmpty();
+                if (empty < 0) return;
 
-                player.playSound(player.getLocation(), Sound.ENTITY_SHULKER_TELEPORT, 1, 2);
+                //player.playSound(player.getLocation(), Sound.ENTITY_SHULKER_TELEPORT, 1, 2);
                 player.getInventory().addItem(event.getCurrentItem());
                 event.getInventory().setItem(event.getSlot(), null);
             }
