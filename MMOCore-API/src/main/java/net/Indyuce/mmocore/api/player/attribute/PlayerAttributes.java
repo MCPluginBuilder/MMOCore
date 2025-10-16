@@ -189,7 +189,7 @@ public class PlayerAttributes {
         public AttributeInstance(@NotNull String attributeId) {
             this.id = attributeId;
             this.enumName = UtilityMethods.enumName(this.id);
-            this.attribute = Lazy.of(() -> MMOCore.plugin.attributeManager.get(this.id));
+            this.attribute = Lazy.persistent(() -> MMOCore.plugin.attributeManager.get(this.id));
         }
 
         /**
