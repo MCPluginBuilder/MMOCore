@@ -7,7 +7,6 @@ import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerLevelChangeEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.comp.profile.MMOCoreProfileDataModule;
-import net.Indyuce.mmocore.manager.data.yaml.YAMLPlayerDataHandler;
 import net.Indyuce.mmocore.player.DefaultPlayerData;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +15,7 @@ public class PlayerDataManager extends SynchronizedDataManager<PlayerData, Offli
     private DefaultPlayerData defaultData = DefaultPlayerData.DEFAULT;
 
     public PlayerDataManager(MMOCore plugin) {
-        super(plugin, new YAMLPlayerDataHandler(plugin));
+        super(plugin);
     }
 
     @Override

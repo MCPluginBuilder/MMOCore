@@ -4,8 +4,7 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.data.DataLoadResult;
 import io.lumine.mythic.lib.data.SaveReason;
-import io.lumine.mythic.lib.data.sql.SQLDataSource;
-import io.lumine.mythic.lib.data.sql.SQLSynchronizedDataHandler;
+import io.lumine.mythic.lib.data.sql.SQLDatabase;
 import io.lumine.mythic.lib.gson.JsonArray;
 import io.lumine.mythic.lib.gson.JsonElement;
 import io.lumine.mythic.lib.gson.JsonObject;
@@ -33,12 +32,11 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-public class SQLDataHandler extends SQLSynchronizedDataHandler<PlayerData, OfflinePlayerData> {
-    public static final String DATA_TABLE_NAME = "mmocore_playerdata";
+public class SQLDatabaseImpl extends SQLDatabase<PlayerData, OfflinePlayerData> {
     public static final String UUID_FIELD_NAME = "uuid";
 
-    public SQLDataHandler(SQLDataSource dataSource) {
-        super(dataSource, DATA_TABLE_NAME, UUID_FIELD_NAME);
+    public SQLDatabaseImpl() {
+        super(MMOCore.plugin,  UUID_FIELD_NAME);
     }
 
     private static final String[] NEW_COLUMNS = new String[]{
@@ -58,7 +56,7 @@ public class SQLDataHandler extends SQLSynchronizedDataHandler<PlayerData, Offli
     public void setup() {
 
         // Fully create table
-        getDataSource().executeUpdateAsync("CREATE TABLE IF NOT EXISTS " + DATA_TABLE_NAME + "("
+        executeUpdate("CREATE TABLE IF NOT EXISTS " + userdataTableName + "("
                 + UUID_FIELD_NAME + " VARCHAR(36)," +
                 "class_points INT(11) DEFAULT 0," +
                 "skill_points INT(11) DEFAULT 0," +
@@ -92,21 +90,16 @@ public class SQLDataHandler extends SQLSynchronizedDataHandler<PlayerData, Offli
 
         // Add columns that might not be here by default
         for (int i = 0; i < NEW_COLUMNS.length; i += 2) {
-            final String columnName = NEW_COLUMNS[i];
-            final String dataType = NEW_COLUMNS[i + 1];
-            // TODO prepare
-            getDataSource().getResultAsync("SELECT * FROM information_schema.COLUMNS WHERE TABLE_NAME = '" + DATA_TABLE_NAME + "' AND COLUMN_NAME = '" + columnName + "'", result -> {
-                try {
-                    if (!result.next())
-                        getDataSource().executeUpdate("ALTER TABLE " + DATA_TABLE_NAME + " ADD COLUMN " + columnName + " " + dataType);
-                } catch (SQLException exception) {
-                    exception.printStackTrace();
-                }
-            });
+            final var columnName = NEW_COLUMNS[i];
+            final var dataType = NEW_COLUMNS[i + 1];
+            executeQuery("SELECT * FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?", result -> {
+                if (!result.next())
+                    executeUpdate("ALTER TABLE " + userdataTableName + " ADD COLUMN " + columnName + " " + dataType);
+            }, databaseName, userdataTableName, columnName);
         }
 
         // Modify exp to be a double precision instead
-        getDataSource().executeUpdateAsync("ALTER TABLE " + DATA_TABLE_NAME + " MODIFY COLUMN experience DOUBLE PRECISION");
+        executeUpdate("ALTER TABLE `" + userdataTableName + "` MODIFY COLUMN experience DOUBLE PRECISION");
     }
 
     @Override
@@ -207,7 +200,7 @@ public class SQLDataHandler extends SQLSynchronizedDataHandler<PlayerData, Offli
         final UUID effectiveId = data.getEffectiveId();
         UtilityMethods.debug(MMOCore.plugin, "SQL", "Saving data for: '" + effectiveId + "'...");
 
-        final PlayerDataTableUpdater updater = new PlayerDataTableUpdater(getDataSource(), data);
+        final PlayerDataTableUpdater updater = new PlayerDataTableUpdater(this, data);
         updater.addData("class_points", data.getClassPoints());
         updater.addData("skill_points", data.getSkillPoints());
         updater.addData("skill_reallocation_points", data.getSkillReallocationPoints());

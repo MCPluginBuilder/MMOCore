@@ -1,12 +1,11 @@
 package net.Indyuce.mmocore.manager.data.sql;
 
 import io.lumine.mythic.lib.data.SaveReason;
-import io.lumine.mythic.lib.data.sql.SQLDataSource;
 import io.lumine.mythic.lib.gson.JsonArray;
 import io.lumine.mythic.lib.gson.JsonObject;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import net.Indyuce.mmocore.manager.data.yaml.YAMLPlayerDataHandler;
+import net.Indyuce.mmocore.manager.data.yaml.YAMLDatabaseImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,44 +17,27 @@ import java.util.logging.Level;
 
 public class PlayerDataTableUpdater {
     private final PlayerData playerData;
-    private final SQLDataSource provider;
+    private final SQLDatabaseImpl provider;
     private final UUID effectiveId;
     private final Map<String, String> requestMap = new HashMap<>();
 
-    public PlayerDataTableUpdater(SQLDataSource provider, PlayerData playerData) {
+    public PlayerDataTableUpdater(SQLDatabaseImpl provider, PlayerData playerData) {
         this.playerData = playerData;
         this.provider = provider;
         this.effectiveId = playerData.getEffectiveId();
     }
 
     public void executeRequest(@NotNull SaveReason saveReason) {
-        final String request = "INSERT INTO " + SQLDataHandler.DATA_TABLE_NAME + "(" + SQLDataHandler.UUID_FIELD_NAME + ", " + formatCollection(requestMap.keySet(), false)
+        final String request = "INSERT INTO " + provider.getUserDataTableName() + "(" + SQLDatabaseImpl.UUID_FIELD_NAME + ", " + formatCollection(requestMap.keySet(), false)
                 + ") VALUES('" + effectiveId + "'," + formatCollection(requestMap.values(), true) + ")" +
                 " ON DUPLICATE KEY UPDATE " + formatMap() + ";";
 
-        try {
-            final Connection connection = provider.getConnection();
-            try {
-                final PreparedStatement statement = connection.prepareStatement(request);
-                try {
-                    statement.executeUpdate();
-                } catch (SQLException exception) {
-                    MMOCore.log(Level.WARNING, "Could not save player data of " + effectiveId + ", saving through YAML instead");
-                    new YAMLPlayerDataHandler(MMOCore.plugin).saveData(playerData, saveReason);
-                    exception.printStackTrace();
-                } finally {
-                    statement.close();
-                }
-            } catch (SQLException exception) {
-                MMOCore.log(Level.WARNING, "Could not save player data of " + effectiveId + ", saving through YAML instead");
-                new YAMLPlayerDataHandler(MMOCore.plugin).saveData(playerData, saveReason);
-                exception.printStackTrace();
-            } finally {
-                connection.close();
-            }
+        try (Connection connection = provider.getConnection()) {
+            final PreparedStatement statement = connection.prepareStatement(request);
+            statement.executeUpdate();
         } catch (SQLException exception) {
             MMOCore.log(Level.WARNING, "Could not save player data of " + effectiveId + ", saving through YAML instead");
-            new YAMLPlayerDataHandler(MMOCore.plugin).saveData(playerData, saveReason);
+            new YAMLDatabaseImpl().saveData(playerData, saveReason);
             exception.printStackTrace();
         }
     }

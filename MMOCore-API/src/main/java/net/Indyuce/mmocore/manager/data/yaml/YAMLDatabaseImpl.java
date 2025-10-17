@@ -1,8 +1,7 @@
 package net.Indyuce.mmocore.manager.data.yaml;
 
 import io.lumine.mythic.lib.data.DataLoadResult;
-import io.lumine.mythic.lib.data.yaml.YAMLSynchronizedDataHandler;
-import io.lumine.mythic.lib.module.MMOPlugin;
+import io.lumine.mythic.lib.data.yaml.YAMLFlatDatabase;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerLevelChangeEvent;
@@ -22,9 +21,9 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-public class YAMLPlayerDataHandler extends YAMLSynchronizedDataHandler<PlayerData, OfflinePlayerData> {
-    public YAMLPlayerDataHandler(MMOPlugin owning) {
-        super(owning);
+public class YAMLDatabaseImpl extends YAMLFlatDatabase<PlayerData, OfflinePlayerData> {
+    public YAMLDatabaseImpl() {
+        super(MMOCore.plugin);
     }
 
     @Override

@@ -26,6 +26,8 @@ mysql:
     prepStmtCacheSize: 250
     prepStmtCacheSqlLimit: 2048
 
+  userdata-table-name: 'mmocore_playerdata'
+
 # The default values for all playerdata
 # All new players will start with these values
 default-playerdata:
