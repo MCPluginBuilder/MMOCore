@@ -1532,12 +1532,12 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     @Deprecated
     public boolean isFullyLoaded() {
-        return isSynchronized();
+        return isSessionReady();
     }
 
     @Deprecated
     public void setFullyLoaded() {
-        markAsSynchronized();
+        this.markSessionReady();
     }
 
     @Deprecated
