@@ -52,7 +52,7 @@ public class Arguments {
                 return player;
             }, explorer -> {
         if (explorer.getSender() instanceof Player) return (Player) explorer.getSender();
-        throw new IllegalArgumentException("Please provide a player");
+        throw new ArgumentParseException("Please provide a player");
     });
 
     public static final Argument<@NotNull PlayerAttribute> ATTRIBUTE = new Argument<>("attribute",
