@@ -3,6 +3,7 @@ package net.Indyuce.mmocore.skill.cast.handler;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
+import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import io.lumine.mythic.lib.util.SoundObject;
 import net.Indyuce.mmocore.MMOCore;
@@ -127,7 +128,10 @@ public class SkillScroller extends SkillCastingHandler {
         public void onTick() {
             final String skillName = getSelected().getSkill().getName();
             final String actionBarFormat = MythicLib.plugin.getPlaceholderParser().parse(getCaster().getPlayer(), SkillScroller.this.actionBarFormat.replace("{selected}", skillName));
-            getCaster().displayActionBar(actionBarFormat);
+
+            var handler = caster.getMMOPlayerData().getActionBar();
+            if (!handler.canShow(ActionBarPriority.NORMAL)) return;
+            handler.show(ActionBarPriority.NORMAL, actionBarFormat);
         }
 
         public ClassSkill getSelected() {

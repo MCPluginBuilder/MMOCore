@@ -32,6 +32,11 @@ public abstract class ObjectiveProgress implements Closeable {
 		return questProgress;
 	}
 
+    public double getProgress() {
+        // default to 0, maybe ppl implemented quest objectives
+        return 0;
+    }
+
 	@Override
 	public void close() {
 		if (this instanceof Listener)

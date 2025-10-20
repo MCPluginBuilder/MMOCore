@@ -26,6 +26,8 @@ mysql:
     prepStmtCacheSize: 250
     prepStmtCacheSqlLimit: 2048
 
+  userdata-table-name: 'mmocore_playerdata'
+
 # The default values for all playerdata
 # All new players will start with these values
 default-playerdata:
@@ -35,10 +37,10 @@ default-playerdata:
   skill-realloc-points: 0
   attribute-points: 0
   attribute-realloc-points: 0
-  health: 20
-  mana: 0
-  stellium: 0
-  stamina: 0
+  health: 1000   # High enough so that the player
+  mana: 1000     # starts with full hp/mana/...
+  stellium: 1000 # These values will be clamped to
+  stamina: 1000  # max resource value!
 
 custom-mining:
 
@@ -295,8 +297,10 @@ combat-log:
     - WITHER
 
 # Whether or not the default class should save information (level,
-# skills, etc.) when selecting a new class
-save-default-class-info: false
+# skills, etc.) when selecting a new class. Turn this off if you
+# do not plan on using the Default player class if, for instance,
+# players are asked to select a class right away on login.
+save-default-class-info: true
 
 waypoints:
 
@@ -324,28 +328,6 @@ resource-bar-colors:
   stamina-whole: 'GREEN'
   stamina-half: 'DARK_GREEN'
   stamina-empty: 'WHITE'
-
-# Whether the admin commands should display
-# the result of the command when ran.
-# For Example: "Players Level is now 10."
-#
-# Accepted Values:
-#   true    - Always verbose
-#   player  - Only verbose when ran from a player
-#   console - Only verbose when ran from console
-#   false   - Never verbose
-command-verbose:
-  attribute: true
-  skill: true
-  class: true
-  experience: true
-  level: true
-  nocd: true
-  skill-tree-points: true
-  points: true
-  reset: true
-  resource: true
-  waypoint: true
 
 # Requires WorldGuard to work. Do NOT enable unless
 # you have WG to avoid weird interact rule issues!

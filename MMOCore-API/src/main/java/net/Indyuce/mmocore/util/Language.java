@@ -11,6 +11,7 @@ import java.util.logging.Level;
 public enum Language {
     EXP_HOLOGRAM,
     CAUGHT_FISH,
+    GOLD_POUCH_UI_NAME,
     FISH_OUT_WATER,
     FISH_OUT_WATER_CRIT,
     NO_SKILL_PLACEHOLDER;

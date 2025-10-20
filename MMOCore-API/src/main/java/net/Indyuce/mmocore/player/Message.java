@@ -2,7 +2,6 @@ package net.Indyuce.mmocore.player;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.message.PlayerMessage;
-import io.lumine.mythic.lib.message.ReadyMessage;
 import io.lumine.mythic.lib.message.type.EmptyMessage;
 import io.lumine.mythic.lib.util.config.YamlFile;
 import io.lumine.mythic.lib.util.config.YamlUtils;
@@ -31,6 +30,7 @@ public enum Message {
     GUILD_IS_FULL,
     GUILD_KICK_PLAYER("kick-from-guild"),
     GUILD_JOINED_OTHER,
+    GUILD_NO_PENDING_INVITE,
     ALREADY_IN_GUILD,
     SENT_GUILD_INVITE,
     GUILD_FAIL_CREATION_INVALID_CHARS("fail-guild-creation.invalid-characters"),
@@ -64,6 +64,7 @@ public enum Message {
     // Friends
     FRIEND_REQUEST,
     FRIEND_REQUEST_COOLDOWN,
+    FRIEND_NO_PENDING_INVITE,
     FRIEND_NOT_ONLINE_PLAYER("not-online-player"),
     FRIEND_CANT_FRIEND_YOURSELF("cant-request-to-yourself"),
     FRIEND_SENT_REQUEST("sent-friend-request"),
@@ -80,6 +81,7 @@ public enum Message {
     PARTY_CREATED,
     PARTY_TRANSFER_OWNERSHIP("transfer-party-ownership"),
     PARTY_IS_FULL,
+    PARTY_NO_PENDING_INVITE,
     PARTY_NOT_ONLINE_PLAYER("not-online-player"),
     PARTY_INVITE_COOLDOWN,
     PARTY_LEAVE,
@@ -142,6 +144,7 @@ public enum Message {
 
     // Skill trees
     NO_SKILL_TREE,
+    NO_CLASS_SKILL_TREE,
     NO_SKILL_TREE_POINTS_SPENT,
     NOT_SKILL_TREE_REALLOCATION_POINT,
     SKILL_TREE_SWITCH,
@@ -204,14 +207,8 @@ public enum Message {
         this.candidates = array;
     }
 
-    @NotNull
-    public ReadyMessage prepare(@NotNull Object... placeholders) {
-        return this.wrapped.prepare(null, placeholders);
-    }
-
     public <T extends Player> void send(@NotNull Iterable<T> players, @NotNull Object... placeholders) {
-        final var message = this.wrapped.prepare(null, placeholders);
-        for (var player : players) message.send(player);
+        for (var player : players) this.send(player, placeholders);
     }
 
     public void send(@NotNull Player player, @NotNull Object... placeholders) {

@@ -22,7 +22,7 @@ public class SQLOfflinePlayerData implements OfflinePlayerData {
     public SQLOfflinePlayerData(UUID uuid) {
         this.uuid = uuid;
 /*
-            provider.getResult("SELECT * FROM mmocore_playerdata WHERE uuid = '" + uuid + "';", (result) -> {
+            provider.getResult("SELECT * FROM "+DATA_TABLE_NAME+" WHERE uuid = '" + uuid + "';", (result) -> {
                 try {
                     MythicLib.debug("MMOCoreSQL", "Loading OFFLINE data for '" + uuid + "'.");
                     if (!result.next()) {

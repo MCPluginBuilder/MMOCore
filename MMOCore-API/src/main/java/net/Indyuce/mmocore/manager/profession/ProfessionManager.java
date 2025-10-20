@@ -1,12 +1,13 @@
 package net.Indyuce.mmocore.manager.profession;
 
 import io.lumine.mythic.lib.util.FileUtils;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.experience.Profession;
 import net.Indyuce.mmocore.manager.MMOCoreManager;
-import org.apache.commons.lang.Validate;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -40,6 +41,7 @@ public class ProfessionManager implements MMOCoreManager {
 				}
 	}
 
+	@Nullable
 	public Profession get(String id) {
 		return professions.get(id);
 	}

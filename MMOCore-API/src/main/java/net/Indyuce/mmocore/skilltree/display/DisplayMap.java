@@ -3,7 +3,6 @@ package net.Indyuce.mmocore.skilltree.display;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.gui.util.IconOptions;
 import net.Indyuce.mmocore.skilltree.NodeState;
-import net.Indyuce.mmocore.skilltree.PathState;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;

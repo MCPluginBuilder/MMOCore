@@ -2,16 +2,17 @@ package net.Indyuce.mmocore;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
-import io.lumine.mythic.lib.data.sql.SQLDataSource;
+import io.lumine.mythic.lib.data.SynchronizedDataManager;
 import io.lumine.mythic.lib.metrics.bukkit.Metrics;
+import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.player.modifier.PlayerModifier;
-import io.lumine.mythic.lib.util.MMOPlugin;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.SpigotPlugin;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.attribute.AttributeModifier;
 import net.Indyuce.mmocore.api.player.profess.resource.PlayerResource;
-import net.Indyuce.mmocore.command.MMOCoreCommandTreeRoot;
-import net.Indyuce.mmocore.command.api.ToggleableCommand;
+import net.Indyuce.mmocore.command.ToggleableCommand;
+import net.Indyuce.mmocore.command.builtin.mmocore.MMOCoreCommandTreeRoot;
 import net.Indyuce.mmocore.comp.citizens.CitizenInteractEventListener;
 import net.Indyuce.mmocore.comp.citizens.CitizensMMOLoader;
 import net.Indyuce.mmocore.comp.mythicmobs.MythicHook;
@@ -37,7 +38,8 @@ import net.Indyuce.mmocore.manager.data.DataProvider;
 import net.Indyuce.mmocore.manager.data.GuildDataManager;
 import net.Indyuce.mmocore.manager.data.LegacyDataProvider;
 import net.Indyuce.mmocore.manager.data.PlayerDataManager;
-import net.Indyuce.mmocore.manager.data.sql.SQLDataHandler;
+import net.Indyuce.mmocore.manager.data.sql.SQLDatabaseImpl;
+import net.Indyuce.mmocore.manager.data.yaml.YAMLDatabaseImpl;
 import net.Indyuce.mmocore.manager.profession.*;
 import net.Indyuce.mmocore.manager.social.BoosterManager;
 import net.Indyuce.mmocore.manager.social.PartyManager;
@@ -52,7 +54,6 @@ import net.Indyuce.mmocore.script.mechanic.StaminaMechanic;
 import net.Indyuce.mmocore.script.mechanic.StelliumMechanic;
 import net.Indyuce.mmocore.skill.cast.SkillCastingMode;
 import net.Indyuce.mmocore.skill.trigger.MMOCoreTriggerType;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventPriority;
@@ -151,10 +152,7 @@ public class MMOCore extends MMOPlugin {
             getLogger().warning("(Your config version: '" + configVersion + "' | Expected config version: '" + defConfigVersion + "')");
         }
 
-        if (getConfig().isConfigurationSection("mysql") && getConfig().getBoolean("mysql.enabled")) {
-            final SQLDataSource dataSource = new SQLDataSource(this);
-            playerDataManager.setDataHandler(new SQLDataHandler(dataSource));
-        }
+        playerDataManager.setupDatabase(SQLDatabaseImpl::new, YAMLDatabaseImpl::new);
 
         if (getConfig().isConfigurationSection("default-playerdata"))
             playerDataManager.loadDefaultData(getConfig().getConfigurationSection("default-playerdata"));
@@ -192,9 +190,8 @@ public class MMOCore extends MMOPlugin {
                 for (PlayerData player : PlayerData.getAll())
                     if (player.isOnline() && !player.getPlayer().isDead())
                         for (PlayerResource resource : PlayerResource.values()) {
-                            double regenAmount = player.getProfess().getHandler(resource).getRegen(player);
-                            if (regenAmount != 0)
-                                resource.regen(player, regenAmount);
+                            final var regenAmount = player.getProfess().getHandler(resource).getRegen(player);
+                            if (regenAmount != 0) resource.regen(player, regenAmount);
                         }
             }
         }.runTaskTimer(MMOCore.plugin, 100, 20);
@@ -263,7 +260,7 @@ public class MMOCore extends MMOPlugin {
         nativeGuildManager.load();
 
         // Toggleable Commands
-        ToggleableCommand.register();
+        ToggleableCommand.loadCommands();
 
         // Register MMOCore command what soever
         MMOCoreCommandTreeRoot mmoCoreCommand = new MMOCoreCommandTreeRoot();
@@ -347,5 +344,10 @@ public class MMOCore extends MMOPlugin {
 
     public boolean hasEconomy() {
         return economy != null && economy.isValid();
+    }
+
+    @Override
+    public @NotNull SynchronizedDataManager<?, ?> getRawPlayerDataManager() {
+        return this.playerDataManager;
     }
 }

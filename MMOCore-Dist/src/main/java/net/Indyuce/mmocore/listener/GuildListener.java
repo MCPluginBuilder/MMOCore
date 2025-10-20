@@ -22,15 +22,17 @@ public class GuildListener implements Listener {
 
         event.setCancelled(true);
 
-        // Run it sync
+        // Run it on main server thread
         Bukkit.getScheduler().runTask(MMOCore.plugin, () -> {
-            var rawMessage = event.getMessage().substring(MMOCore.plugin.nativeGuildManager.getConfig().getPrefix().length());
-            var message = Message.GUILD_CHAT.prepare("player", data.getPlayer().getName(), "tag", data.getGuild().getTag(), "message", rawMessage);
-            GuildChatEvent called = new GuildChatEvent(data, message.getRawContent());
+            final var rawMessage = event.getMessage().substring(MMOCore.plugin.nativeGuildManager.getConfig().getPrefix().length());
+            final var called = new GuildChatEvent(data, rawMessage);
             Bukkit.getPluginManager().callEvent(called);
-            if (!called.isCancelled()) data.getGuild().forEachMember(member -> {
+            if (called.isCancelled() || called.getMessage() == null) return;
+
+            data.getGuild().forEachMember(member -> {
                 Player online = Bukkit.getPlayer(member);
-                if (online != null) message.send(online);
+                if (online != null)
+                    Message.GUILD_CHAT.send(online, "player", data.getPlayer().getName(), "tag", data.getGuild().getTag(), "message", called.getMessage());
             });
         });
     }

@@ -1,9 +1,9 @@
 package net.Indyuce.mmocore.api.quest.objective;
 
 import io.lumine.mythic.lib.api.MMOLineConfig;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.api.quest.ObjectiveProgress;
 import net.Indyuce.mmocore.api.quest.QuestProgress;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -29,18 +29,20 @@ public class GoToObjective extends Objective {
 	}
 
 	@Override
-	public ObjectiveProgress newProgress(QuestProgress questProgress) {
-		return new GotoProgress(questProgress, this);
+	public GotoProgress newProgress(QuestProgress questProgress) {
+		return new GotoProgress(questProgress);
 	}
 
 	public class GotoProgress extends ObjectiveProgress implements Listener {
-		public GotoProgress(QuestProgress questProgress, Objective objective) {
-			super(questProgress, objective);
+		public GotoProgress(QuestProgress questProgress) {
+			super(questProgress, GoToObjective.this);
 		}
 
 		@EventHandler
 		public void a(PlayerMoveEvent event) {
-			if (event.getFrom().getBlockX() == event.getTo().getBlockX() && event.getFrom().getBlockY() == event.getTo().getBlockY() && event.getFrom().getBlockZ() == event.getTo().getBlockZ())
+			if (event.getFrom().getBlockX() == event.getTo().getBlockX()
+					&& event.getFrom().getBlockY() == event.getTo().getBlockY()
+					&& event.getFrom().getBlockZ() == event.getTo().getBlockZ())
 				return;
 
 			Player player = event.getPlayer();
@@ -48,6 +50,11 @@ public class GoToObjective extends Objective {
 				if (player.getWorld().equals(loc.getWorld()) && ((player.getLocation().distance(loc) - 0.5d) < range))
 					getQuestProgress().completeObjective();
 			}
+		}
+
+		@Override
+		public double getProgress() {
+			return 1d;
 		}
 
 		@Override

@@ -1,6 +1,6 @@
 package net.Indyuce.mmocore.api.util.math.formula;
 
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 
 import java.util.Random;
 

@@ -5,10 +5,10 @@ import com.sk89q.worldguard.session.handler.Handler;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.comp.flags.CustomFlag;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.player.Message;
-import org.apache.commons.lang.Validate;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -78,7 +78,7 @@ public class PvPModeListener implements Listener {
             if (event.getDamage() > 0) {
                 final var left = targetData.getCombat().getInvulnerableTill() - System.currentTimeMillis();
                 final var leftFormatted = MythicLib.plugin.getMMOConfig().decimal.format(left / 1000d);
-                Message.PVP_MODE_CANNOT_HIT_INVULNERABLE_TARGET.prepare("left", leftFormatted).send(source);
+                Message.PVP_MODE_CANNOT_HIT_INVULNERABLE_TARGET.send(source, "left", leftFormatted);
             }
             event.setCancelled(true);
             return;
@@ -89,7 +89,7 @@ public class PvPModeListener implements Listener {
             if (event.getDamage() > 0) {
                 final var left = sourceData.getCombat().getInvulnerableTill() - System.currentTimeMillis();
                 final var leftFormatted = MythicLib.plugin.getMMOConfig().decimal.format(left / 1000d);
-                Message.PVP_MODE_CANNOT_HIT_INVULNERABLE_SELF.prepare("left", leftFormatted).send(source);
+                Message.PVP_MODE_CANNOT_HIT_INVULNERABLE_SELF.send(source, "left", leftFormatted);
             }
             event.setCancelled(true);
             return;

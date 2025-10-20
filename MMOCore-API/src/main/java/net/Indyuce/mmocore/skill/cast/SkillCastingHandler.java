@@ -1,7 +1,7 @@
 package net.Indyuce.mmocore.skill.cast;
 
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import org.apache.commons.lang.Validate;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;

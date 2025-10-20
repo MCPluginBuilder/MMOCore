@@ -1,9 +1,9 @@
 package net.Indyuce.mmocore.manager.profession;
 
 import io.lumine.mythic.lib.util.Closeable;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.experience.source.type.ExperienceSource;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;

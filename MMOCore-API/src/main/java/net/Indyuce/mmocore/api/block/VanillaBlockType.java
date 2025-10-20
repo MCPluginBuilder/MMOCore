@@ -1,13 +1,15 @@
 package net.Indyuce.mmocore.api.block;
 
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.MMOLineConfig;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.api.block.BlockInfo.RegeneratingBlock;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.block.data.BlockData;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
@@ -23,7 +25,7 @@ public class VanillaBlockType implements BlockType {
     public VanillaBlockType(MMOLineConfig config) {
         config.validate("type");
 
-        type = Material.valueOf(config.getString("type").toUpperCase().replace("-", "_").replace(" ", "_"));
+        type = UtilityMethods.prettyValueOf(Material::valueOf, config.getString("type"), "No material with ID %s");
         age = config.getInt("age", 0);
 
         Validate.isTrue(age >= 0 && age < 8, "Age must be between 0 and 7");
@@ -43,8 +45,8 @@ public class VanillaBlockType implements BlockType {
         Location loc = block.getLocation();
         block.getLocation().getBlock().setType(type);
 
-        BlockData state = block.getLocation().getBlock().getBlockData();
-        if (age > 0 && state instanceof Ageable) {
+        BlockData state;
+        if (age > 0 && (state = block.getLocation().getBlock().getBlockData()) instanceof Ageable) {
             ((Ageable) state).setAge(age);
             loc.getBlock().setBlockData(state);
         }
@@ -59,7 +61,7 @@ public class VanillaBlockType implements BlockType {
     }
 
     @Override
-    public String display() {
+    public @NotNull String display() {
         return "Vanilla{" + type.name() + "}";
     }
 

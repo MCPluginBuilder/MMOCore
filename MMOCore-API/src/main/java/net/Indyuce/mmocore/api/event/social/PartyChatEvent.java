@@ -5,6 +5,10 @@ import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.party.provided.Party;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
 
 public class PartyChatEvent extends PlayerDataEvent implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
@@ -12,23 +16,25 @@ public class PartyChatEvent extends PlayerDataEvent implements Cancellable {
     private final Party party;
 
     private boolean cancelled;
-    private String message;
+    private String rawMessage;
 
-    public PartyChatEvent(Party party, PlayerData playerData, String message) {
+    public PartyChatEvent(Party party, PlayerData playerData, String rawMessage) {
         super(playerData);
 
         this.party = party;
-        this.message = message;
+        this.rawMessage = rawMessage;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setMessage(@Nullable String rawMessage) {
+        this.rawMessage = Objects.requireNonNull(rawMessage, "Message cannot be null");
     }
 
+    @Nullable
     public String getMessage() {
-        return message;
+        return rawMessage;
     }
 
+    @NotNull
     public Party getParty() {
         return party;
     }

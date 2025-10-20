@@ -5,7 +5,7 @@ import net.Indyuce.mmocore.api.event.PlayerResourceUpdateEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.profess.ClassOption;
 import net.Indyuce.mmocore.api.quest.trigger.ManaTrigger;
-import net.Indyuce.mmocore.command.rpg.admin.ResourceCommandTreeNode;
+import net.Indyuce.mmocore.command.builtin.mmocore.admin.ResourceCommandTreeNode;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -24,21 +24,21 @@ public enum PlayerResource {
             (data, amount) -> data.giveMana(amount, PlayerResourceUpdateEvent.UpdateReason.REGENERATION),
             (data, amount) -> data.giveMana(amount, PlayerResourceUpdateEvent.UpdateReason.COMMAND),
             (data, amount) -> data.giveMana(-amount, PlayerResourceUpdateEvent.UpdateReason.COMMAND),
-            (data, amount) -> data.setMana(amount)),
+            (data, amount) -> data.setMana(amount, PlayerResourceUpdateEvent.UpdateReason.COMMAND)),
 
     STAMINA(PlayerData::getStamina,
             data -> data.getStats().getStat("MAX_STAMINA"),
             (data, amount) -> data.giveStamina(amount, PlayerResourceUpdateEvent.UpdateReason.REGENERATION),
             (data, amount) -> data.giveStamina(amount, PlayerResourceUpdateEvent.UpdateReason.COMMAND),
             (data, amount) -> data.giveStamina(-amount, PlayerResourceUpdateEvent.UpdateReason.COMMAND),
-            (data, amount) -> data.setStamina(amount)),
+            (data, amount) -> data.setStamina(amount, PlayerResourceUpdateEvent.UpdateReason.COMMAND)),
 
     STELLIUM(PlayerData::getStellium,
             data -> data.getStats().getStat("MAX_STELLIUM"),
             (data, amount) -> data.giveStellium(amount, PlayerResourceUpdateEvent.UpdateReason.REGENERATION),
             (data, amount) -> data.giveStellium(amount, PlayerResourceUpdateEvent.UpdateReason.COMMAND),
             (data, amount) -> data.giveStellium(-amount, PlayerResourceUpdateEvent.UpdateReason.COMMAND),
-            (data, amount) -> data.setStellium(amount));
+            (data, amount) -> data.setStellium(amount, PlayerResourceUpdateEvent.UpdateReason.COMMAND));
 
     private final String regenStat, maxRegenStat;
     private final ClassOption offCombatRegen;

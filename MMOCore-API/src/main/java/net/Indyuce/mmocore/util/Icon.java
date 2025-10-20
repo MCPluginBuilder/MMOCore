@@ -2,7 +2,7 @@ package net.Indyuce.mmocore.util;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.gui.editable.item.ItemOptions;
-import org.apache.commons.lang.Validate;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;

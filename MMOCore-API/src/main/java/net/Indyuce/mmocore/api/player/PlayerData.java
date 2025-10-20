@@ -1,11 +1,14 @@
 package net.Indyuce.mmocore.api.player;
 
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
+import io.lumine.mythic.lib.data.SaveReason;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import io.lumine.mythic.lib.player.cooldown.CooldownMap;
-import io.lumine.mythic.lib.util.Closeable;
+import io.lumine.mythic.lib.skill.trigger.TriggerType;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.version.VParticle;
 import net.Indyuce.mmocore.MMOCore;
@@ -24,6 +27,7 @@ import net.Indyuce.mmocore.api.quest.PlayerQuests;
 import net.Indyuce.mmocore.api.quest.trigger.Trigger;
 import net.Indyuce.mmocore.api.quest.trigger.api.Removable;
 import net.Indyuce.mmocore.api.util.MMOCoreUtils;
+import net.Indyuce.mmocore.command.Arguments;
 import net.Indyuce.mmocore.experience.EXPSource;
 import net.Indyuce.mmocore.experience.ExperienceObject;
 import net.Indyuce.mmocore.experience.PlayerProfessions;
@@ -32,7 +36,6 @@ import net.Indyuce.mmocore.experience.droptable.ExperienceItem;
 import net.Indyuce.mmocore.experience.droptable.ExperienceTable;
 import net.Indyuce.mmocore.gui.skilltree.NodeIncrementResult;
 import net.Indyuce.mmocore.guild.provided.Guild;
-import net.Indyuce.mmocore.loot.chest.particle.SmallParticleEffect;
 import net.Indyuce.mmocore.manager.data.OfflinePlayerData;
 import net.Indyuce.mmocore.party.AbstractParty;
 import net.Indyuce.mmocore.party.provided.MMOCorePartyModule;
@@ -48,12 +51,13 @@ import net.Indyuce.mmocore.skill.binding.SkillSlot;
 import net.Indyuce.mmocore.skill.cast.SkillCastingInstance;
 import net.Indyuce.mmocore.skill.cast.SkillCastingMode;
 import net.Indyuce.mmocore.skilltree.NodeState;
+import net.Indyuce.mmocore.skilltree.ParentInformation;
 import net.Indyuce.mmocore.skilltree.SkillTreeNode;
+import net.Indyuce.mmocore.skilltree.display.PathState;
 import net.Indyuce.mmocore.skilltree.tree.SkillTree;
 import net.Indyuce.mmocore.util.Language;
 import net.Indyuce.mmocore.waypoint.Waypoint;
 import net.Indyuce.mmocore.waypoint.WaypointOption;
-import org.apache.commons.lang.Validate;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
@@ -67,7 +71,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerData, Closeable, ClassDataContainer {
+public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerData, ClassDataContainer {
 
     /**
      * Can be null, the {@link #getProfess()} method will return the
@@ -85,7 +89,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     /**
      * Saving resources (especially health) right in player data fixes TONS of issues.
      */
-    private double health, mana, stamina, stellium;
+    private double lastHealth, lastMana, lastStamina, lastStellium;
+    private double mana, stamina, stellium;
     private Guild guild;
     private SkillCastingInstance skillCasting;
     private final PlayerQuests questData;
@@ -99,7 +104,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
      * plugin-scope to check if some item is class-specific and
      * should be reset when switching class
      */
-    @Deprecated
     private final Set<String> waypoints = new HashSet<>();
     private final Map<String, Integer> skills = new HashMap<>();
     private final Map<Integer, BoundSkillInfo> boundSkills = new HashMap<>();
@@ -108,25 +112,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     private final Map<String, SavedClassInformation> classSlots = new HashMap<>();
     private final Map<PlayerActivity, Long> lastActivity = new HashMap<>();
     private final CombatHandler combat = new CombatHandler(this);
-
-    /**
-     * Cached data
-     * <p>
-     * Current state of each node. This does not get saved in the player database
-     * as it can be inferred from the skill tree node levels map.
-     */
-    private final Map<SkillTreeNode, NodeState> nodeStates = new HashMap<>();
-
-    private final Map<SkillTreeNode, Integer> nodeLevels = new HashMap<>();
-    private final Map<String, Integer> skillTreePoints = new HashMap<>();
-
-    /**
-     * Cached data
-     * <p>
-     * Amount of points spent in each tree. This does not get saved in the
-     * player database as it can be inferred from the skill tree node levels map.
-     */
-    private final Map<SkillTree, Integer> skillTreePointsSpent = new HashMap<>();
 
     /**
      * Saves the NSK's of the items that have been unlocked in the format "namespace:key".
@@ -196,11 +181,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         attributes.reload();
     }
 
-    @Deprecated
-    public void setupRemovableTrigger() {
-        applyTemporaryTriggers();
-    }
-
     /**
      * Some triggers are marked with the {@link Removable} interface as
      * they are non-permanent triggers, and they need to be re-applied
@@ -230,33 +210,115 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
                 node.getExperienceTable().applyTemporaryTriggers(this, node);
     }
 
-    public void setupSkillTrees() {
+    @Override
+    protected void onSessionReady() {
+
+        // Update class stats and all
+        this.setupSkillTrees();
+        this.applyTemporaryTriggers();
+        this.getStats().updateStats();
+
+        getMMOPlayerData().getProfileSession().addOpenCallback(session -> this.onProfileSessionReady());
+    }
+
+    private void castOnLoginScripts() {
+
+        // Class Skills
+        for (ClassSkill skill : getProfess().getSkills())
+            if (skill.getSkill().getTrigger() == TriggerType.LOGIN)
+                skill.toCastable(this).cast(getMMOPlayerData());
+
+        // Call Scripts
+        for (var script : getProfess().getScripts())
+            if (script.getTrigger() == TriggerType.LOGIN) script.getTriggeredSkill().cast(getMMOPlayerData());
+    }
+
+    private void onProfileSessionReady() {
+        this.castOnLoginScripts();
+
+        // Set health again
+        UtilityMethods.setHealth(getPlayer(), lastHealth);
+        setMana(lastMana, PlayerResourceUpdateEvent.UpdateReason.CHOOSE_CLASS);
+        setStamina(lastStamina, PlayerResourceUpdateEvent.UpdateReason.CHOOSE_CLASS);
+        setStellium(lastStellium, PlayerResourceUpdateEvent.UpdateReason.CHOOSE_CLASS);
+    }
+
+    @Override
+    public Map<Integer, String> mapBoundSkills() {
+        Map<Integer, String> result = new HashMap<>();
+        for (int slot : boundSkills.keySet())
+            result.put(slot, boundSkills.get(slot).getClassSkill().getSkill().getHandler().getId());
+        return result;
+    }
+
+    public void resetTriggerStats() {
+        getMMOPlayerData().getStatMap().getInstances().forEach(statInstance -> statInstance.removeIf(Trigger.STAT_MODIFIER_KEY::equals));
+        getMMOPlayerData().getSkillModifierMap().removeModifiers(Trigger.STAT_MODIFIER_KEY);
+    }
+
+    //region Skill trees
+
+    /**
+     * Current state of each node. This does not get saved in the player database
+     * as it can be inferred from the skill tree node levels map. This is used
+     * mainly for displaying the skill tree in the GUI.
+     */
+    private final Map<SkillTreeNode, NodeState> nodeStates = new HashMap<>();
+
+    /**
+     * Current state of each path. This does not get saved in the player database
+     * as it can be inferred from the skill tree node levels map. This is used
+     * mainly for displaying the skill tree in the GUI.
+     */
+    private final Map<ParentInformation, PathState> edgeStates = new HashMap<>();
+
+    private final Map<SkillTreeNode, Integer> nodeLevels = new HashMap<>();
+    private final Map<String, Integer> skillTreePoints = new HashMap<>();
+
+    /**
+     * Cached data
+     * <p>
+     * Amount of points spent in each tree. This does not get saved in the
+     * player database as it can be inferred from the skill tree node levels map.
+     */
+    private final Map<SkillTree, Integer> skillTreePointsSpent = new HashMap<>();
+
+    @Override
+    public int getSkillTreeReallocationPoints() {
+        return skillTreeReallocationPoints;
+    }
+
+    private void setupSkillTrees() {
 
         // Node states setup
         for (SkillTree skillTree : getProfess().getSkillTrees())
-            skillTree.setupNodeStates(this);
+            skillTree.resolveStates(this);
     }
 
     public int getPointsSpent(@NotNull SkillTree skillTree) {
         return skillTreePointsSpent.getOrDefault(skillTree, 0);
     }
 
-    @Deprecated
-    public int getPointSpent(SkillTree skillTree) {
-        return getPointsSpent(skillTree);
+    @NotNull
+    private static String asKey(@Nullable SkillTree skillTree) {
+        return skillTree == null ? Arguments.SKILL_TREE_GLOBAL_KEY : skillTree.getId();
     }
 
-    public void setSkillTreePoints(@NotNull String treeId, int points) {
-        if (points <= 0) skillTreePoints.remove(treeId);
-        else skillTreePoints.put(treeId, points);
+    public void setSkillTreePoints(@NotNull SkillTree skillTree, int points) {
+        setSkillTreePoints(asKey(skillTree), points);
+    }
+
+    public void setSkillTreePoints(@NotNull String skillTreeId, int points) {
+        if (points <= 0) skillTreePoints.remove(skillTreeId);
+        else skillTreePoints.put(skillTreeId, points);
+    }
+
+    public void giveSkillTreePoints(@Nullable SkillTree skillTree, int val) {
+        giveSkillTreePoints(asKey(skillTree), val);
     }
 
     public void giveSkillTreePoints(@NotNull String id, int val) {
         skillTreePoints.merge(id, Math.max(0, val), (points, ignored) -> Math.max(0, points + val));
-    }
-
-    public int countSkillTreePoints(@NotNull SkillTree skillTree) {
-        return nodeLevels.keySet().stream().filter(node -> node.getTree().equals(skillTree)).mapToInt(node -> nodeLevels.get(node) * node.getPointConsumption()).sum();
     }
 
     /**
@@ -268,14 +330,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return new HashMap<>(skillTreePoints);
     }
 
-    @Override
-    public Map<Integer, String> mapBoundSkills() {
-        Map<Integer, String> result = new HashMap<>();
-        for (int slot : boundSkills.keySet())
-            result.put(slot, boundSkills.get(slot).getClassSkill().getSkill().getHandler().getId());
-        return result;
-    }
-
     public Set<Map.Entry<String, Integer>> getNodeLevelsEntrySet() {
         HashMap<String, Integer> nodeLevelsString = new HashMap<>();
         for (SkillTreeNode node : nodeLevels.keySet())
@@ -283,21 +337,11 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return nodeLevelsString.entrySet();
     }
 
-    public void resetTriggerStats() {
-        getMMOPlayerData().getStatMap().getInstances().forEach(statInstance -> statInstance.removeIf(Trigger.STAT_MODIFIER_KEY::equals));
-        getMMOPlayerData().getSkillModifierMap().removeModifiers(Trigger.STAT_MODIFIER_KEY);
-    }
-
     @Override
     public Map<String, Integer> getNodeLevels() {
         final Map<String, Integer> mapped = new HashMap<>();
         this.nodeLevels.forEach((node, level) -> mapped.put(node.getFullId(), level));
         return mapped;
-    }
-
-    @Deprecated
-    public void clearSkillTrees() {
-        resetSkillTrees();
     }
 
     public void resetSkillTrees() {
@@ -310,6 +354,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         // Skill trees progress
         nodeLevels.clear();
         nodeStates.clear(); // Cache data
+        edgeStates.clear();
         skillTreePointsSpent.clear();
         tableItemClaims.keySet().removeIf(s -> s.startsWith(SkillTreeNode.KEY_PREFIX)); // Clear node claim count
 
@@ -321,13 +366,14 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         setupSkillTrees();
     }
 
-    public void clearNodeStates(@NotNull SkillTree skillTree) {
-        for (SkillTreeNode node : skillTree.getNodes()) nodeStates.remove(node);
+    public void clearStates(@NotNull SkillTree skillTree) {
+        for (var node : skillTree.getNodes()) nodeStates.remove(node);
+        // TODO clear path states.
     }
 
-    // TODO move to UI...?
     @NotNull
     public NodeIncrementResult canIncrementNodeLevel(@NotNull SkillTreeNode node) {
+        // TODO move to UI...?
         final var nodeState = nodeStates.get(node);
 
         // Node is maxed out
@@ -356,10 +402,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         final int newLevel = addNodeLevels(node, 1);
         node.updateAdvancement(this, newLevel); // Claim the node exp table
 
-        // Update node state
-        // TODO check/remove: USELESS LINE? since node states are updated afterwards
-        // nodeStates.compute(node, (key, status) -> status == NodeState.UNLOCKABLE ? NodeState.UNLOCKED : status);
-
         // Consume skill tree points
         final AtomicInteger cost = new AtomicInteger(node.getPointConsumption());
         skillTreePoints.computeIfPresent(node.getTree().getId(), (key, points) -> {
@@ -369,14 +411,12 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         });
         if (cost.get() > 0) withdrawSkillTreePoints("global", cost.get());
 
-        // Reload node states from full skill tree
-        clearNodeStates(node.getTree());
-        node.getTree().setupNodeStates(this);
+        // Reload node/path states from full skill tree
+        node.getTree().resolveStates(this);
     }
 
-    @Deprecated
-    public int getSkillTreePoint(String treeId) {
-        return getSkillTreePoints(treeId);
+    public int getSkillTreePoints(@Nullable SkillTree skillTree) {
+        return getSkillTreePoints(asKey(skillTree));
     }
 
     public int getSkillTreePoints(@NotNull String treeId) {
@@ -388,17 +428,20 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         skillTreePoints.computeIfPresent(treeId, (ignored, points) -> cost >= points ? null : points - cost);
     }
 
-    public void setNodeState(SkillTreeNode node, NodeState nodeState) {
+    public void setNodeState(@NotNull SkillTreeNode node, @NotNull NodeState nodeState) {
         nodeStates.put(node, nodeState);
     }
 
-    public NodeState getNodeState(SkillTreeNode node) {
+    public void setPathState(@NotNull ParentInformation edge, @NotNull PathState pathState) {
+        edgeStates.put(edge, pathState);
+    }
+
+    public NodeState getNodeState(@NotNull SkillTreeNode node) {
         return nodeStates.get(node);
     }
 
-    @Deprecated
-    public NodeState getNodeStatus(SkillTreeNode node) {
-        return getNodeState(node);
+    public PathState getPathState(@NotNull ParentInformation path) {
+        return edgeStates.get(path);
     }
 
     public boolean hasNodeState(@NotNull SkillTreeNode node) {
@@ -428,9 +471,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         for (SkillTreeNode node : skillTree.getNodes()) {
             node.resetAdvancement(this, true);
             setNodeLevel(node, 0);
-            nodeStates.remove(node);
         }
-        skillTree.setupNodeStates(this);
+        skillTree.resolveStates(this);
     }
 
     @NotNull
@@ -441,6 +483,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     public boolean hasNodeStates() {
         return !nodeStates.isEmpty();
     }
+
+    //endregion Skill trees
 
     @Override
     public Map<String, Integer> getNodeTimesClaimed() {
@@ -499,16 +543,14 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         this.unlockedItems.addAll(unlockedItems);
     }
 
-    @Deprecated
-    public void resetTimesClaimed() {
-        tableItemClaims.clear();
-    }
-
     @Override
-    public void close() {
+    public void onSaved(@NotNull SaveReason reason) {
+        super.onSaved(reason);
 
         // Saves player health before saveData as the player will be considered offline into it if it is async
-        health = getPlayer().getHealth();
+        lastHealth = getPlayer().getHealth();
+
+        if (reason == SaveReason.AUTOSAVE) return;
 
         // Remove from party if it is MMO Party Module
         if (MMOCore.plugin.partyModule instanceof MMOCorePartyModule) {
@@ -619,11 +661,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return attributeReallocationPoints;
     }
 
-    @Override
-    public int getSkillTreeReallocationPoints() {
-        return skillTreeReallocationPoints;
-    }
-
     public int getClaims(@NotNull ExperienceObject object, @NotNull ExperienceItem item) {
         final ExperienceTable table = object.getExperienceTable();
         return getClaims(object.getKey() + "." + table.getId() + "." + item.getId());
@@ -648,16 +685,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         else tableItemClaims.put(itemKey, times);
     }
 
-    @Deprecated
-    public void setClaims(ExperienceObject object, ExperienceTable table, ExperienceItem item, int times) {
-        setClaims(object.getKey() + "." + table.getId() + "." + item.getId(), times);
-    }
-
-    @Deprecated
-    public int getClaims(ExperienceObject object, ExperienceTable table, ExperienceItem item) {
-        return getClaims(object.getKey() + "." + table.getId() + "." + item.getId());
-    }
-
     public Map<String, Integer> getItemClaims() {
         return tableItemClaims;
     }
@@ -677,19 +704,22 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return guild != null;
     }
 
-    public void setLevel(int level) {
-        this.level = Math.max(1, level);
-        if (isOnline()) {
-            if (isSynchronized()) getStats().updateStats();
+    public void setLevel(int level, @NotNull PlayerLevelChangeEvent.Reason reason) {
+
+        final var oldLevel = this.level;
+        final var newLevel = Math.max(1, level);
+        this.level = newLevel;
+
+        if (reason != PlayerLevelChangeEvent.Reason.CHOOSE_PROFILE) // No event, data is loaded async
+            Bukkit.getPluginManager().callEvent(new PlayerLevelChangeEvent(this, null, oldLevel, newLevel, reason));
+
+        if (getMMOPlayerData().isPlaying()) {
+            getStats().updateStats();
             refreshVanillaExp();
         }
     }
 
-    public void takeLevels(int value) {
-        setLevel(level - value);
-    }
-
-    public void giveLevels(int value, EXPSource source) {
+    public void giveLevels(int value, @NotNull EXPSource source) {
         long equivalentExp = 0;
         while (value-- > 0) equivalentExp += getProfess().getExpCurve().getExperience(getLevel() + value + 1);
         giveExperience(equivalentExp, source);
@@ -779,7 +809,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return waypoint.hasOption(WaypointOption.DEFAULT) || waypoints.contains(waypoint.getId());
     }
 
-    public void unlockWaypoint(Waypoint waypoint) {
+    public void unlockWaypoint(@NotNull Waypoint waypoint) {
+        Message.WAYPOINT_UNLOCK.send(this, "waypoint", waypoint.getName());
         waypoints.add(waypoint.getId());
     }
 
@@ -787,29 +818,87 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         waypoints.remove(waypoint.getId());
     }
 
-    /**
-     * @deprecated Provide a heal reason with {@link #heal(double, PlayerResourceUpdateEvent.UpdateReason)}
-     */
-    @Deprecated
-    public void heal(double heal) {
-        this.heal(heal, PlayerResourceUpdateEvent.UpdateReason.OTHER);
-    }
+    //region Resources
 
-    public void heal(double heal, PlayerResourceUpdateEvent.UpdateReason reason) {
+    public void heal(double amount, @NotNull PlayerResourceUpdateEvent.UpdateReason reason) {
         if (!isOnline()) return;
 
-        // Avoid calling an useless event
-        double max = getPlayer().getAttribute(Attributes.MAX_HEALTH).getValue();
-        double newest = Math.max(0, Math.min(getPlayer().getHealth() + heal, max));
-        if (getPlayer().getHealth() == newest) return;
+        final var maxValue = getPlayer().getAttribute(Attributes.MAX_HEALTH).getValue();
+        var newValue = Math.max(0, Math.min(getPlayer().getHealth() + amount, maxValue));
+        if (getPlayer().getHealth() == newValue) return;
 
-        PlayerResourceUpdateEvent event = new PlayerResourceUpdateEvent(this, PlayerResource.HEALTH, heal, reason);
-        Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled()) return;
+        if (reason != PlayerResourceUpdateEvent.UpdateReason.CHOOSE_CLASS) {
+            final var event = new PlayerResourceUpdateEvent(this, PlayerResource.HEALTH, getPlayer().getHealth(), newValue, reason);
+            Bukkit.getPluginManager().callEvent(event);
+            if (event.isCancelled()) return;
+            newValue = event.getNewAmount();
+        }
 
         // Use updated amount from event
-        getPlayer().setHealth(Math.max(0, Math.min(getPlayer().getHealth() + event.getAmount(), max)));
+        getPlayer().setHealth(Math.max(0, Math.min(newValue, maxValue)));
     }
+
+    public void setMana(double amount, @NotNull PlayerResourceUpdateEvent.UpdateReason reason) {
+
+        final var maxValue = getStats().getStat("MAX_MANA");
+        var newValue = Math.max(0, Math.min(amount, maxValue));
+        if (mana == newValue) return;
+
+        if (reason != PlayerResourceUpdateEvent.UpdateReason.CHOOSE_CLASS) {
+            final var called = new PlayerResourceUpdateEvent(this, PlayerResource.MANA, this.mana, newValue, reason);
+            Bukkit.getPluginManager().callEvent(called);
+            if (called.isCancelled()) return;
+            newValue = called.getNewAmount();
+        }
+
+        mana = Math.max(0, Math.min(newValue, maxValue));
+    }
+
+    public void setStamina(double amount, @NotNull PlayerResourceUpdateEvent.UpdateReason reason) {
+
+        final var maxValue = getStats().getStat("MAX_STAMINA");
+        var newValue = Math.max(0, Math.min(amount, maxValue));
+        if (stamina == newValue) return;
+
+        if (reason != PlayerResourceUpdateEvent.UpdateReason.CHOOSE_CLASS) {
+            final var called = new PlayerResourceUpdateEvent(this, PlayerResource.STAMINA, this.stamina, newValue, reason);
+            Bukkit.getPluginManager().callEvent(called);
+            if (called.isCancelled()) return;
+            newValue = called.getNewAmount();
+        }
+
+        stamina = Math.max(0, Math.min(newValue, maxValue));
+    }
+
+    public void setStellium(double amount, @NotNull PlayerResourceUpdateEvent.UpdateReason reason) {
+
+        final var maxValue = getStats().getStat("MAX_STELLIUM");
+        var newValue = Math.max(0, Math.min(amount, maxValue));
+        if (stellium == newValue) return;
+
+        if (reason != PlayerResourceUpdateEvent.UpdateReason.CHOOSE_CLASS) {
+            final var called = new PlayerResourceUpdateEvent(this, PlayerResource.STELLIUM, this.stellium, newValue, reason);
+            Bukkit.getPluginManager().callEvent(called);
+            if (called.isCancelled()) return;
+            newValue = called.getNewAmount();
+        }
+
+        stellium = Math.max(0, Math.min(newValue, maxValue));
+    }
+
+    public void giveMana(double amount, @NotNull PlayerResourceUpdateEvent.UpdateReason reason) {
+        setMana(mana + amount, reason);
+    }
+
+    public void giveStamina(double amount, @NotNull PlayerResourceUpdateEvent.UpdateReason reason) {
+        setStamina(stamina + amount, reason);
+    }
+
+    public void giveStellium(double amount, @NotNull PlayerResourceUpdateEvent.UpdateReason reason) {
+        setStellium(stellium + amount, reason);
+    }
+
+    //endregion
 
     public void addFriend(UUID uuid) {
         friends.add(uuid);
@@ -903,7 +992,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
      * @param value  Experience to give the player
      * @param source How the player earned experience
      */
-    public void giveExperience(double value, EXPSource source) {
+    public void giveExperience(double value, @NotNull EXPSource source) {
         giveExperience(value, source, null, true);
     }
 
@@ -916,8 +1005,9 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
      *                         If it's null, no hologram will be displayed
      * @param splitExp         Should the exp be split among party members
      */
-    public void giveExperience(double value, @NotNull EXPSource source, @Nullable Location hologramLocation,
-                               boolean splitExp) {
+    public void giveExperience(double value, @NotNull EXPSource source, @Nullable Location hologramLocation, boolean splitExp) {
+
+        // Take exp on negative amounts
         if (value <= 0) {
             experience = Math.max(0, experience + value);
             return;
@@ -941,40 +1031,42 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         // Apply buffs AFTER splitting exp
         value *= (1 + getStats().getStat("ADDITIONAL_EXPERIENCE") / 100) * MMOCore.plugin.boosterManager.getMultiplier(null);
 
-        PlayerExperienceGainEvent event = new PlayerExperienceGainEvent(this, value, source);
+        final var event = new PlayerExperienceGainEvent(this, value, source);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) return;
 
         // Experience hologram
         if (hologramLocation != null)
-            MMOCoreUtils.displayIndicator(hologramLocation, Language.EXP_HOLOGRAM.getFormat().replace("exp", MythicLib.plugin.getMMOConfig().decimal.format(event.getExperience())));
+            MMOCoreUtils.displayIndicator(hologramLocation, Language.EXP_HOLOGRAM.getFormat().replace("{exp}", MythicLib.plugin.getMMOConfig().decimal.format(event.getExperience())));
 
         experience = Math.max(0, experience + event.getExperience());
 
         // Calculate the player's next level
-        int oldLevel = level;
-        long needed;
-        while (experience >= (needed = getLevelUpExperience())) {
+        final var oldLevel = level;
+        var newLevel = level;
+        long experienceNeeded;
+
+        /*
+         * Loop for exp overload when leveling up, will continue
+         * looping until exp is 0 or max currentLevel has been reached
+         */
+        while (experience >= (experienceNeeded = getProfess().getExpCurve().getExperience(newLevel + 1))) {
 
             if (hasReachedMaxLevel()) {
                 experience = 0;
                 break;
             }
 
-            experience -= needed;
-            level = getLevel() + 1;
+            experience -= experienceNeeded;
+            newLevel++;
 
             // Apply class experience table
-            getProfess().updateAdvancement(this, level);
+            getProfess().updateAdvancement(this, newLevel);
         }
 
-        if (level > oldLevel) {
-            Bukkit.getPluginManager().callEvent(new PlayerLevelUpEvent(this, null, oldLevel, level));
-            if (isOnline()) {
-                Message.LEVEL_UP.send(this, "level", level);
-                new SmallParticleEffect(getPlayer(), VParticle.INSTANT_EFFECT.get()); // TODO move to playerMessage
-            }
-            getStats().updateStats();
+        if (newLevel > oldLevel) {
+            setLevel(newLevel, PlayerLevelChangeEvent.Reason.LEVEL_UP); // Update 'level'
+            Message.LEVEL_UP.send(this, "level", level);
         }
 
         refreshVanillaExp();
@@ -990,79 +1082,9 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return profess == null ? MMOCore.plugin.classManager.getDefaultClass() : profess;
     }
 
-    /**
-     * @deprecated Provide reason with {@link #giveMana(double, PlayerResourceUpdateEvent.UpdateReason)}
-     */
-    @Deprecated
-    public void giveMana(double amount) {
-        giveMana(amount, PlayerResourceUpdateEvent.UpdateReason.OTHER);
-    }
-
-    public void giveMana(double amount, PlayerResourceUpdateEvent.UpdateReason reason) {
-
-        // Avoid calling useless event
-        double max = getStats().getStat("MAX_MANA");
-        double newest = Math.max(0, Math.min(mana + amount, max));
-        if (mana == newest) return;
-
-        PlayerResourceUpdateEvent event = new PlayerResourceUpdateEvent(this, PlayerResource.MANA, amount, reason);
-        Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled()) return;
-
-        // Use updated amount from Bukkit event
-        mana = Math.max(0, Math.min(mana + event.getAmount(), max));
-    }
-
-    /**
-     * @deprecated Provide reason with {@link #giveStamina(double, PlayerResourceUpdateEvent.UpdateReason)}
-     */
-    @Deprecated
-    public void giveStamina(double amount) {
-        giveStamina(amount, PlayerResourceUpdateEvent.UpdateReason.OTHER);
-    }
-
-    public void giveStamina(double amount, PlayerResourceUpdateEvent.UpdateReason reason) {
-
-        // Avoid calling useless event
-        double max = getStats().getStat("MAX_STAMINA");
-        double newest = Math.max(0, Math.min(stamina + amount, max));
-        if (stamina == newest) return;
-
-        PlayerResourceUpdateEvent event = new PlayerResourceUpdateEvent(this, PlayerResource.STAMINA, amount, reason);
-        Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled()) return;
-
-        // Use updated amount from Bukkit event
-        stamina = Math.max(0, Math.min(stamina + event.getAmount(), max));
-    }
-
-    /**
-     * @deprecated Provide reason with {@link #giveStellium(double, PlayerResourceUpdateEvent.UpdateReason)}
-     */
-    @Deprecated
-    public void giveStellium(double amount) {
-        giveStellium(amount, PlayerResourceUpdateEvent.UpdateReason.OTHER);
-    }
-
-    public void giveStellium(double amount, PlayerResourceUpdateEvent.UpdateReason reason) {
-
-        // Avoid calling useless event
-        double max = getStats().getStat("MAX_STELLIUM");
-        double newest = Math.max(0, Math.min(stellium + amount, max));
-        if (stellium == newest) return;
-
-        PlayerResourceUpdateEvent event = new PlayerResourceUpdateEvent(this, PlayerResource.STELLIUM, amount, reason);
-        Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled()) return;
-
-        // Use updated amount from Bukkit event
-        stellium = Math.max(0, Math.min(stellium + event.getAmount(), max));
-    }
-
-    @Deprecated
     @Override
-    public double getHealth() {
-        return isOnline() ? getPlayer().getHealth() : health;
+    public double getLastHealth() {
+        return lastHealth;
     }
 
     @Override
@@ -1079,10 +1101,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return stellium;
     }
 
-    public double getCachedHealth() {
-        return health;
-    }
-
     public PlayerStats getStats() {
         return playerStats;
     }
@@ -1091,39 +1109,27 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return attributes;
     }
 
-    public void setHealth(double amount) {
-        this.health = amount;
-    }
+    public void loadResources(double lastHealth, double lastMana, double lastStamina, double lastStellium) {
 
-    public void setMana(double amount) {
-        mana = Math.max(0, Math.min(amount, getStats().getStat("MAX_MANA")));
-    }
+        // Player started playing, update resources now
+        if (isSessionReady()) {
+            UtilityMethods.setHealth(getPlayer(), lastHealth);
+            setMana(lastMana, PlayerResourceUpdateEvent.UpdateReason.CHOOSE_CLASS);
+            setStamina(lastStamina, PlayerResourceUpdateEvent.UpdateReason.CHOOSE_CLASS);
+            setStellium(lastStellium, PlayerResourceUpdateEvent.UpdateReason.CHOOSE_CLASS);
+        }
 
-    public void setStamina(double amount) {
-        stamina = Math.max(0, Math.min(amount, getStats().getStat("MAX_STAMINA")));
-    }
-
-    public void setStellium(double amount) {
-        stellium = Math.max(0, Math.min(amount, getStats().getStat("MAX_STELLIUM")));
-    }
-
-    @Deprecated
-    public boolean isFullyLoaded() {
-        return isSynchronized();
-    }
-
-    @Deprecated
-    public void setFullyLoaded() {
-        markAsSynchronized();
+        // Cache and load later
+        else {
+            this.lastHealth = lastHealth;
+            this.lastMana = lastMana;
+            this.lastStamina = lastStamina;
+            this.lastStellium = lastStellium;
+        }
     }
 
     public boolean isCasting() {
         return skillCasting != null;
-    }
-
-    @Deprecated
-    public boolean setSkillCasting(@NotNull SkillCastingInstance skillCasting) {
-        return setSkillCasting();
     }
 
     /**
@@ -1173,38 +1179,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return true;
     }
 
-    @Deprecated
-    public void displayActionBar(@NotNull String message) {
-        displayActionBar(message, false);
-    }
-
-    @Deprecated
-    public void displayActionBar(@NotNull String message, boolean raw) {
-
-        // TODO add an option to disable action-bar properly in all casting modes
-        if (ChatColor.stripColor(message).isEmpty()) return;
-
-        // TODO move raw/not raw decision to MythicLib
-        var handler = getMMOPlayerData().getActionBar();
-        if (!raw) {
-            handler.show(ActionBarPriority.NORMAL, message);
-        } else {
-            if (!handler.canShow(ActionBarPriority.NORMAL)) return;
-            handler.show(ActionBarPriority.NORMAL, "");
-            MythicLib.plugin.getVersion().getWrapper().sendActionBarRaw(getPlayer(), message);
-        }
-    }
-
-    @Deprecated
-    public void setAttribute(PlayerAttribute attribute, int value) {
-        setAttribute(attribute.getId(), value);
-    }
-
-    @Deprecated
-    public void setAttribute(String id, int value) {
-        attributes.getInstance(id).setBase(value);
-    }
-
     @Override
     public Map<String, Integer> mapAttributeLevels() {
         return getAttributes().mapPoints();
@@ -1224,16 +1198,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     public void resetSkillLevel(String skill) {
         skills.remove(skill);
-    }
-
-    @Deprecated
-    public boolean hasSkillUnlocked(RegisteredSkill skill) {
-        return getProfess().hasSkill(skill.getHandler().getId()) && hasSkillUnlocked(getProfess().getSkill(skill.getHandler().getId()));
-    }
-
-    @Deprecated
-    public boolean hasSkillUnlocked(ClassSkill skill) {
-        return hasUnlockedLevel(skill);
     }
 
     /**
@@ -1304,11 +1268,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return found != null ? found.getClassSkill() : null;
     }
 
-    @Deprecated
-    public void setBoundSkill(int slot, ClassSkill skill) {
-        bindSkill(slot, skill);
-    }
-
     /**
      * Binds a skill to the player.
      *
@@ -1365,29 +1324,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return getCombat().isInCombat();
     }
 
-    /**
-     * Loops through all the subclasses available to the player and
-     * checks if they could potentially upgrade to one of these
-     *
-     * @return If the player can change its current class to
-     *         a subclass
-     */
-    @Deprecated
-    public boolean canChooseSubclass() {
-        for (Subclass subclass : getProfess().getSubclasses())
-            if (getLevel() >= subclass.getLevel()) return true;
-        return false;
-    }
-
-    /**
-     * Everytime a player does a combat action, like taking
-     * or dealing damage to an entity, this method is called.
-     */
-    @Deprecated
-    public void updateCombat() {
-        getCombat().update();
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -1400,6 +1336,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     public int hashCode() {
         return getMMOPlayerData().hashCode();
     }
+
+    //region Static methods
 
     public static PlayerData get(@NotNull MMOPlayerData playerData) {
         return get(playerData.getPlayer());
@@ -1448,4 +1386,259 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     public static Collection<PlayerData> getAll() {
         return MMOCore.plugin.playerDataManager.getLoaded();
     }
+
+    //endregion
+
+    //region Deprecated
+
+    @Deprecated
+    public void takeLevels(int value) {
+        setLevel(level - value, PlayerLevelChangeEvent.Reason.UNKNOWN);
+    }
+
+    @Deprecated
+    public void setLevel(int level) {
+        setLevel(level, PlayerLevelChangeEvent.Reason.UNKNOWN);
+    }
+
+    @Deprecated
+    public void clearNodeStates(@NotNull SkillTree skillTree) {
+        clearStates(skillTree);
+    }
+
+    /**
+     * @see #setMana(double, PlayerResourceUpdateEvent.UpdateReason)
+     * @deprecated
+     */
+    @Deprecated
+    public void setMana(double amount) {
+        setMana(amount, PlayerResourceUpdateEvent.UpdateReason.UNKNOWN);
+    }
+
+    /**
+     * @see #setStamina(double, PlayerResourceUpdateEvent.UpdateReason)
+     * @deprecated
+     */
+    @Deprecated
+    public void setStamina(double amount) {
+        setStamina(amount, PlayerResourceUpdateEvent.UpdateReason.UNKNOWN);
+    }
+
+    /**
+     * @see #setStellium(double, PlayerResourceUpdateEvent.UpdateReason)
+     * @deprecated
+     */
+    @Deprecated
+    public void setStellium(double amount) {
+        setStellium(amount, PlayerResourceUpdateEvent.UpdateReason.UNKNOWN);
+    }
+
+    /**
+     * @see #loadResources(double, double, double, double)
+     * @deprecated
+     */
+    @Deprecated
+    public void setHealth(double amount) {
+        this.lastHealth = amount;
+    }
+
+    @Deprecated
+    public double getHealth() {
+        return getLastHealth();
+    }
+
+    @Deprecated
+    public double getCachedHealth() {
+        return getLastHealth();
+    }
+
+    /**
+     * @deprecated Provide reason with {@link #giveStellium(double, PlayerResourceUpdateEvent.UpdateReason)}
+     */
+    @Deprecated
+    public void giveStellium(double amount) {
+        giveStellium(amount, PlayerResourceUpdateEvent.UpdateReason.UNKNOWN);
+    }
+
+    /**
+     * @deprecated Provide reason with {@link #giveStamina(double, PlayerResourceUpdateEvent.UpdateReason)}
+     */
+    @Deprecated
+    public void giveStamina(double amount) {
+        giveStamina(amount, PlayerResourceUpdateEvent.UpdateReason.UNKNOWN);
+    }
+
+    /**
+     * @deprecated Provide reason with {@link #giveMana(double, PlayerResourceUpdateEvent.UpdateReason)}
+     */
+    @Deprecated
+    public void giveMana(double amount) {
+        giveMana(amount, PlayerResourceUpdateEvent.UpdateReason.UNKNOWN);
+    }
+
+    @Deprecated
+    public void setupRemovableTrigger() {
+        applyTemporaryTriggers();
+    }
+
+    @Deprecated
+    public int getPointSpent(SkillTree skillTree) {
+        return getPointsSpent(skillTree);
+    }
+
+    @Deprecated
+    public int getSkillTreePoint(String treeId) {
+        return getSkillTreePoints(treeId);
+    }
+
+    @Deprecated
+    public void clearSkillTrees() {
+        resetSkillTrees();
+    }
+
+    @Deprecated
+    public void resetTimesClaimed() {
+        tableItemClaims.clear();
+    }
+
+    @Deprecated
+    public void setClaims(ExperienceObject object, ExperienceTable table, ExperienceItem item, int times) {
+        setClaims(object.getKey() + "." + table.getId() + "." + item.getId(), times);
+    }
+
+    @Deprecated
+    public int getClaims(ExperienceObject object, ExperienceTable table, ExperienceItem item) {
+        return getClaims(object.getKey() + "." + table.getId() + "." + item.getId());
+    }
+
+    /**
+     * @see #heal(double, PlayerResourceUpdateEvent.UpdateReason)
+     * @deprecated Provide a heal reason with {@link #heal(double, PlayerResourceUpdateEvent.UpdateReason)}
+     */
+    @Deprecated
+    public void heal(double heal) {
+        this.heal(heal, PlayerResourceUpdateEvent.UpdateReason.UNKNOWN);
+    }
+
+    @Deprecated
+    public NodeState getNodeStatus(SkillTreeNode node) {
+        return getNodeState(node);
+    }
+
+    @Deprecated
+    public boolean setSkillCasting(@NotNull SkillCastingInstance skillCasting) {
+        return setSkillCasting();
+    }
+
+    @Deprecated
+    public boolean isFullyLoaded() {
+        return isSessionReady();
+    }
+
+    @Deprecated
+    public void setFullyLoaded() {
+        this.markSessionReady();
+    }
+
+    @Deprecated
+    public void setBoundSkill(int slot, ClassSkill skill) {
+        bindSkill(slot, skill);
+    }
+
+    /**
+     * Loops through all the subclasses available to the player and
+     * checks if they could potentially upgrade to one of these
+     *
+     * @return If the player can change its current class to
+     *         a subclass
+     */
+    @Deprecated
+    public boolean canChooseSubclass() {
+        for (Subclass subclass : getProfess().getSubclasses())
+            if (getLevel() >= subclass.getLevel()) return true;
+        return false;
+    }
+
+    /**
+     * @see #hasUnlockedLevel(ClassSkill)
+     * @deprecated
+     */
+    @Deprecated
+    public boolean hasSkillUnlocked(RegisteredSkill skill) {
+        return getProfess().hasSkill(skill.getHandler().getId()) && hasSkillUnlocked(getProfess().getSkill(skill.getHandler().getId()));
+    }
+
+    /**
+     * @see #hasUnlockedLevel(ClassSkill)
+     * @deprecated
+     */
+    @Deprecated
+    public boolean hasSkillUnlocked(ClassSkill skill) {
+        return hasUnlockedLevel(skill);
+    }
+
+    /**
+     * Everytime a player does a combat action, like taking
+     * or dealing damage to an entity, this method is called.
+     *
+     * @see #getCombat()
+     * @deprecated
+     */
+    @Deprecated
+    public void updateCombat() {
+        getCombat().update();
+    }
+
+    @Deprecated
+    public void displayActionBar(@NotNull String message) {
+        getMMOPlayerData().getActionBar().show(ActionBarPriority.NORMAL, message);
+    }
+
+    @Deprecated
+    public void displayActionBar(@NotNull String message, boolean raw) {
+
+        // TODO add an option to disable action-bar properly in all casting modes
+        if (ChatColor.stripColor(message).isEmpty()) return;
+
+        // TODO move raw/not raw decision to MythicLib
+        var handler = getMMOPlayerData().getActionBar();
+        if (!raw) {
+            handler.show(ActionBarPriority.NORMAL, message);
+        } else {
+            if (!handler.canShow(ActionBarPriority.NORMAL)) return;
+            handler.show(ActionBarPriority.NORMAL, "");
+            MythicLib.plugin.getVersion().getWrapper().sendActionBarRaw(getPlayer(), message);
+        }
+    }
+
+    /**
+     * @see #getAttributes()
+     * @deprecated
+     */
+    @Deprecated
+    public void setAttribute(PlayerAttribute attribute, int value) {
+        setAttribute(attribute.getId(), value);
+    }
+
+    /**
+     * @see #getAttributes()
+     * @deprecated
+     */
+    @Deprecated
+    public void setAttribute(String id, int value) {
+        attributes.getInstance(id).setBase(value);
+    }
+
+    /**
+     * Counts the number of points spent in that skill tree
+     *
+     * @see #getPointsSpent(SkillTree)
+     * @deprecated
+     */
+    @Deprecated
+    public int countSkillTreePoints(@NotNull SkillTree skillTree) {
+        return nodeLevels.keySet().stream().filter(node -> node.getTree().equals(skillTree)).mapToInt(node -> nodeLevels.get(node) * node.getPointConsumption()).sum();
+    }
+
+    //endregion
 }

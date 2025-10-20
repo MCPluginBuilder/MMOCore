@@ -2,13 +2,12 @@ package net.Indyuce.mmocore.listener;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.event.PlayerAttackEvent;
-import io.lumine.mythic.lib.api.event.SynchronizedDataLoadEvent;
-import io.lumine.mythic.lib.version.Attributes;
 import net.Indyuce.mmocore.MMOCore;
+import net.Indyuce.mmocore.api.event.PlayerLevelChangeEvent;
+import net.Indyuce.mmocore.api.event.PlayerLevelUpEvent;
 import net.Indyuce.mmocore.api.event.PlayerResourceUpdateEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.profess.resource.PlayerResource;
-import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -19,35 +18,6 @@ import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 
 public class PlayerListener implements Listener {
-
-    /**
-     * Script ran when the full MMO plugin data is synchronized. Player Health
-     * is only updated now otherwise other MMO plugins would not have the time
-     * to register their stats beforehand.
-     */
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void a(SynchronizedDataLoadEvent event) {
-        if (event.syncIsFull()) {
-            final PlayerData playerData = PlayerData.get(event.getHolder().getUniqueId());
-            final Player player = playerData.getPlayer();
-
-            playerData.setupSkillTrees();
-            playerData.applyTemporaryTriggers();
-            playerData.getStats().updateStats(true); // TODO maybe duplicate?
-
-            /*
-             * If the player is not dead and the health is 0, this means that the data was
-             * missing from the database, and it should give full health to the player. It
-             * must account for the edge case where the player is dead.
-             */
-            if (playerData.isOnline() && !player.isDead()) {
-                final double cachedHealth = playerData.getCachedHealth(),
-                        maxHealth = player.getAttribute(Attributes.MAX_HEALTH).getValue(),
-                        fixedHealth = MMOCoreUtils.fixResource(cachedHealth, maxHealth);
-                player.setHealth(fixedHealth);
-            }
-        }
-    }
 
     /**
      * Updates the player's combat log data every time he hits an entity, or
@@ -79,12 +49,19 @@ public class PlayerListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void resourceBukkitInterface(PlayerResourceUpdateEvent event) {
         if (event.getResource() == PlayerResource.HEALTH) {
-            final EntityRegainHealthEvent bukkitEvent = new EntityRegainHealthEvent(event.getPlayer(), event.getAmount(), RegainReason.CUSTOM);
+            final var bukkitEvent = new EntityRegainHealthEvent(event.getPlayer(), event.getDifference(), RegainReason.CUSTOM);
             Bukkit.getPluginManager().callEvent(bukkitEvent);
 
             // Update event values
-            event.setAmount(bukkitEvent.getAmount());
+            event.setNewAmount(event.getOldAmount() + bukkitEvent.getAmount());
             event.setCancelled(bukkitEvent.isCancelled());
         }
+    }
+
+    @SuppressWarnings("deprecation")
+    @EventHandler
+    public void backwardsCompatibilityEvent(PlayerLevelChangeEvent event) {
+        if (event.getReason() == PlayerLevelChangeEvent.Reason.LEVEL_UP)
+            Bukkit.getPluginManager().callEvent(new PlayerLevelUpEvent(event.getData(), event.getProfession(), event.getOldLevel(), event.getNewLevel()));
     }
 }

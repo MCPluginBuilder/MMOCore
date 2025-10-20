@@ -1,10 +1,8 @@
 package net.Indyuce.mmocore.listener;
 
 import io.lumine.mythic.lib.api.item.NBTItem;
-import io.lumine.mythic.lib.version.VParticle;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import net.Indyuce.mmocore.loot.chest.particle.SmallParticleEffect;
 import net.Indyuce.mmocore.manager.InventoryManager;
 import net.Indyuce.mmocore.player.Message;
 import net.Indyuce.mmocore.waypoint.Waypoint;
@@ -34,8 +32,6 @@ public class WaypointsListener implements Listener {
         PlayerData playerData = PlayerData.get(player);
         if (waypoint.hasOption(WaypointOption.UNLOCKABLE) && !playerData.hasWaypoint(waypoint)) {
             playerData.unlockWaypoint(waypoint);
-            new SmallParticleEffect(player, VParticle.WITCH.get()); // TODO move to PlayerMessage
-            Message.WAYPOINT_UNLOCK.send(playerData, "waypoint", waypoint.getName());
             return;
         }
 

@@ -1,11 +1,12 @@
 package net.Indyuce.mmocore.api;
 
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.apache.commons.lang.Validate;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -162,7 +163,7 @@ public class ConfigMessage {
 
         // Handle special case with player data + action bar
         if (playerData != null && playerData.isOnline() && actionbar) {
-            playerData.displayActionBar(rawMessage, raw);
+            playerData.getMMOPlayerData().getActionBar().show(ActionBarPriority.NORMAL, rawMessage);
             return;
         }
 

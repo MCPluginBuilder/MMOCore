@@ -1,7 +1,7 @@
 package net.Indyuce.mmocore.experience;
 
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import org.apache.commons.lang.Validate;
 
 import java.io.BufferedReader;
 import java.io.File;

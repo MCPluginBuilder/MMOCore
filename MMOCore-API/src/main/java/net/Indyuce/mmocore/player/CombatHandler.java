@@ -1,11 +1,10 @@
 package net.Indyuce.mmocore.player;
 
 import io.lumine.mythic.lib.util.Closeable;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerCombatEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import net.Indyuce.mmocore.command.PvpModeCommand;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
@@ -20,6 +19,8 @@ public class CombatHandler implements Closeable {
     @Nullable
     private BukkitTask task;
 
+    public static final String COOLDOWN_KEY = "PvpMode";
+
     public CombatHandler(PlayerData player) {
         this.player = player;
     }
@@ -27,7 +28,7 @@ public class CombatHandler implements Closeable {
     public void update() {
         lastHit = System.currentTimeMillis();
         invulnerableTill = 0;
-        player.getMMOPlayerData().getCooldownMap().applyCooldown(PvpModeCommand.COOLDOWN_KEY, MMOCore.plugin.configManager.pvpModeCombatCooldown);
+        player.getMMOPlayerData().getCooldownMap().applyCooldown(COOLDOWN_KEY, MMOCore.plugin.configManager.pvpModeCombatCooldown);
 
         // Simply refreshing
         if (isInCombat()) {
@@ -120,6 +121,6 @@ public class CombatHandler implements Closeable {
         // Necessary steps when entering a town.
         lastHit = 0;
         invulnerableTill = 0;
-        player.getMMOPlayerData().getCooldownMap().resetCooldown(PvpModeCommand.COOLDOWN_KEY);
+        player.getMMOPlayerData().getCooldownMap().resetCooldown(COOLDOWN_KEY);
     }
 }

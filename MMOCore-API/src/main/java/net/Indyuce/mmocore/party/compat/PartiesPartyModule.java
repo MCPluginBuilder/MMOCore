@@ -37,9 +37,14 @@ public class PartiesPartyModule implements PartyModule, Listener {
 
     @EventHandler
     public void onPlayerJoin(BukkitPartiesPlayerPostJoinEvent event) {
-        int membersSize = event.getParty().getMembers().size();
-        event.getParty().getOnlineMembers()
-                .forEach(p -> PartyUtils.updateStatBonuses(PlayerData.get(p.getPlayerUUID()), membersSize));
+        // !!! async event !!!
+        Bukkit.getScheduler().runTask(MMOCore.plugin, () -> {
+            final var memberCount = event.getParty().getMembers().size();
+            event.getParty().getOnlineMembers().forEach(member -> {
+                final var playerData = PlayerData.get(member.getPlayerUUID());
+                PartyUtils.updateStatBonuses(playerData, memberCount);
+            });
+        });
     }
 
     @EventHandler
@@ -52,8 +57,7 @@ public class PartiesPartyModule implements PartyModule, Listener {
         PartyUtils.clearStatBonuses(event.getPartyPlayer().getPlayerUUID());
 
         // Update stats for online members
-        event.getParty().getOnlineMembers()
-                .forEach(p -> PartyUtils.updateStatBonuses(PlayerData.get(p.getPlayerUUID()), memberCount));
+        event.getParty().getOnlineMembers().forEach(p -> PartyUtils.updateStatBonuses(PlayerData.get(p.getPlayerUUID()), memberCount));
     }
 
     private static class CustomParty implements AbstractParty {
@@ -66,8 +70,7 @@ public class PartiesPartyModule implements PartyModule, Listener {
         @Override
         public boolean hasMember(Player player) {
             for (PartyPlayer member : party.getOnlineMembers())
-                if (member.getPlayerUUID().equals(player.getUniqueId()))
-                    return true;
+                if (member.getPlayerUUID().equals(player.getUniqueId())) return true;
 
             return false;
         }

@@ -1,9 +1,10 @@
 package net.Indyuce.mmocore.manager;
 
 import io.lumine.mythic.lib.util.FileUtils;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.quest.Quest;
-import org.apache.commons.lang.Validate;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -17,6 +18,7 @@ public class QuestManager implements MMOCoreManager {
         quests.put(quest.getId(), quest);
     }
 
+    @Nullable
     public Quest get(String id) {
         return quests.get(id);
     }

@@ -1,45 +1,50 @@
 package net.Indyuce.mmocore.api.event;
 
+import io.lumine.mythic.lib.command.CommandTreeRoot;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 
-/**
- * @deprecated Use Bukkit event instead
- */
-@Deprecated
+// TODO move to MythicLib
 public class MMOCommandEvent extends PlayerDataEvent implements Cancellable {
-	private static final HandlerList handlers = new HandlerList();
+    private static final HandlerList handlers = new HandlerList();
     private boolean cancelled;
 
-	private final String command;
+    private final String command;
 
-	public MMOCommandEvent(PlayerData player, String command) {
-		super(player);
+    @Deprecated
+    public MMOCommandEvent(PlayerData player, String command) {
+        super(player);
 
-		this.command = command;
-	}
+        this.command = command;
+    }
 
-	public String getCommand() {
-		return command;
-	}
+    public MMOCommandEvent(PlayerData player, CommandTreeRoot command) {
+        super(player);
 
-	@Override
-	public HandlerList getHandlers() {
-		return handlers;
-	}
+        this.command = command.getId();
+    }
 
-	public static HandlerList getHandlerList() {
-		return handlers;
-	}
+    public String getCommand() {
+        return command;
+    }
 
-	@Override
-	public boolean isCancelled() {
-		return cancelled;
-	}
+    @Override
+    public HandlerList getHandlers() {
+        return handlers;
+    }
 
-	@Override
-	public void setCancelled(boolean b) {
-		cancelled = b;
-	}
+    public static HandlerList getHandlerList() {
+        return handlers;
+    }
+
+    @Override
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    @Override
+    public void setCancelled(boolean b) {
+        cancelled = b;
+    }
 }

@@ -10,9 +10,9 @@ import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.modifier.ModifierType;
 import io.lumine.mythic.lib.util.Closeable;
 import io.lumine.mythic.lib.util.Lazy;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import org.apache.commons.lang.Validate;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
@@ -189,7 +189,7 @@ public class PlayerAttributes {
         public AttributeInstance(@NotNull String attributeId) {
             this.id = attributeId;
             this.enumName = UtilityMethods.enumName(this.id);
-            this.attribute = Lazy.of(() -> MMOCore.plugin.attributeManager.get(this.id));
+            this.attribute = Lazy.persistent(() -> MMOCore.plugin.attributeManager.get(this.id));
         }
 
         /**

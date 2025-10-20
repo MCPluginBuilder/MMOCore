@@ -2,16 +2,15 @@ package net.Indyuce.mmocore.experience.source;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.MMOLineConfig;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.api.event.PlayerResourceUpdateEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.profess.resource.PlayerResource;
 import net.Indyuce.mmocore.experience.dispenser.ExperienceDispenser;
 import net.Indyuce.mmocore.experience.source.type.SpecificExperienceSource;
 import net.Indyuce.mmocore.manager.profession.ExperienceSourceManager;
-import org.apache.commons.lang.Validate;
 import org.bukkit.event.EventHandler;
-
-import static org.bukkit.event.EventPriority.HIGHEST;
+import org.bukkit.event.EventPriority;
 
 public class ResourceExperienceSource extends SpecificExperienceSource<PlayerResource> {
     private final PlayerResource resource;
@@ -43,16 +42,16 @@ public class ResourceExperienceSource extends SpecificExperienceSource<PlayerRes
 
     private static class Manager extends ExperienceSourceManager<ResourceExperienceSource> {
 
-        @EventHandler(priority = HIGHEST, ignoreCancelled = true)
+        @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
         public void onResource(PlayerResourceUpdateEvent event) {
             if (!UtilityMethods.isRealPlayer(event.getPlayer())) return;
 
             PlayerData playerData = PlayerData.get(event.getPlayer());
-            if (event.getAmount() >= 0) return;
+            if (event.getDifference() >= 0) return;
 
             for (ResourceExperienceSource source : getSources())
                 if (source.matchesParameter(playerData, event.getResource()))
-                    source.giveExperience(playerData, -event.getAmount(), null);
+                    source.giveExperience(playerData, -event.getDifference(), null);
         }
     }
 }

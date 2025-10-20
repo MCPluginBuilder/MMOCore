@@ -1,8 +1,8 @@
 package net.Indyuce.mmocore.api.player.social;
 
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import org.apache.commons.lang.Validate;
 
 import java.util.UUID;
 

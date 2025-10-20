@@ -5,15 +5,16 @@ import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import io.lumine.mythic.lib.player.cooldown.CooldownObject;
 import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.skill.PassiveSkill;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.util.math.formula.LinearValue;
 import net.Indyuce.mmocore.player.Unlockable;
 import net.Indyuce.mmocore.util.formula.FormulaFailsafeException;
 import net.Indyuce.mmocore.util.formula.ScalingFormula;
-import org.apache.commons.lang.Validate;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -146,7 +147,7 @@ public class ClassSkill implements CooldownObject, Unlockable {
         return Objects.requireNonNull(parameters.get(parameter), "Could not find parameter called '" + parameter + "'");
     }
 
-    public double getParameter(@NotNull String parameter, int level, @NotNull PlayerData caster) {
+    public double getParameter(@NotNull String parameter, int level, @Nullable PlayerData caster) {
         try {
             return getParameterFormula(parameter).evaluate(level, caster);
         } catch (FormulaFailsafeException exception) {
@@ -165,14 +166,14 @@ public class ClassSkill implements CooldownObject, Unlockable {
     }
 
     @NotNull
-    public List<String> calculateLore(PlayerData data, int x) {
+    public List<String> calculateLore(PlayerData data, int skillLevel) {
 
         // Calculate placeholders
         var placeholders = new Placeholders();
 
         // Skill parameters
         for (var param : parameters.keySet()) {
-            var baseValue = getParameter(param, data);
+            var baseValue = getParameter(param, skillLevel, data);
             var modifiedValue = data.getMMOPlayerData().getSkillModifierMap().calculateValue(skill.getHandler(), baseValue, param);
             var formatted = skill.getDecimalFormat(param).format(modifiedValue);
 

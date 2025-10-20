@@ -2,13 +2,13 @@ package net.Indyuce.mmocore.manager;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.util.FileUtils;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.manager.registry.MMOCoreRegister;
 import net.Indyuce.mmocore.skilltree.ParentType;
 import net.Indyuce.mmocore.skilltree.SkillTreeNode;
 import net.Indyuce.mmocore.skilltree.tree.SkillTree;
 import net.Indyuce.mmocore.skilltree.tree.SkillTreeType;
-import org.apache.commons.lang.Validate;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -55,14 +55,7 @@ public class SkillTreeManager extends MMOCoreRegister<SkillTree> {
     @NotNull
     public SkillTree loadSkillTree(@NotNull ConfigurationSection config) {
         Validate.notNull(config, "Config cannot be null");
-
-        final SkillTreeType type;
-        try {
-            type = SkillTreeType.valueOf(UtilityMethods.enumName(config.getString("type", "custom")));
-        } catch (RuntimeException exception) {
-            throw new IllegalArgumentException("Not a valid skill tree type");
-        }
-
+        final var type = UtilityMethods.prettyValueOf(SkillTreeType::valueOf, config.getString("type", "custom"), "No skill tree type '%s'");
         return type.construct(config);
     }
 

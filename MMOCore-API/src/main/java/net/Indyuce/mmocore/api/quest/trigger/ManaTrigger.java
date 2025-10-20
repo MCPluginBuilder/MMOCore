@@ -26,7 +26,7 @@ public class ManaTrigger extends Trigger {
 
 			// Set mana
 		else if (operation == Operation.SET)
-			player.setMana(amount.calculate());
+			player.setMana(amount.calculate(), PlayerResourceUpdateEvent.UpdateReason.TRIGGER);
 
 			// Take mana
 		else

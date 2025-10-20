@@ -13,7 +13,7 @@ import io.lumine.mythic.lib.gui.util.IconOptions;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.player.Message;
-import net.Indyuce.mmocore.skilltree.IntegerCoordinates;
+import net.Indyuce.mmocore.skilltree.IntCoords;
 import net.Indyuce.mmocore.skilltree.NodeState;
 import net.Indyuce.mmocore.skilltree.ParentType;
 import net.Indyuce.mmocore.skilltree.SkillTreeNode;
@@ -22,7 +22,6 @@ import net.Indyuce.mmocore.skilltree.display.NodeDisplayInfo;
 import net.Indyuce.mmocore.skilltree.display.PathDisplayInfo;
 import net.Indyuce.mmocore.skilltree.tree.SkillTree;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.inventory.ClickType;
@@ -37,6 +36,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SkillTreeViewer extends EditableInventory {
     protected DisplayMap icons;
@@ -101,7 +101,7 @@ public class SkillTreeViewer extends EditableInventory {
         @Override
         public Placeholders getPlaceholders(SkillTreeInventory inv, int n) {
             Placeholders holders = new Placeholders();
-            holders.register("skill-tree-points", inv.playerData.getSkillTreePoints(inv.getSkillTree().getId()));
+            holders.register("skill-tree-points", inv.playerData.getSkillTreePoints(inv.getSkillTree()));
             holders.register("global-points", inv.playerData.getSkillTreePoints("global"));
             holders.register("realloc-points", inv.playerData.getSkillTreeReallocationPoints());
             int maxPointSpent = inv.getSkillTree().getMaxPointSpent();
@@ -126,11 +126,10 @@ public class SkillTreeViewer extends EditableInventory {
             }
 
             int reallocated = inv.playerData.getPointsSpent(inv.skillTree);
-            // Remove all the nodeStates progress
             inv.playerData.giveSkillTreePoints(inv.skillTree.getId(), reallocated);
             inv.playerData.giveSkillTreeReallocationPoints(-1);
             inv.playerData.resetSkillTree(inv.skillTree);
-            inv.skillTree.setupNodeStates(inv.playerData);
+            inv.skillTree.resolveStates(inv.playerData);
             Message.SKILL_TREE_REALLOCATE.send(inv.playerData, "points", inv.playerData.getSkillTreePoints(inv.skillTree.getId()), "skill-tree", inv.skillTree.getName());
             inv.open();
         }
@@ -218,7 +217,7 @@ public class SkillTreeViewer extends EditableInventory {
             ItemStack item = super.getDisplayedItem(inv, ItemOptions.material(n, skillTree.getItem()));
 
             ItemMeta meta = item.getItemMeta();
-            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES); // Hardcore 'hide-flags' on
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES); // Hardcode 'hide-flags' on
             meta.setDisplayName(skillTree.getName());
             meta.setCustomModelData(skillTree.getCustomModelData());
             PersistentDataContainer container = meta.getPersistentDataContainer();
@@ -303,7 +302,7 @@ public class SkillTreeViewer extends EditableInventory {
 
         @Override
         public void preprocessLore(@NotNull SkillTreeInventory inv, int n, @NotNull List<String> lore) {
-            IntegerCoordinates coordinates = inv.getCoordinates(n);
+            IntCoords coordinates = inv.getCoordinates(n);
             if (!inv.getSkillTree().isNode(coordinates)) return;
 
             SkillTreeNode node = inv.getSkillTree().getNode(coordinates);
@@ -313,8 +312,8 @@ public class SkillTreeViewer extends EditableInventory {
                 if (str.contains("{node-lore}")) {
                     lore.remove(i);
                     List<String> shaded = node.getLore(inv.playerData);
-                    var _i = i;
-                    shaded.forEach(s -> lore.add(_i, str.replace("{node-lore}", s)));
+                    var _i = new AtomicInteger(i);
+                    shaded.forEach(s -> lore.add(_i.getAndIncrement(), str.replace("{node-lore}", s)));
                     i += shaded.size();
                 } else if (str.contains("{strong-parents}")) {
                     lore.remove(i);
@@ -345,10 +344,11 @@ public class SkillTreeViewer extends EditableInventory {
          */
         @Override
         public ItemStack getDisplayedItem(SkillTreeInventory inv, int n) {
-            IntegerCoordinates coordinates = inv.getCoordinates(n);
-            if (!inv.getSkillTree().isPathOrNode(coordinates)) return new ItemStack(Material.AIR);
+            IntCoords coordinates = inv.getCoordinates(n);
 
-            IconOptions icon = inv.getIcon(coordinates);
+            IconOptions icon = inv.computeIcon(coordinates);
+            if (icon == null) return null; // Neither a path nor a node
+
             ItemStack item = super.getDisplayedItem(inv, new ItemOptions(n, icon));
             ItemMeta meta = item.getItemMeta();
 
@@ -376,6 +376,7 @@ public class SkillTreeViewer extends EditableInventory {
          * Soft&Strong children lore for the node
          */
         public List<String> getParentsLore(SkillTreeInventory inv, SkillTreeNode node, Collection<SkillTreeNode> parents) {
+            // TODO why is this hardcoded >:(
             List<String> lore = new ArrayList<>();
             for (SkillTreeNode parent : parents) {
                 int level = inv.playerData.getNodeLevel(parent);
@@ -386,7 +387,7 @@ public class SkillTreeViewer extends EditableInventory {
         }
 
         @Override
-        public Placeholders getPlaceholders(SkillTreeInventory inv, int n) {
+        public @NotNull Placeholders getPlaceholders(SkillTreeInventory inv, int n) {
             Placeholders holders = new Placeholders();
             holders.register("skill-tree", inv.getSkillTree().getName());
             boolean isNode = inv.getSkillTree().isNode(inv.getCoordinates(n));
@@ -399,10 +400,10 @@ public class SkillTreeViewer extends EditableInventory {
                 holders.register("name", node.getName());
                 holders.register("max-children", node.getMaxChildren());
                 holders.register("point-consumed", node.getPointConsumption());
-                holders.register("display-type", node.getNodeType());
-            } else {
+                //holders.register("display-type", node.getNodeType());
+            } /*else {
                 holders.register("display-type", inv.skillTree.getPath(inv.getCoordinates(n)).getPathType());
-            }
+            }*/
             int maxPointSpent = inv.getSkillTree().getMaxPointSpent();
             holders.register("max-point-spent", maxPointSpent == Integer.MAX_VALUE ? "∞" : maxPointSpent);
             holders.register("point-spent", inv.playerData.getPointsSpent(inv.getSkillTree()));
@@ -419,10 +420,10 @@ public class SkillTreeViewer extends EditableInventory {
             final PersistentDataContainer container = event.getCurrentItem().getItemMeta().getPersistentDataContainer();
             final int x = container.get(new NamespacedKey(MMOCore.plugin, "coordinates.x"), PersistentDataType.INTEGER);
             final int y = container.get(new NamespacedKey(MMOCore.plugin, "coordinates.y"), PersistentDataType.INTEGER);
-            if (!inv.skillTree.isNode(new IntegerCoordinates(x, y))) return;
+            if (!inv.skillTree.isNode(new IntCoords(x, y))) return;
 
             // Higher number of points spent in SKILL TREE (not node)
-            final SkillTreeNode node = inv.skillTree.getNode(new IntegerCoordinates(x, y));
+            final SkillTreeNode node = inv.skillTree.getNode(new IntCoords(x, y));
             if (inv.playerData.getPointsSpent(inv.skillTree) >= inv.skillTree.getMaxPointSpent()) {
                 Message.SKILL_TREE_MAX_POINTS_SPENT.send(inv.playerData);
                 return;
@@ -517,16 +518,25 @@ public class SkillTreeViewer extends EditableInventory {
             return playerData;
         }
 
-        public IconOptions getIcon(@NotNull IntegerCoordinates coordinates) {
-            if (skillTree.isNode(coordinates)) {
-                var node = skillTree.getNode(coordinates);
-                var nodeShape = node.getNodeType();
-                var nodeState = playerData.getNodeState(node);
+        @Deprecated
+        public IconOptions getIcon(IntCoords coordinates) {
+            return computeIcon(coordinates);
+        }
+
+        @Nullable
+        public IconOptions computeIcon(@NotNull IntCoords coordinates) {
+
+            // Is this a node?
+            final var node = skillTree.getNodeOrNull(coordinates);
+            if (node != null) {
+                final var nodeShape = skillTree.getNodeShape(node);
+                final var nodeState = playerData.getNodeState(node);
                 var displayInfo = new NodeDisplayInfo(nodeShape, nodeState);
 
                 // Node > skill tree > skill tree UI
                 var icon = DisplayMap.getIcon(displayInfo, node.getIcons(), skillTree.getIcons(), icons);
                 if (icon == null && nodeState == NodeState.MAXED_OUT) {
+                    // Fallback to UNLOCKED if no MAXED_OUT icon found
                     displayInfo = new NodeDisplayInfo(nodeShape, NodeState.UNLOCKED);
                     icon = DisplayMap.getIcon(displayInfo, node.getIcons(), skillTree.getIcons(), icons);
                 }
@@ -534,11 +544,13 @@ public class SkillTreeViewer extends EditableInventory {
                 //Validate.notNull(icon, "Node " + node.getFullId() + " has no icon for shape " + nodeShape + " and state " + nodeState);
 
                 return icon;
-            } else {
-                var path = skillTree.getPath(coordinates);
-                var pathShape = path.getPathType();
-                var pathStatus = path.getStatus(playerData);
-                var displayInfo = new PathDisplayInfo(pathShape, pathStatus);
+            }
+
+            final var edge = skillTree.getPath(coordinates);
+            if (edge != null) {
+                final var pathState = playerData.getPathState(edge);
+                final var pathShape = edge.getShape(coordinates);
+                final var displayInfo = new PathDisplayInfo(pathShape, pathState);
 
                 // Skill tree > Skill tree UI
                 var icon = DisplayMap.getIcon(displayInfo, skillTree.getIcons(), icons);
@@ -547,6 +559,9 @@ public class SkillTreeViewer extends EditableInventory {
 
                 return icon;
             }
+
+            // Neither a node or a path
+            return null;
         }
 
         @NotNull
@@ -555,11 +570,11 @@ public class SkillTreeViewer extends EditableInventory {
             return guiName.replace("{skill-tree-name}", skillTree.getName()).replace("{skill-tree-id}", skillTree.getId());
         }
 
-        public IntegerCoordinates getCoordinates(int n) {
+        public IntCoords getCoordinates(int n) {
             int slot = slots.get(n);
             int deltaX = (slot - minSlot) % 9;
             int deltaY = (slot - minSlot) / 9;
-            IntegerCoordinates coordinates = new IntegerCoordinates(getX() + deltaX, getY() + deltaY);
+            IntCoords coordinates = new IntCoords(getX() + deltaX, getY() + deltaY);
             return coordinates;
         }
 

@@ -1,9 +1,9 @@
 package net.Indyuce.mmocore.api.player.profess.event;
 
 import io.lumine.mythic.lib.api.MMOLineConfig;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.quest.trigger.Trigger;
-import org.apache.commons.lang.Validate;
 
 import java.util.LinkedHashSet;
 import java.util.List;

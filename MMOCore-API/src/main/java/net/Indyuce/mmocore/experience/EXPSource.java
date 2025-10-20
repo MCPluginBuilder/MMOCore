@@ -38,6 +38,12 @@ public enum EXPSource {
     FISHING,
 
     /**
+     * When professions level up and provide exp
+     * to the main class
+     */
+    PROFESSION_TO_CLASS,
+
+    /**
      * Anything else
      */
     OTHER

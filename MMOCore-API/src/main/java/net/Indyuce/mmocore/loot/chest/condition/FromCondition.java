@@ -2,8 +2,8 @@ package net.Indyuce.mmocore.loot.chest.condition;
 
 import io.lumine.mythic.lib.api.MMOLineConfig;
 import io.lumine.mythic.lib.util.config.YamlFile;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
-import org.apache.commons.lang.Validate;
 
 import java.util.ArrayList;
 import java.util.List;

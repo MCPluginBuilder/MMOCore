@@ -1,6 +1,5 @@
 package net.Indyuce.mmocore.skilltree.display;
 
-import net.Indyuce.mmocore.skilltree.PathState;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -15,7 +14,7 @@ public class PathDisplayInfo {
     }
 
     @NotNull
-    public PathState getStatus() {
+    public PathState getState() {
         return state;
     }
 

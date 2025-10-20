@@ -8,7 +8,6 @@ import net.Indyuce.mmocore.api.ConfigMessage;
 import net.Indyuce.mmocore.api.util.input.ChatInput;
 import net.Indyuce.mmocore.api.util.input.PlayerInput;
 import net.Indyuce.mmocore.api.util.input.PlayerInput.InputType;
-import net.Indyuce.mmocore.command.api.CommandVerbose;
 import net.Indyuce.mmocore.player.Message;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
@@ -24,8 +23,6 @@ import java.util.List;
 import java.util.logging.Level;
 
 public class ConfigManager {
-    public final CommandVerbose commandVerbose = new CommandVerbose();
-
     public boolean overrideVanillaExp, canCreativeCast, passiveSkillsNeedBinding, cobbleGeneratorXP, saveDefaultClassInfo, splitMainExp, splitProfessionExp, disableQuestBossBar,
             pvpModeEnabled, pvpModeInvulnerabilityCanDamage, forceClassSelection, enableGlobalSkillTreeGUI, enableSpecificSkillTreeGUI, waypointAutoPathCalculation, waypointLinkReciprocity;
     public String partyChatPrefix, noSkillBoundPlaceholder;
@@ -122,7 +119,6 @@ public class ConfigManager {
         Message.loadMessagesFromConfig();
 
         final ConfigurationSection config = MMOCore.plugin.getConfig();
-        commandVerbose.reload(MMOCore.plugin.getConfig().getConfigurationSection("command-verbose"));
 
         messages = new YamlFile(MMOCore.plugin, "messages").getContent(); // Backwards compatibility.
         partyChatPrefix = MMOCore.plugin.getConfig().getString("party.chat-prefix");

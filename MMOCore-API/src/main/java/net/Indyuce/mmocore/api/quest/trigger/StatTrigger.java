@@ -3,10 +3,10 @@ package net.Indyuce.mmocore.api.quest.trigger;
 import io.lumine.mythic.lib.api.MMOLineConfig;
 import io.lumine.mythic.lib.api.stat.modifier.StatModifier;
 import io.lumine.mythic.lib.player.modifier.ModifierType;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.quest.trigger.api.Removable;
 import net.Indyuce.mmocore.api.quest.trigger.api.Temporary;
-import org.apache.commons.lang.Validate;
 
 public class StatTrigger extends Trigger implements Removable, Temporary {
     private final StatModifier modifier;

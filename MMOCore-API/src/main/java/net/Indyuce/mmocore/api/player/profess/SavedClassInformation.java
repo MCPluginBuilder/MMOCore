@@ -2,16 +2,16 @@ package net.Indyuce.mmocore.api.player.profess;
 
 import io.lumine.mythic.lib.gson.JsonElement;
 import io.lumine.mythic.lib.gson.JsonObject;
-import io.lumine.mythic.lib.version.Attributes;
 import net.Indyuce.mmocore.MMOCore;
+import net.Indyuce.mmocore.api.event.PlayerLevelChangeEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.attribute.PlayerAttribute;
-import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import net.Indyuce.mmocore.player.ClassDataContainer;
 import net.Indyuce.mmocore.skill.RegisteredSkill;
 import net.Indyuce.mmocore.skilltree.SkillTreeNode;
 import net.Indyuce.mmocore.skilltree.tree.SkillTree;
 import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -119,7 +119,7 @@ public class SavedClassInformation implements ClassDataContainer {
         this.skillTreeReallocationPoints = data.getSkillTreeReallocationPoints();
         this.skillReallocationPoints = data.getSkillReallocationPoints();
         this.experience = data.getExperience();
-        this.health = data.getHealth();
+        this.health = data.getLastHealth();
         this.mana = data.getMana();
         this.stellium = data.getStellium();
         this.stamina = data.getStamina();
@@ -159,7 +159,7 @@ public class SavedClassInformation implements ClassDataContainer {
     }
 
     @Override
-    public double getHealth() {
+    public double getLastHealth() {
         return health;
     }
 
@@ -284,7 +284,7 @@ public class SavedClassInformation implements ClassDataContainer {
      * @param profess Target player class
      * @param player  Player changing class
      */
-    public void load(PlayerClass profess, PlayerData player) {
+    public void load(@NotNull PlayerClass profess, @NotNull PlayerData player) {
 
         /*
          * Saves current class info inside a SavedClassInformation, only
@@ -310,7 +310,7 @@ public class SavedClassInformation implements ClassDataContainer {
          * Reads this class info, applies it to the player. set class after
          * changing level so the player stats can be calculated based on new level
          */
-        player.setLevel(level);
+        player.setLevel(level, PlayerLevelChangeEvent.Reason.CHOOSE_CLASS);
         player.setExperience(experience);
         player.setSkillPoints(skillPoints);
         player.setAttributePoints(attributePoints);
@@ -332,21 +332,17 @@ public class SavedClassInformation implements ClassDataContainer {
             for (SkillTreeNode node : skillTree.getNodes())
                 player.setNodeLevel(node, nodeLevels.getOrDefault(node.getFullId(), 0));
 
-            skillTree.setupNodeStates(player);
+            skillTree.resolveStates(player);
         }
 
         // Add the values to the times claimed table and claims the corresponding stat triggers.
-        nodeTimesClaimed.forEach((str, val) -> player.setClaims(str, val));
+        nodeTimesClaimed.forEach(player::setClaims);
 
         // Unload current class information
         player.unloadClassInfo(profess);
 
         // This needs to be done at the end to make sure the MAX_HEALTH/MAX_MANA/... stats are loaded.
-        player.getPlayer().setHealth(MMOCoreUtils.fixResource(health, player.getPlayer().getAttribute(Attributes.MAX_HEALTH).getValue()));
-        player.setHealth(health);
-        player.setMana(mana);
-        player.setStellium(stellium);
-        player.setStamina(stamina);
+        player.loadResources(health, mana, stellium, stamina);
         player.applyTemporaryTriggers();
         player.getStats().updateStats();
     }

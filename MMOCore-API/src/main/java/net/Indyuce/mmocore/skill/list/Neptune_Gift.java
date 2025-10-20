@@ -1,6 +1,5 @@
 package net.Indyuce.mmocore.skill.list;
 
-import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
@@ -28,14 +27,19 @@ public class Neptune_Gift extends SkillHandler<SimpleSkillResult> implements Lis
         throw new RuntimeException("Not supported");
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void a(PlayerResourceUpdateEvent event) {
-        if (event.getPlayer().getLocation().getBlock().getType() == Material.WATER) {
-            PassiveSkill skill = event.getData().getMMOPlayerData().getPassiveSkillMap().getSkill(this);
-            if (skill == null)
-                return;
+        if (event.getReason().isRegeneration()) return;
+        if (event.getPlayer().getLocation().getBlock().getType() != Material.WATER) return;
 
-            event.setAmount(event.getAmount() * (1 + event.getData().getMMOPlayerData().getSkillModifierMap().calculateValue(skill.getTriggeredSkill(), "extra") / 100));
-        }
+        final var skill = event.getData().getMMOPlayerData().getPassiveSkillMap().getSkill(this);
+        if (skill == null) return; // No skill
+
+        final var regenerated = event.getDifference();
+        if (regenerated < 0) return; // WTH? loosing resource
+
+        final var extraModifier = event.getData().getMMOPlayerData().getSkillModifierMap().calculateValue(skill.getTriggeredSkill(), "extra");
+        final var extraRegen = regenerated * extraModifier / 100;
+        event.setNewAmount(event.getNewAmount() + extraRegen);
     }
 }

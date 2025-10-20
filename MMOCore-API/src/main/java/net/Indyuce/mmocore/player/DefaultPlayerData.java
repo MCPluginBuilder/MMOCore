@@ -1,8 +1,9 @@
 package net.Indyuce.mmocore.player;
 
-import io.lumine.mythic.lib.version.Attributes;
+import net.Indyuce.mmocore.api.event.PlayerLevelChangeEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,7 +54,7 @@ public class DefaultPlayerData implements ClassDataContainer {
     }
 
     @Override
-    public double getHealth() {
+    public double getLastHealth() {
         return health;
     }
 
@@ -136,8 +137,13 @@ public class DefaultPlayerData implements ClassDataContainer {
         return new HashMap<>();
     }
 
-    public void apply(PlayerData player) {
-        player.setLevel(level);
+    @Deprecated
+    public void apply(PlayerData playerData) {
+        this.apply(playerData, PlayerLevelChangeEvent.Reason.UNKNOWN);
+    }
+
+    public void apply(@NotNull PlayerData player, @NotNull PlayerLevelChangeEvent.Reason reason) {
+        player.setLevel(level, reason);
         player.setExperience(0);
         player.setClassPoints(classPoints);
         player.setSkillPoints(skillPoints);
@@ -145,10 +151,6 @@ public class DefaultPlayerData implements ClassDataContainer {
         player.setAttributeReallocationPoints(attrReallocPoints);
         player.setSkillTreeReallocationPoints(skillTreeReallocPoints);
         player.setSkillReallocationPoints(skillReallocPoints);
-        if (player.isOnline())
-            player.getPlayer().setHealth(Math.min(health, player.getPlayer().getAttribute(Attributes.MAX_HEALTH).getValue()));
-        player.setMana(mana);
-        player.setStamina(stamina);
-        player.setStellium(stellium);
+        player.loadResources(health, mana, stamina, stellium);
     }
 }

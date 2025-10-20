@@ -5,9 +5,9 @@ import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.api.event.PlayerResourceUpdateEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import org.apache.commons.lang.Validate;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
@@ -30,11 +30,8 @@ public class StaminaMechanic extends TargetMechanic {
     public void cast(SkillMetadata meta, Entity target) {
         Validate.isTrue(target instanceof Player, "Target is not a player");
         PlayerData targetData = PlayerData.get(target.getUniqueId());
-        if (operation == Operation.GIVE)
-            targetData.giveStamina(amount.evaluate(meta), reason);
-        else if (operation == Operation.SET)
-            targetData.setStamina(amount.evaluate(meta));
-        else if (operation == Operation.TAKE)
-            targetData.giveStamina(-amount.evaluate(meta), reason);
+        if (operation == Operation.GIVE) targetData.giveStamina(amount.evaluate(meta), reason);
+        else if (operation == Operation.SET) targetData.setStamina(amount.evaluate(meta), reason);
+        else if (operation == Operation.TAKE) targetData.giveStamina(-amount.evaluate(meta), reason);
     }
 }

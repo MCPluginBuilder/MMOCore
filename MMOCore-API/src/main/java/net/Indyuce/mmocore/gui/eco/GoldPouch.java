@@ -1,13 +1,13 @@
 package net.Indyuce.mmocore.gui.eco;
 
+import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.item.ItemTag;
 import io.lumine.mythic.lib.api.item.NBTItem;
 import io.lumine.mythic.lib.gui.PluginInventory;
 import net.Indyuce.mmocore.api.util.MMOCoreUtils;
+import net.Indyuce.mmocore.util.Language;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -28,7 +28,7 @@ public class GoldPouch extends PluginInventory {
 
     @Override
     public Inventory getInventory() {
-        Inventory inv = Bukkit.createInventory(this, 18, ChatColor.UNDERLINE + "Gold Pouch");
+        Inventory inv = Bukkit.createInventory(this, 18, MythicLib.plugin.parseColors(Language.GOLD_POUCH_UI_NAME.getFormat()));
         inv.setContents(MMOCoreUtils.itemStackArrayFromBase64(nbt.getString("RpgPouchInventory")));
         return lastBukkitInventory = inv;
     }
@@ -52,12 +52,11 @@ public class GoldPouch extends PluginInventory {
             event.setCancelled(true);
 
             // in deposit menu
-            if (event.getSlot() < 18) {
-                int empty = player.getInventory().firstEmpty();
-                if (empty < 0)
-                    return;
+            if (event.getRawSlot() < 18) {
+                final var empty = player.getInventory().firstEmpty();
+                if (empty < 0) return;
 
-                player.playSound(player.getLocation(), Sound.ENTITY_SHULKER_TELEPORT, 1, 2);
+                //player.playSound(player.getLocation(), Sound.ENTITY_SHULKER_TELEPORT, 1, 2);
                 player.getInventory().addItem(event.getCurrentItem());
                 event.getInventory().setItem(event.getSlot(), null);
             }

@@ -1,8 +1,11 @@
 package net.Indyuce.mmocore.skilltree;
 
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import io.lumine.mythic.lib.gui.util.IconOptions;
+import io.lumine.mythic.lib.util.PostLoadAction;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.experience.EXPSource;
@@ -13,7 +16,6 @@ import net.Indyuce.mmocore.skilltree.display.DisplayMap;
 import net.Indyuce.mmocore.skilltree.display.NodeDisplayInfo;
 import net.Indyuce.mmocore.skilltree.display.NodeShape;
 import net.Indyuce.mmocore.skilltree.tree.SkillTree;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
@@ -23,13 +25,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 // We must use generics to get the type of the corresponding tree
+
 public class SkillTreeNode implements ExperienceObject {
     private final SkillTree tree;
     private final String name, id;
     private final String permissionRequired;
     private final int pointConsumption;
     private final DisplayMap icons;
-    private final IntegerCoordinates coordinates;
+    private final IntCoords coordinates;
     private final int maxLevel, maxChildren;
     private final ExperienceTable experienceTable;
     private final List<ParentInformation> children = new ArrayList<>();
@@ -38,10 +41,41 @@ public class SkillTreeNode implements ExperienceObject {
 
     private boolean root;
 
-    public SkillTreeNode(SkillTree tree, ConfigurationSection config) {
+    private final PostLoadAction postLoadAction = new PostLoadAction(config -> {
+
+        // Load children
+        // Requires other nodes to be loaded first
+        loadRelatives(true, config);
+
+        // Load parents. Both work, one way or the other
+        // Requires other nodes to be loaded first
+        loadRelatives(false, config);
+    });
+
+    private void loadRelatives(boolean nodeIsParent, @NotNull ConfigurationSection config) {
+        final var configPath = nodeIsParent ? "children" : "parents";
+
+        if (config.isConfigurationSection(configPath))
+            for (var parentTypeRaw : config.getConfigurationSection(configPath).getKeys(false)) {
+                final var section = config.getConfigurationSection(configPath + "." + parentTypeRaw);
+                Validate.notNull(section, "Could not read " + configPath + " of type '" + parentTypeRaw + "'");
+                final ParentType parentType = UtilityMethods.prettyValueOf(ParentType::valueOf, parentTypeRaw, "No parent type called '%s'");
+
+                for (var relativeId : section.getKeys(false)) {
+                    final var relative = SkillTreeNode.this.tree.getNode(relativeId);
+                    final var child = nodeIsParent ? relative : this;
+                    final var parent = nodeIsParent ? this : relative;
+                    child.addParent(ParentInformation.fromConfig(child, parent, parentType, section.get(relativeId)));
+                }
+            }
+    }
+
+    public SkillTreeNode(@NotNull SkillTree tree, @NotNull ConfigurationSection config) {
         Validate.notNull(config, "Config cannot be null");
         this.id = config.getName();
         this.tree = tree;
+
+        postLoadAction.cacheConfig(config);
 
         // Load icons for node states
         this.icons = DisplayMap.from(config.getConfigurationSection("display"));
@@ -70,7 +104,7 @@ public class SkillTreeNode implements ExperienceObject {
         Validate.isTrue(maxLevel > 0, "Max level must be positive");
         maxChildren = config.getInt("max-children", 0);
         Validate.isTrue(maxChildren >= 0, "Max children must positive or zero");
-        coordinates = IntegerCoordinates.from(config.get("coordinates"));
+        coordinates = IntCoords.from(config.get("coordinates"));
     }
 
     public SkillTree getTree() {
@@ -81,12 +115,23 @@ public class SkillTreeNode implements ExperienceObject {
         return root;
     }
 
-    public void addParent(@NotNull SkillTreeNode parent, @NotNull ParentType parentType, int requiredLevel) {
-        parents.add(new ParentInformation(parent, parentType, requiredLevel));
+    @NotNull
+    public PostLoadAction getPostLoadAction() {
+        return postLoadAction;
     }
 
-    public void addChild(@NotNull SkillTreeNode child, @NotNull ParentType parentType, int requiredLevel) {
-        children.add(new ParentInformation(child, parentType, requiredLevel));
+    /**
+     * Registers this relation both as a parent and child relation in the right
+     * registers of the parent and child nodes.
+     * <p>
+     * Note that the {@link #children} and {@link #parents} maps are only
+     * modified through this method.
+     */
+    public void addParent(@NotNull ParentInformation parentInfo) {
+        Validate.isTrue(parentInfo.getChild().equals(this), "#addParent(..) must be called on child node");
+
+        parents.add(parentInfo);
+        parentInfo.getParent().children.add(parentInfo);
     }
 
     public void setRoot() {
@@ -97,24 +142,9 @@ public class SkillTreeNode implements ExperienceObject {
         return pointConsumption;
     }
 
-    public int getParentNeededLevel(SkillTreeNode parent) {
-        for (ParentInformation entry : parents)
-            if (entry.getNode().equals(parent))
-                return entry.getLevel();
-        throw new RuntimeException("Could not find parent " + parent.getId() + " for node " + id);
-    }
-
-    @Deprecated
-    public int getParentNeededLevel(SkillTreeNode parent, ParentType parentType) {
-        for (ParentInformation entry : parents)
-            if (entry.getNode().equals(parent) && entry.getType() == parentType)
-                return entry.getLevel();
-        return 0;
-    }
-
     public boolean hasParent(SkillTreeNode parent) {
-        for (ParentInformation entry : parents)
-            if (entry.getNode() == parent) return true;
+        for (var edge : parents)
+            if (edge.getParent().equals(parent)) return true;
         return false;
     }
 
@@ -136,12 +166,6 @@ public class SkillTreeNode implements ExperienceObject {
     }
 
     @NotNull
-    @Deprecated
-    public List<SkillTreeNode> getParents(ParentType parentType) {
-        return parents.stream().filter(integer -> integer.getType() == parentType).map(ParentInformation::getNode).collect(Collectors.toList());
-    }
-
-    @NotNull
     public List<ParentInformation> getChildren() {
         return children;
     }
@@ -155,7 +179,7 @@ public class SkillTreeNode implements ExperienceObject {
 
     /**
      * @return Full node identifier, containing both the node identifier AND
-     * the skill tree identifier, like "combat_extra_strength"
+     *         the skill tree identifier, like "combat_extra_strength"
      */
     @NotNull
     public String getFullId() {
@@ -168,7 +192,7 @@ public class SkillTreeNode implements ExperienceObject {
     }
 
     @NotNull
-    public IntegerCoordinates getCoordinates() {
+    public IntCoords getCoordinates() {
         return coordinates;
     }
 
@@ -193,30 +217,6 @@ public class SkillTreeNode implements ExperienceObject {
     @Override
     public boolean hasExperienceTable() {
         return experienceTable != null;
-    }
-
-    public NodeShape getNodeType() {
-        boolean up = tree.isPathOrNode(new IntegerCoordinates(coordinates.getX(), coordinates.getY() - 1));
-        boolean down = tree.isPathOrNode(new IntegerCoordinates(coordinates.getX(), coordinates.getY() + 1));
-        boolean right = tree.isPathOrNode(new IntegerCoordinates(coordinates.getX() + 1, coordinates.getY()));
-        boolean left = tree.isPathOrNode(new IntegerCoordinates(coordinates.getX() - 1, coordinates.getY()));
-
-        if (up && right && down && left) return NodeShape.UP_RIGHT_DOWN_LEFT;
-        else if (up && right && down) return NodeShape.UP_RIGHT_DOWN;
-        else if (up && right && left) return NodeShape.UP_RIGHT_LEFT;
-        else if (up && down && left) return NodeShape.UP_DOWN_LEFT;
-        else if (down && right && left) return NodeShape.DOWN_RIGHT_LEFT;
-        else if (up && right) return NodeShape.UP_RIGHT;
-        else if (up && down) return NodeShape.UP_DOWN;
-        else if (up && left) return NodeShape.UP_LEFT;
-        else if (down && right) return NodeShape.DOWN_RIGHT;
-        else if (down && left) return NodeShape.DOWN_LEFT;
-        else if (right && left) return NodeShape.RIGHT_LEFT;
-        else if (up) return NodeShape.UP;
-        else if (down) return NodeShape.DOWN;
-        else if (right) return NodeShape.RIGHT;
-        else if (left) return NodeShape.LEFT;
-        return NodeShape.NO_PATH;
     }
 
     @Override
@@ -276,6 +276,52 @@ public class SkillTreeNode implements ExperienceObject {
     }
 
     //region Deprecated
+
+    @Deprecated
+    public void loadLegacyPathSection(@NotNull ConfigurationSection section) {
+        for (var childId : section.getKeys(false)) {
+            final var child = tree.getNode(childId);
+            Validate.notNull(child, "Could not find child node '" + childId + "' for path");
+
+            // Find corresponding edge
+            ParentInformation edge = null;
+            for (var existingEdge : children)
+                if (existingEdge.getChild().equals(child)) {
+                    edge = existingEdge;
+                    break;
+                }
+            if (edge == null) {
+                MMOCore.log("Could not find parent-child relation between '" + id + "' and '" + childId + "'. Did you forget to add it in the 'parents' or 'children' section?");
+                continue;
+            }
+
+            final var subsection = section.getConfigurationSection(childId);
+            for (var pathKey : subsection.getKeys(false)) {
+                final var coords = IntCoords.from(subsection.get(pathKey));
+                edge.addElement(coords);
+            }
+        }
+    }
+
+    @Deprecated
+    public int getParentNeededLevel(SkillTreeNode parent) {
+        for (var edge : parents)
+            if (edge.getParent().equals(parent)) return edge.getLevel();
+        throw new RuntimeException("Could not find parent " + parent.getId() + " for node " + id);
+    }
+
+    @NotNull
+    @Deprecated
+    public List<SkillTreeNode> getParents(ParentType parentType) {
+        return parents.stream().filter(integer -> integer.getType() == parentType).map(ParentInformation::getParent).collect(Collectors.toList());
+    }
+
+    @Deprecated
+    public int getParentNeededLevel(SkillTreeNode parent, ParentType parentType) {
+        for (var edge : parents)
+            if (edge.getParent().equals(parent) && edge.getType() == parentType) return edge.getLevel();
+        return 0;
+    }
 
     @Deprecated
     public boolean hasIcon(NodeState status) {

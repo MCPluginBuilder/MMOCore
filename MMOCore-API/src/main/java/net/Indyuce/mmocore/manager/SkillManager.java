@@ -5,12 +5,12 @@ import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.util.FileUtils;
 import io.lumine.mythic.lib.util.config.YamlFile;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.skill.RegisteredSkill;
 import net.Indyuce.mmocore.skill.list.Ambers;
 import net.Indyuce.mmocore.skill.list.Neptune_Gift;
 import net.Indyuce.mmocore.skill.list.Sneaky_Picky;
-import org.apache.commons.lang.Validate;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -100,6 +100,16 @@ public class SkillManager implements MMOCoreManager {
         // Load skills
         FileUtils.loadObjectsFromFolder(MMOCore.plugin, "skills", true, (name, config) -> {
             final SkillHandler<?> handler = MythicLib.plugin.getSkills().getHandler(UtilityMethods.enumName(name));
+
+            try {
+                Validate.isTrue(handler == null);
+                for (var script : MythicLib.plugin.getSkills().getScripts())
+                    if (UtilityMethods.kebabCase(script.getId()).equals(name)) return;
+            } catch (Throwable ignored) {
+                // TODO j'ai chié dans la colle, plein de .yml en trop a cause des scripts non publics!
+                // A absolument enlever lors de la maj centralisation des skills ML/MMOItems/MMOCores
+            }
+
             Validate.notNull(handler, "Could not find skill handler with ID '" + UtilityMethods.enumName(name) + "'");
             final RegisteredSkill skill = new RegisteredSkill(handler, config);
             this.skills.put(handler.getId(), skill);

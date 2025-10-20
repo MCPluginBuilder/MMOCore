@@ -1,9 +1,9 @@
 package net.Indyuce.mmocore.loot.chest;
 
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.player.Message;
 import net.Indyuce.mmocore.util.HashableLocation;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;

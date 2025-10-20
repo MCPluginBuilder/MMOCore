@@ -3,14 +3,17 @@ package net.Indyuce.mmocore.api.util;
 import com.google.common.collect.MultimapBuilder;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.command.CommandTreeRoot;
 import io.lumine.mythic.lib.gson.JsonArray;
 import io.lumine.mythic.lib.gson.JsonObject;
 import io.lumine.mythic.lib.hologram.Hologram;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.version.VEnchantment;
 import net.Indyuce.mmocore.MMOCore;
+import net.Indyuce.mmocore.api.event.MMOCommandEvent;
+import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.util.Icon;
-import org.apache.commons.lang.Validate;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -51,6 +54,12 @@ public class MMOCoreUtils {
         return player.getName() == null;
     }
 
+    public static boolean callLegacyCommandEvent(PlayerData playerData, CommandTreeRoot command) {
+        final var called = new MMOCommandEvent(playerData, command);
+        Bukkit.getServer().getPluginManager().callEvent(called);
+        return called.isCancelled();
+    }
+
     @Deprecated
     public static String displayName(ItemStack item) {
         return item.hasItemMeta() && item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName()
@@ -62,7 +71,10 @@ public class MMOCoreUtils {
      * @param maxStat Maximum value of resource
      * @return Clamped resource value. If the provided current value is 0,
      * this function will return the maximum resource value.
+     * @deprecated Not used anymore
+     * @see UtilityMethods#setHealth(LivingEntity, double)
      */
+    @Deprecated
     public static double fixResource(double current, double maxStat) {
         return current == 0 ? maxStat : Math.max(0, Math.min(current, maxStat));
     }
@@ -125,6 +137,7 @@ public class MMOCoreUtils {
         return material == Material.PLAYER_HEAD || material == Material.PLAYER_WALL_HEAD;
     }
 
+    @Deprecated
     public static void addAllItemFlags(@NotNull ItemMeta meta) {
         meta.addItemFlags(ItemFlag.values());
 

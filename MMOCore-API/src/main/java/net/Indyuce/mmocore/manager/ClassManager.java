@@ -1,15 +1,16 @@
 package net.Indyuce.mmocore.manager;
 
 import io.lumine.mythic.lib.util.FileUtils;
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.profess.ClassOption;
 import net.Indyuce.mmocore.api.player.profess.PlayerClass;
 import net.Indyuce.mmocore.api.player.profess.event.EventTriggerHandler;
 import net.Indyuce.mmocore.api.player.profess.event.trigger.*;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -29,6 +30,7 @@ public class ClassManager implements MMOCoreManager {
      */
     private final Set<EventTriggerHandler> triggerHandlers = new HashSet<>();
 
+    @SuppressWarnings("deprecation")
     public ClassManager() {
         registerEvent(new LevelUpEventTrigger());
         registerEvent(new AttackEventTrigger());
@@ -52,6 +54,7 @@ public class ClassManager implements MMOCoreManager {
         return map.containsKey(id);
     }
 
+    @Nullable
     public PlayerClass get(String id) {
         return map.get(id);
     }

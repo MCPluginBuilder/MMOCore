@@ -1,12 +1,12 @@
 package net.Indyuce.mmocore.party.provided;
 
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.social.PartyChatEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.party.AbstractParty;
 import net.Indyuce.mmocore.party.PartyModule;
 import net.Indyuce.mmocore.player.Message;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -68,13 +68,14 @@ public class MMOCorePartyModule implements PartyModule, Listener {
 
         event.setCancelled(true);
 
-        // Running it in a delayed task is recommended
+        // Run it on main server thread
         Bukkit.getScheduler().runTask(MMOCore.plugin, () -> {
-            var rawMessage = event.getMessage().substring(MMOCore.plugin.configManager.partyChatPrefix.length());
-            var message = Message.PARTY_CHAT.prepare("player", data.getPlayer().getName(), "message", rawMessage);
-            var called = new PartyChatEvent(party, data, message.getRawContent());
+            final var rawMessage = event.getMessage().substring(MMOCore.plugin.configManager.partyChatPrefix.length());
+            final var called = new PartyChatEvent(party, data, rawMessage);
             Bukkit.getPluginManager().callEvent(called);
-            if (!called.isCancelled()) party.getOnlineMembers().forEach(member -> message.send(member.getPlayer()));
+            if (called.isCancelled() || called.getMessage() == null) return;
+
+            party.getOnlineMembers().forEach(member -> Message.PARTY_CHAT.send(member.getPlayer(), "player", data.getPlayer().getName(), "message", called.getMessage()));
         });
     }
 
