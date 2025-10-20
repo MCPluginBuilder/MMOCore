@@ -497,7 +497,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     /**
      * @return If the item is unlocked by the player
-     *         This is used for skills that can be locked & unlocked.
+     * This is used for skills that can be locked & unlocked.
      */
     public boolean hasUnlocked(Unlockable unlockable) {
         return unlockable.isUnlockedByDefault() || unlockedItems.contains(unlockable.getUnlockNamespacedKey());
@@ -606,6 +606,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     @Override
     public int getLevel() {
+        // Level 0 does not exist
+        // Watch out for raw accesses of #level
         return Math.max(1, level);
     }
 
@@ -669,7 +671,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     /**
      * @param key The identifier of an exp table item.
      * @return Amount of times an item has been claimed
-     *         inside an experience table.
+     * inside an experience table.
      */
     public int getClaims(@NotNull String key) {
         return tableItemClaims.getOrDefault(key, 0);
@@ -706,17 +708,16 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     public void setLevel(int level, @NotNull PlayerLevelChangeEvent.Reason reason) {
 
-        final var oldLevel = this.level;
-        final var newLevel = Math.max(1, level);
+        final var oldLevel = getLevel();
+        var newLevel = Math.max(1, level);
+        if (getProfess().hasMaxLevel()) newLevel = Math.min(getProfess().getMaxLevel(), newLevel);
         this.level = newLevel;
 
         if (reason != PlayerLevelChangeEvent.Reason.CHOOSE_PROFILE) // No event, data is loaded async
             Bukkit.getPluginManager().callEvent(new PlayerLevelChangeEvent(this, null, oldLevel, newLevel, reason));
 
-        if (getMMOPlayerData().isPlaying()) {
-            getStats().updateStats();
-            refreshVanillaExp();
-        }
+        if (getMMOPlayerData().isPlaying()) getStats().updateStats();
+        if (isOnline()) refreshVanillaExp();
     }
 
     public void giveLevels(int value, @NotNull EXPSource source) {
@@ -1009,7 +1010,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
         // Take exp on negative amounts
         if (value <= 0) {
-            experience = Math.max(0, experience + value);
+            setExperience(experience + value);
             return;
         }
 
@@ -1042,8 +1043,9 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         experience = Math.max(0, experience + event.getExperience());
 
         // Calculate the player's next level
-        final var oldLevel = level;
-        var newLevel = level;
+        final var maxLevel = getProfess().getMaxLevel();
+        final var oldLevel = getLevel();
+        var newLevel = oldLevel;
         long experienceNeeded;
 
         /*
@@ -1052,7 +1054,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
          */
         while (experience >= (experienceNeeded = getProfess().getExpCurve().getExperience(newLevel + 1))) {
 
-            if (hasReachedMaxLevel()) {
+            if (maxLevel > 0 && newLevel >= maxLevel) {
                 experience = 0;
                 break;
             }
@@ -1066,7 +1068,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
         if (newLevel > oldLevel) {
             setLevel(newLevel, PlayerLevelChangeEvent.Reason.LEVEL_UP); // Update 'level'
-            Message.LEVEL_UP.send(this, "level", level);
+            Message.LEVEL_UP.send(this, "level", getLevel());
         }
 
         refreshVanillaExp();
@@ -1134,7 +1136,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     /**
      * @return If the PlayerEnterCastingModeEvent successfully put the player
-     *         into casting mode, otherwise if the event is cancelled, returns false.
+     * into casting mode, otherwise if the event is cancelled, returns false.
      */
     public boolean setSkillCasting() {
         Validate.isTrue(!isCasting(), "Player already in casting mode");
@@ -1153,7 +1155,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     /**
      * @return If player successfully left skill casting i.e the Bukkit
-     *         event has not been cancelled
+     * event has not been cancelled
      */
     public boolean leaveSkillCasting() {
         return leaveSkillCasting(false);
@@ -1162,7 +1164,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     /**
      * @param skipEvent Skip firing the exit event
      * @return If player successfully left skill casting i.e the Bukkit
-     *         event has not been cancelled
+     * event has not been cancelled
      */
     public boolean leaveSkillCasting(boolean skipEvent) {
         Validate.isTrue(isCasting(), "Player not in casting mode");
@@ -1393,7 +1395,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     @Deprecated
     public void takeLevels(int value) {
-        setLevel(level - value, PlayerLevelChangeEvent.Reason.UNKNOWN);
+        setLevel(getLevel() - value, PlayerLevelChangeEvent.Reason.UNKNOWN);
     }
 
     @Deprecated
@@ -1550,7 +1552,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
      * checks if they could potentially upgrade to one of these
      *
      * @return If the player can change its current class to
-     *         a subclass
+     * a subclass
      */
     @Deprecated
     public boolean canChooseSubclass() {

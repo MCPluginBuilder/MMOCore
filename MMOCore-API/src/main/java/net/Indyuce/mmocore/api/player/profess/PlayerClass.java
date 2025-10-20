@@ -300,6 +300,10 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
         return maxLevel;
     }
 
+    public boolean hasMaxLevel() {
+        return maxLevel > 0;
+    }
+
     public int getDisplayOrder() {
         return displayOrder;
     }

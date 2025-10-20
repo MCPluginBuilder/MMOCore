@@ -133,6 +133,7 @@ public class PlayerProfessions {
     }
 
     public void setLevel(@NotNull Profession profession, int newLevel, @NotNull PlayerLevelChangeEvent.Reason reason) {
+        if (profession.hasMaxLevel()) newLevel = Math.min(profession.getMaxLevel(), newLevel);
         final var previousValue = level.put(profession.getId(), Math.max(1, newLevel));
         final var oldLevel = previousValue == null ? 1 : Math.max(1, previousValue);
 
@@ -157,8 +158,8 @@ public class PlayerProfessions {
 
     public void giveLevels(Profession profession, int value, EXPSource source) {
         long equivalentExp = 0;
-        int level = getLevel(profession);
-        while (value-- > 0) equivalentExp += profession.getExpCurve().getExperience(level + value + 1);
+        final var currentLevel = getLevel(profession);
+        while (value-- > 0) equivalentExp += profession.getExpCurve().getExperience(currentLevel + value + 1);
         giveExperience(profession, equivalentExp, source);
     }
 
@@ -202,6 +203,7 @@ public class PlayerProfessions {
         if (hologramLocation != null && profession.getOption(Profession.ProfessionOption.EXP_HOLOGRAMS))
             MMOCoreUtils.displayIndicator(hologramLocation.add(.5, 1.5, .5), Language.EXP_HOLOGRAM.getFormat().replace("{exp}", MythicLib.plugin.getMMOConfig().decimal.format(event.getExperience())));
 
+        final var maxLevel = profession.getMaxLevel();
         var currentExp = Math.max(0d, exp.getOrDefault(profession.getId(), 0d) + event.getExperience());
         final var oldLevel = getLevel(profession);
         int newLevel = oldLevel;
@@ -213,7 +215,7 @@ public class PlayerProfessions {
          */
         while (currentExp >= (experienceNeeded = profession.getExpCurve().getExperience(newLevel))) {
 
-            if (hasReachedMaxLevel(profession)) {
+            if (maxLevel > 0 && newLevel >= maxLevel) {
                 currentExp = 0;
                 break;
             }
