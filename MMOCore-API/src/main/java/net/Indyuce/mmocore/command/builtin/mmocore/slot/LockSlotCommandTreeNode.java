@@ -15,8 +15,8 @@ public class LockSlotCommandTreeNode extends CommandTreeNode {
     private final Argument<Player> argPlayer;
     private final Argument<Integer> argIndex;
 
-    public LockSlotCommandTreeNode(CommandTreeNode parent, String id) {
-        super(parent, id);
+    public LockSlotCommandTreeNode(CommandTreeNode parent) {
+        super(parent, "lock");
 
         argPlayer = addArgument(Argument.PLAYER);
         argIndex = addArgument(Arguments.INDEX);

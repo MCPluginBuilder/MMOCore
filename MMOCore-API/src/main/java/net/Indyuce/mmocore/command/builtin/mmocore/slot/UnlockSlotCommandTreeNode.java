@@ -15,8 +15,8 @@ public class UnlockSlotCommandTreeNode extends CommandTreeNode {
     private final Argument<Player> argPlayer;
     private final Argument<Integer> argIndex;
 
-    public UnlockSlotCommandTreeNode(CommandTreeNode parent, String id) {
-        super(parent, id);
+    public UnlockSlotCommandTreeNode(CommandTreeNode parent) {
+        super(parent, "unlock");
 
         argPlayer = addArgument(Argument.PLAYER);
         argIndex = addArgument(Arguments.INDEX);

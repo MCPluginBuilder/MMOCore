@@ -13,8 +13,8 @@ import org.bukkit.entity.Player;
 
 public class BindSlotCommandTreeNode extends CommandTreeNode {
 
-    public BindSlotCommandTreeNode(CommandTreeNode parent, String id) {
-        super(parent, id);
+    public BindSlotCommandTreeNode(CommandTreeNode parent) {
+        super(parent, "bind");
 
         addArgument(Argument.PLAYER);
         addArgument(Arguments.INDEX);

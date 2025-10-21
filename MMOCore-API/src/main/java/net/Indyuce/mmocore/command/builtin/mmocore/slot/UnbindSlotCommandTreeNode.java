@@ -12,8 +12,9 @@ import org.bukkit.entity.Player;
 
 public class UnbindSlotCommandTreeNode extends CommandTreeNode {
 
-    public UnbindSlotCommandTreeNode(CommandTreeNode parent, String id) {
-        super(parent, id);
+    public UnbindSlotCommandTreeNode(CommandTreeNode parent) {
+        super(parent, "unbind");
+
         addArgument(Argument.PLAYER);
         addArgument(Argument.AMOUNT_INT);
     }
