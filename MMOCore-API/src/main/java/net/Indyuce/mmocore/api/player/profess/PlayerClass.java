@@ -184,7 +184,7 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
                     config.getConfigurationSection("skill-slots"),
                     skillSlots,
                     SkillSlot::new,
-                    index -> new SkillSlot(index, 0, "true", "&eUnconfigured Skill Slot " + MMOCoreUtils.intToRoman(index), new ArrayList<>(), false, true, new ArrayList<>()),
+                    index -> new SkillSlot(index, "true", "&eUnconfigured Skill Slot " + MMOCoreUtils.intToRoman(index), new ArrayList<>(), false, true, new ArrayList<>()),
                     (key, exception) -> MMOCore.plugin.getLogger().log(Level.WARNING, "Could not load skill slot '" + key + "' from class '" + getId() + "': " + exception.getMessage()));
 
         // Class skills

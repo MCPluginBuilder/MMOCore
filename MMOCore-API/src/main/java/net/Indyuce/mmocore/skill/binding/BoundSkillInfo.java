@@ -42,7 +42,7 @@ public class BoundSkillInfo implements Closeable {
         this.playerData = playerData;
 
         // Apply skill buffs associated to the slot
-        for (SkillModifierTrigger skillModifierTrigger : skillSlot.getSkillModifierTriggers())
+        for (SkillModifierTrigger skillModifierTrigger : skillSlot.getBuffs())
             if (skillModifierTrigger.getTargetSkills().contains(classSkill.getSkill().getHandler()))
                 skillModifierTrigger.apply(playerData, classSkill.getSkill().getHandler());
 
@@ -80,6 +80,6 @@ public class BoundSkillInfo implements Closeable {
         if (registered != null) registered.unregister(playerData.getMMOPlayerData());
 
         // Remove skill buffs associated to the slot
-        skillSlot.getSkillModifierTriggers().forEach(skillBuffTrigger -> skillBuffTrigger.remove(playerData, classSkill.getSkill().getHandler()));
+        skillSlot.getBuffs().forEach(skillBuffTrigger -> skillBuffTrigger.remove(playerData, classSkill.getSkill().getHandler()));
     }
 }

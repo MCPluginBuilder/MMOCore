@@ -8,36 +8,36 @@ import net.Indyuce.mmocore.api.quest.trigger.SkillModifierTrigger;
 import net.Indyuce.mmocore.api.quest.trigger.Trigger;
 import net.Indyuce.mmocore.player.Unlockable;
 import net.Indyuce.mmocore.skill.ClassSkill;
-import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
 public class SkillSlot implements Unlockable {
-    private final int slot, modelData;
+    private final int slot;
     private final String formula;
     private final String name;
     private final List<String> lore;
 
-    private final boolean isUnlockedByDefault;
+    private final boolean unlockedByDefault;
     private final boolean canManuallyBind;
 
-    private final List<SkillModifierTrigger> skillModifierTriggers = new ArrayList<>();
-    private final Material item;
+    private final List<SkillModifierTrigger> buffs = new ArrayList<>();
 
-    public SkillSlot(int slot, int modelData, String formula, String name, List<String> lore, boolean isUnlockedByDefault, boolean canManuallyBind, List<SkillModifierTrigger> skillModifierTriggers) {
+    @Deprecated
+    public SkillSlot(int slot, int modelData, String formula, String name, List<String> lore, boolean unlockedByDefault, boolean canManuallyBind, List<SkillModifierTrigger> buffs) {
+        this(slot, formula, name, lore, unlockedByDefault, canManuallyBind, buffs);
+    }
+
+    public SkillSlot(int slot, String formula, String name, List<String> lore, boolean unlockedByDefault, boolean canManuallyBind, List<SkillModifierTrigger> buffs) {
         this.slot = slot;
-        this.modelData = modelData;
         this.formula = formula;
         this.name = name;
         this.lore = lore;
-        this.item = null;
         this.canManuallyBind = canManuallyBind;
-        this.isUnlockedByDefault = isUnlockedByDefault;
-        this.skillModifierTriggers.addAll(skillModifierTriggers);
+        this.unlockedByDefault = unlockedByDefault;
+        this.buffs.addAll(buffs);
     }
 
     public static final String SKILL_MODIFIER_TRIGGER_KEY = "mmocoreSkillSlot";
@@ -47,9 +47,7 @@ public class SkillSlot implements Unlockable {
         this.formula = section.contains("formula") ? section.getString("formula") : "true";
         this.name = section.getString("name");
         this.lore = section.getStringList("lore");
-        this.item = section.contains("item") ? Material.valueOf(section.getString("item")) : null;
-        this.modelData = section.getInt("model-data", 0);
-        this.isUnlockedByDefault = section.getBoolean("unlocked-by-default", true);
+        this.unlockedByDefault = section.getBoolean("unlocked-by-default", true);
         this.canManuallyBind = section.getBoolean("can-manually-bind", true);
 
         // Load skill buffs
@@ -60,7 +58,7 @@ public class SkillSlot implements Unlockable {
                 Validate.isTrue(trigger instanceof SkillModifierTrigger, "Not a skill_buff trigger");
                 final SkillModifierTrigger mod = (SkillModifierTrigger) trigger;
                 mod.updateKey(SKILL_MODIFIER_TRIGGER_KEY); // Fixes MMOCore issue #967
-                skillModifierTriggers.add(mod);
+                buffs.add(mod);
             } catch (RuntimeException exception) {
                 MMOCore.plugin.getLogger().log(Level.WARNING, "Could not load skill buff '" + skillBuff + "' from skill slot '" + name + "': " + exception.getMessage());
             }
@@ -78,25 +76,17 @@ public class SkillSlot implements Unlockable {
         return lore;
     }
 
-    @Nullable
-    public Material getItem() {
-        return item;
-    }
-
-    public boolean hasItem() {
-        return item != null;
-    }
-
-    public int getModelData() {
-        return modelData;
-    }
-
     public boolean isUnlockedByDefault() {
-        return isUnlockedByDefault;
+        return unlockedByDefault;
     }
 
+    @Deprecated
     public List<SkillModifierTrigger> getSkillModifierTriggers() {
-        return skillModifierTriggers;
+        return getBuffs();
+    }
+
+    public List<SkillModifierTrigger> getBuffs() {
+        return buffs;
     }
 
     public boolean canManuallyBind() {
