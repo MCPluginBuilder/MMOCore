@@ -9,8 +9,6 @@ import net.Indyuce.mmocore.manager.data.yaml.YAMLDatabaseImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
@@ -32,13 +30,14 @@ public class PlayerDataTableUpdater {
                 + ") VALUES('" + effectiveId + "'," + formatCollection(requestMap.values(), true) + ")" +
                 " ON DUPLICATE KEY UPDATE " + formatMap() + ";";
 
-        try (Connection connection = provider.getConnection()) {
-            final PreparedStatement statement = connection.prepareStatement(request);
+        try (var connection = provider.getConnection();
+             var statement = connection.prepareStatement(request)) {
             statement.executeUpdate();
         } catch (SQLException exception) {
-            MMOCore.log(Level.WARNING, "Could not save player data of " + effectiveId + ", saving through YAML instead");
-            new YAMLDatabaseImpl().saveData(playerData, saveReason);
+            MMOCore.log(Level.WARNING, "Could not save player data of " + effectiveId + ", saving to YAML instead");
             exception.printStackTrace();
+
+            new YAMLDatabaseImpl().saveData(playerData, saveReason);
         }
     }
 

@@ -36,7 +36,7 @@ public class SQLDatabaseImpl extends SQLDatabase<PlayerData, OfflinePlayerData> 
     public static final String UUID_FIELD_NAME = "uuid";
 
     public SQLDatabaseImpl() {
-        super(MMOCore.plugin,  UUID_FIELD_NAME);
+        super(MMOCore.plugin, UUID_FIELD_NAME);
     }
 
     private static final String[] NEW_COLUMNS = new String[]{
@@ -53,8 +53,7 @@ public class SQLDatabaseImpl extends SQLDatabase<PlayerData, OfflinePlayerData> 
             "stellium", "FLOAT"};
 
     @Override
-    public void setup() {
-
+    protected void setupSQL() throws SQLException {
         // Fully create table
         executeUpdate("CREATE TABLE IF NOT EXISTS " + userdataTableName + "("
                 + UUID_FIELD_NAME + " VARCHAR(36)," +
