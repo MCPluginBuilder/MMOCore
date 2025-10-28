@@ -38,6 +38,7 @@ import net.Indyuce.mmocore.gui.skilltree.NodeIncrementResult;
 import net.Indyuce.mmocore.guild.provided.Guild;
 import net.Indyuce.mmocore.manager.data.OfflinePlayerData;
 import net.Indyuce.mmocore.party.AbstractParty;
+import net.Indyuce.mmocore.party.PartyUtils;
 import net.Indyuce.mmocore.party.provided.MMOCorePartyModule;
 import net.Indyuce.mmocore.party.provided.Party;
 import net.Indyuce.mmocore.player.ClassDataContainer;
@@ -217,6 +218,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         this.setupSkillTrees();
         this.applyTemporaryTriggers();
         this.getStats().updateStats();
+        PartyUtils.resolvePartyBonuses(this); // In case buffs not removed on logoff
 
         getMMOPlayerData().getProfileSession().addOpenCallback(session -> this.onProfileSessionReady());
     }

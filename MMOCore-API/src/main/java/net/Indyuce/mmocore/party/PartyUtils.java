@@ -10,24 +10,36 @@ import java.util.UUID;
 public class PartyUtils {
 
     @Deprecated
-    public static void applyStatBonuses(PlayerData playerData, int memberCount) {
-        updateStatBonuses(playerData, memberCount);
+    public static void updateStatBonuses(PlayerData playerData, int ignored) {
+        resolvePartyBonuses(playerData);
     }
 
-    /**
-     * Applies party stat bonuses to a specific player
-     */
-    public static void updateStatBonuses(@NotNull PlayerData player, int memberCount) {
-        if (memberCount <= 1) clearStatBonuses(player);
+    public static void resolvePartyBonuses(@NotNull PlayerData playerData) {
+        final var party = MMOCore.plugin.partyModule.getParty(playerData);
+        if (party == null) clearStatBonuses(playerData);
+        else applyStatBonuses(playerData, party.countMembers());
+    }
+
+    public static void applyStatBonuses(@NotNull UUID playerId, int memberCount) {
+        final var playerData = MMOPlayerData.getOrNull(playerId);
+        if (playerData != null) applyStatBonuses(playerData, memberCount);
+    }
+
+    public static void applyStatBonuses(@NotNull PlayerData playerData, int memberCount) {
+        applyStatBonuses(playerData.getMMOPlayerData(), memberCount);
+    }
+
+    public static void applyStatBonuses(@NotNull MMOPlayerData playerData, int memberCount) {
+        if (memberCount < 2) clearStatBonuses(playerData);
         else for (var buff : MMOCore.plugin.partyManager.getBonuses())
-            buff.multiply(memberCount - 1).register(player.getMMOPlayerData());
+            buff.multiply(memberCount - 1).register(playerData);
     }
 
-    /**
-     * Clear party stat bonuses from a player
-     */
-    public static void clearStatBonuses(@NotNull PlayerData player) {
-        var playerData = player.getMMOPlayerData();
+    public static void clearStatBonuses(@NotNull PlayerData playerData) {
+        clearStatBonuses(playerData.getMMOPlayerData());
+    }
+
+    public static void clearStatBonuses(@NotNull MMOPlayerData playerData) {
         MMOCore.plugin.partyManager.getBonuses().forEach(buff -> buff.unregister(playerData));
     }
 
@@ -46,9 +58,7 @@ public class PartyUtils {
      * @param playerUuid UUID of player supposedly offline
      */
     public static void clearStatBonuses(@NotNull UUID playerUuid) {
-        if (MMOPlayerData.has(playerUuid)) {
-            var playerData = MMOPlayerData.get(playerUuid);
-            MMOCore.plugin.partyManager.getBonuses().forEach(buff -> buff.unregister(playerData));
-        }
+        final var playerData = MMOPlayerData.getOrNull(playerUuid);
+        if (playerData != null) clearStatBonuses(playerData);
     }
 }
