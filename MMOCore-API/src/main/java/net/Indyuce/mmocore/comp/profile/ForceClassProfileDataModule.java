@@ -7,11 +7,11 @@ import fr.phoenixdevt.profiles.event.ProfileRemoveEvent;
 import fr.phoenixdevt.profiles.event.ProfileSelectEvent;
 import fr.phoenixdevt.profiles.event.ProfileUnloadEvent;
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.api.event.SynchronizedDataLoadEvent;
 import io.lumine.mythic.lib.comp.profile.ProfileMode;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
+import net.Indyuce.mmocore.api.player.profess.ClassOption;
 import net.Indyuce.mmocore.manager.InventoryManager;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -47,7 +47,7 @@ public class ForceClassProfileDataModule implements ProfileDataModule {
     @EventHandler
     public void onProfileCreate(ProfileCreateEvent event) {
 
-        // Proxy-based profiles
+        // Will be prompted on profile application in proxy-mode
         if (MythicLib.plugin.getProfileMode() == ProfileMode.PROXY) {
             event.validate(this);
             return;
@@ -57,30 +57,14 @@ public class ForceClassProfileDataModule implements ProfileDataModule {
         InventoryManager.CLASS_SELECT.newInventory(playerData, () -> event.validate(this)).open();
     }
 
-    /**
-     * Force class before profile selection once MMOCore loaded its data
-     */
     @EventHandler
-    public void onDataLoad(SynchronizedDataLoadEvent event) {
-        if (event.getManager().getOwningPlugin().equals(MMOCore.plugin)) {
-            final PlayerData playerData = (PlayerData) event.getHolder();
-
-            // Proxy-based profiles
-            if (!event.hasProfileEvent()) {
-                Validate.isTrue(MythicLib.plugin.getProfileMode() == ProfileMode.PROXY, "Listened to a data load event with no profile event attached but proxy-based profiles are disabled");
-                if (playerData.getProfess().equals(MMOCore.plugin.classManager.getDefaultClass()))
-                    InventoryManager.CLASS_SELECT.newInventory(playerData, () -> event.getHolder().getMMOPlayerData().getProfileSession().markAsReady(this.key)).open();
-                else event.getHolder().getMMOPlayerData().getProfileSession().markAsReady(this.key);
-                return;
-            }
-
-            final ProfileSelectEvent event1 = (ProfileSelectEvent) event.getProfileEvent();
-
-            // Validate if necessary
-            if (playerData.getProfess().equals(MMOCore.plugin.classManager.getDefaultClass()))
-                InventoryManager.CLASS_SELECT.newInventory(playerData, () -> event1.validate(this)).open();
-            else event1.validate(this);
-        }
+    public void onProfileApply(ProfileSelectEvent event) {
+        final var playerData = PlayerData.get(event.getPlayerData().getPlayer());
+        playerData.bufferForceClassSelection(() -> {
+            if (playerData.getProfess().hasOption(ClassOption.DEFAULT))
+                InventoryManager.CLASS_SELECT.newInventory(playerData, () -> event.validate(this)).open();
+            else event.validate(this);
+        });
     }
 
     @EventHandler

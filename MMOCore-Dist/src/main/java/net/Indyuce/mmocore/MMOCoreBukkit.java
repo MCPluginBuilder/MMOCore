@@ -31,7 +31,7 @@ public class MMOCoreBukkit {
         if (plugin.getConfig().getBoolean("vanilla-exp-redirection.enabled"))
             Bukkit.getPluginManager().registerEvents(new RedirectVanillaExp(plugin.getConfig().getDouble("vanilla-exp-redirection.ratio")), plugin);
 
-        if (plugin.getConfig().getBoolean("force-class-selection") && MythicLib.plugin.hasProfiles())
+        if (plugin.configManager.forceClassSelection && MythicLib.plugin.hasProfiles())
             new ForceClassProfileDataModule();
 
         Bukkit.getPluginManager().registerEvents(new WaypointsListener(), plugin);

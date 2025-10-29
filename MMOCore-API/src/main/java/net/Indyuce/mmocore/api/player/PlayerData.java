@@ -68,6 +68,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -220,8 +221,35 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         this.getStats().updateStats();
         PartyUtils.resolvePartyBonuses(this); // In case buffs not removed on logoff
 
+        tryForceClassSelection(); // Force class selection
+
         getMMOPlayerData().getProfileSession().addOpenCallback(session -> this.onProfileSessionReady());
     }
+
+    //region Force class selection
+
+    private Runnable bufferedForcedClassSelectionCallback;
+    private final AtomicBoolean bufferedForcedClassSelection = new AtomicBoolean(false);
+
+    private void tryForceClassSelection() {
+        final var canOpen = this.bufferedForcedClassSelection.getAndSet(true);
+        // Useless to check if `forceClassSelect` is enabled, it must be if `canOpen` is `true`
+        if (canOpen) {
+            this.bufferedForcedClassSelectionCallback.run();
+            this.bufferedForcedClassSelectionCallback = null;
+        }
+    }
+
+    public void bufferForceClassSelection(@NotNull Runnable callback) {
+        this.bufferedForcedClassSelectionCallback = callback;
+        final var canOpen = this.bufferedForcedClassSelection.getAndSet(true);
+        if (canOpen) {
+            this.bufferedForcedClassSelectionCallback.run();
+            this.bufferedForcedClassSelectionCallback = null;
+        }
+    }
+
+    //endregion
 
     private void castOnLoginScripts() {
 
@@ -499,7 +527,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     /**
      * @return If the item is unlocked by the player
-     * This is used for skills that can be locked & unlocked.
+     *         This is used for skills that can be locked & unlocked.
      */
     public boolean hasUnlocked(Unlockable unlockable) {
         return unlockable.isUnlockedByDefault() || unlockedItems.contains(unlockable.getUnlockNamespacedKey());
@@ -673,7 +701,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     /**
      * @param key The identifier of an exp table item.
      * @return Amount of times an item has been claimed
-     * inside an experience table.
+     *         inside an experience table.
      */
     public int getClaims(@NotNull String key) {
         return tableItemClaims.getOrDefault(key, 0);
@@ -1138,7 +1166,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     /**
      * @return If the PlayerEnterCastingModeEvent successfully put the player
-     * into casting mode, otherwise if the event is cancelled, returns false.
+     *         into casting mode, otherwise if the event is cancelled, returns false.
      */
     public boolean setSkillCasting() {
         Validate.isTrue(!isCasting(), "Player already in casting mode");
@@ -1157,7 +1185,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     /**
      * @return If player successfully left skill casting i.e the Bukkit
-     * event has not been cancelled
+     *         event has not been cancelled
      */
     public boolean leaveSkillCasting() {
         return leaveSkillCasting(false);
@@ -1166,7 +1194,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     /**
      * @param skipEvent Skip firing the exit event
      * @return If player successfully left skill casting i.e the Bukkit
-     * event has not been cancelled
+     *         event has not been cancelled
      */
     public boolean leaveSkillCasting(boolean skipEvent) {
         Validate.isTrue(isCasting(), "Player not in casting mode");
@@ -1554,7 +1582,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
      * checks if they could potentially upgrade to one of these
      *
      * @return If the player can change its current class to
-     * a subclass
+     *         a subclass
      */
     @Deprecated
     public boolean canChooseSubclass() {
