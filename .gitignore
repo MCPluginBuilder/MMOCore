@@ -12,3 +12,4 @@ MMOCore.iml
 /MMOCore-Dist/MMOCore-Dist.iml
 
 local_install.bat
+proxy_install.bat

@@ -69,8 +69,8 @@ public class ForceClassProfileDataModule implements ProfileDataModule {
             if (!event.hasProfileEvent()) {
                 Validate.isTrue(MythicLib.plugin.getProfileMode() == ProfileMode.PROXY, "Listened to a data load event with no profile event attached but proxy-based profiles are disabled");
                 if (playerData.getProfess().equals(MMOCore.plugin.classManager.getDefaultClass()))
-                    InventoryManager.CLASS_SELECT.newInventory(playerData, () -> {
-                    }).open();
+                    InventoryManager.CLASS_SELECT.newInventory(playerData, () -> event.getHolder().getMMOPlayerData().getProfileSession().markAsReady(this.key)).open();
+                else event.getHolder().getMMOPlayerData().getProfileSession().markAsReady(this.key);
                 return;
             }
 
