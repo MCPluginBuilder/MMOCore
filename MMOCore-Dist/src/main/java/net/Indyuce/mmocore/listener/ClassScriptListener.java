@@ -1,6 +1,6 @@
 package net.Indyuce.mmocore.listener;
 
-import io.lumine.mythic.lib.api.player.MMOPlayerData;
+import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerChangeClassEvent;
 import net.Indyuce.mmocore.api.event.PlayerLevelChangeEvent;
@@ -14,7 +14,7 @@ import org.bukkit.event.Listener;
  * This class calls trigger types registered by MMOCore
  * which are specific to player classes.
  *
- * @see {@link MMOCoreTriggerType}
+ * @see MMOCoreTriggerType
  */
 public class ClassScriptListener implements Listener {
 
@@ -23,8 +23,8 @@ public class ClassScriptListener implements Listener {
 
         // With delay
         Bukkit.getScheduler().runTask(MMOCore.plugin, () -> {
-            final MMOPlayerData caster = event.getData().getMMOPlayerData();
-            caster.triggerSkills(MMOCoreTriggerType.CLASS_CHOSEN, null);
+            final var caster = event.getData().getMMOPlayerData();
+            caster.triggerSkills(new TriggerMetadata(caster, MMOCoreTriggerType.CLASS_CHOSEN));
         });
     }
 
@@ -34,8 +34,8 @@ public class ClassScriptListener implements Listener {
         // With delay
         if (event.getReason() == PlayerLevelChangeEvent.Reason.LEVEL_UP)
             Bukkit.getScheduler().runTask(MMOCore.plugin, () -> {
-                final MMOPlayerData caster = event.getData().getMMOPlayerData();
-                caster.triggerSkills(MMOCoreTriggerType.LEVEL_UP, null);
+                final var caster = event.getData().getMMOPlayerData();
+                caster.triggerSkills(new TriggerMetadata(caster, MMOCoreTriggerType.LEVEL_UP));
             });
     }
 
