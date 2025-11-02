@@ -820,6 +820,12 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return classSlots.get(profess);
     }
 
+    /**
+     * Saves information of a class
+     *
+     * @param profess Class
+     * @param info    Class player progress
+     */
     public void applyClassInfo(PlayerClass profess, SavedClassInformation info) {
         classSlots.put(profess.getId(), info);
     }
@@ -1216,19 +1222,25 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return getAttributes().mapPoints();
     }
 
-    public int getSkillLevel(RegisteredSkill skill) {
+    public int getSkillLevel(@NotNull RegisteredSkill skill) {
         return skills.getOrDefault(skill.getHandler().getId(), 1);
     }
 
-    public void setSkillLevel(RegisteredSkill skill, int level) {
+    public void setSkillLevel(@NotNull RegisteredSkill skill, int level) {
         setSkillLevel(skill.getHandler().getId(), level);
     }
 
-    public void setSkillLevel(String skill, int level) {
-        skills.put(skill, level);
+    public void setSkillLevel(@NotNull String skill, int level) {
+        if (level <= 1) skills.remove(skill);
+        else skills.put(skill, level);
     }
 
-    public void resetSkillLevel(String skill) {
+    public void resetSkills() {
+        skills.clear();
+        while (hasSkillBound(0)) unbindSkill(0);
+    }
+
+    public void resetSkillLevel(@NotNull String skill) {
         skills.remove(skill);
     }
 

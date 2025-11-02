@@ -97,7 +97,7 @@ public class PlayerStats {
             }
         });
 
-        // Updates the player's unbindable CLASS passive skills
+        // Updates the player's UNBINDABLE PASSIVE (== PERMANENT) skills
         final PassiveSkillMap skillMap = data.getMMOPlayerData().getPassiveSkillMap();
         skillMap.removeModifiers("MMOCorePermanentSkill");
         for (ClassSkill skill : data.getProfess().getSkills())
