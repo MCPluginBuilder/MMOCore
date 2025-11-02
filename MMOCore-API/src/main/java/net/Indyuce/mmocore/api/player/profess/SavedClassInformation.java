@@ -12,12 +12,14 @@ import net.Indyuce.mmocore.skilltree.SkillTreeNode;
 import net.Indyuce.mmocore.skilltree.tree.SkillTree;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Level;
 
 public class SavedClassInformation implements ClassDataContainer {
     private final int level, skillPoints, attributePoints, attributeReallocationPoints, skillTreeReallocationPoints, skillReallocationPoints;
@@ -286,41 +288,75 @@ public class SavedClassInformation implements ClassDataContainer {
      */
     public void load(@NotNull PlayerClass profess, @NotNull PlayerData player) {
 
+        // TODO check all classes instead?
+        // big hypothesis => last class is always the one with the highest progression
+        @Nullable SavedClassInformation lastClassPlayed = null;
+
         /*
          * Saves current class info inside a SavedClassInformation, only
          * if the class is a real class and not the default one.
          */
         if (!player.getProfess().hasOption(ClassOption.DEFAULT) || MMOCore.plugin.configManager.saveDefaultClassInfo)
-            player.applyClassInfo(player.getProfess(), new SavedClassInformation(player));
+            player.applyClassInfo(player.getProfess(), lastClassPlayed = new SavedClassInformation(player));
 
-        // Remove class permanent buffs
-        player.getProfess().resetAdvancement(player, false);
+        ///////////////////////////////////////////////
+        // Reset player data
+        ///////////////////////////////////////////////
 
-        /*
-         * Resets information which much be reset after everything is saved.
-         */
-        player.resetSkills();
+        player.getProfess().resetAdvancement(player, false); // Reset class exp table
+        player.resetSkills(); // Reset skills
+        // Reset player attributes
         for (PlayerAttribute attribute : MMOCore.plugin.attributeManager.getAll()) {
             attribute.resetAdvancement(player, false);
             player.getAttributes().getInstance(attribute).setBase(0);
         }
-        player.resetSkillTrees();
+        player.resetSkillTrees(); // Reset skill trees
 
-        /*
-         * Reads this class info, applies it to the player. set class after
-         * changing level so the player stats can be calculated based on new level
-         */
-        player.setLevel(level, PlayerLevelChangeEvent.Reason.CHOOSE_CLASS);
-        player.setExperience(experience);
-        player.setSkillPoints(skillPoints);
-        player.setAttributePoints(attributePoints);
+        ///////////////////////////////////////////////
+        // Patch player data
+        ///////////////////////////////////////////////
+
+        final int targetLevel, targetSkillPoints, targetAttributePoints;
+        final double targetExp;
+
+        // Fetch info from last class
+        if (lastClassPlayed != null) {
+            targetLevel = lastClassPlayed.level;
+            targetExp = lastClassPlayed.experience;
+            targetSkillPoints = lastClassPlayed.skillPoints + lastClassPlayed.countSpentSkillPoints() - this.countSpentSkillPoints();
+            targetAttributePoints = lastClassPlayed.attributePoints + lastClassPlayed.countSpentAttributePoints() - this.countSpentAttributePoints();
+        }
+
+        // Fetch info from saved class info
+        else {
+            targetLevel = level;
+            targetExp = experience;
+            targetSkillPoints = this.skillPoints;
+            targetAttributePoints = this.attributePoints;
+        }
+
+        ///////////////////////////////////////////////
+        // Apply player data
+        ///////////////////////////////////////////////
+
+        player.setLevel(targetLevel, PlayerLevelChangeEvent.Reason.CHOOSE_CLASS);
+        player.setExperience(targetExp);
+        player.setSkillPoints(targetSkillPoints);
+        player.setAttributePoints(targetAttributePoints);
         player.setAttributeReallocationPoints(attributeReallocationPoints);
         player.setSkillTreeReallocationPoints(skillTreeReallocationPoints);
         player.setSkillReallocationPoints(skillReallocationPoints);
         player.setUnlockedItems(unlockedItems);
         player.setClass(profess);
-        for (int slot : boundSkills.keySet())
-            player.bindSkill(slot, profess.getSkill(boundSkills.get(slot)));
+        for (int slot : boundSkills.keySet()) {
+            final var skill = profess.getSkill(boundSkills.get(slot));
+            if (skill == null) {
+                MMOCore.plugin.getLogger().log(Level.WARNING, "Tried binding skill '" + boundSkills.get(slot) + "' to slot " + slot + " for player " + player.getPlayer().getName() + ", but skill no longer exists in class " + profess.getId());
+                continue;
+            }
+
+            player.bindSkill(slot, skill);
+        }
 
         skillLevels.forEach(player::setSkillLevel);
         attributeLevels.forEach((id, pts) -> player.getAttributes().getInstance(id).setBase(pts));
@@ -346,5 +382,20 @@ public class SavedClassInformation implements ClassDataContainer {
         player.applyTemporaryTriggers();
         player.getStats().updateStats();
     }
+
+    //region Player data progress synchronizer
+
+    private int countSpentSkillPoints() {
+        // Skill levels, not points spent, hence the -1's
+        return this.skillLevels.values().stream().map(i -> i - 1).mapToInt(Integer::intValue).sum();
+    }
+
+    private int countSpentAttributePoints() {
+        return this.attributeLevels.values().stream().mapToInt(Integer::intValue).sum();
+    }
+
+    // TODO skill trees? not used in SAO for now
+
+    //endregion
 }
 
