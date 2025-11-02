@@ -104,8 +104,6 @@ public class ResetCommandTreeNode extends CommandTreeNode {
     static class ResetSkillsCommandTreeNode extends AbstractResetNode {
         public ResetSkillsCommandTreeNode(CommandTreeNode parent) {
             super(parent, "skills");
-
-            addArgument(Argument.PLAYER);
         }
 
         @Override
@@ -117,8 +115,7 @@ public class ResetCommandTreeNode extends CommandTreeNode {
         }
 
         static void resetSkills(@NotNull PlayerData data) {
-            data.mapSkillLevels().forEach((skill, ignored) -> data.resetSkillLevel(skill));
-            while (data.hasSkillBound(0)) data.unbindSkill(0);
+            data.resetSkills();
             data.setUnlockedItems(new HashSet<>()); // TODO class-specific unlockables etc.
         }
     }
@@ -126,8 +123,6 @@ public class ResetCommandTreeNode extends CommandTreeNode {
     static class ResetSkillTreesCommandTreeNode extends AbstractResetNode {
         public ResetSkillTreesCommandTreeNode(CommandTreeNode parent) {
             super(parent, "skill-trees");
-
-            addArgument(Argument.PLAYER);
         }
 
         @Override
