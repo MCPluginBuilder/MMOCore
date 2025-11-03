@@ -24,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 
 public class PlayerProfessions {
     private final Map<String, Double> exp = new HashMap<>();
@@ -175,6 +176,8 @@ public class PlayerProfessions {
         giveExperience(profession, value, source, null, true);
     }
 
+    private static final Random RANDOM = new Random();
+
     public void giveExperience(@NotNull Profession profession, double value, @NotNull EXPSource source, @Nullable Location hologramLocation, boolean splitExp) {
         Validate.isTrue(playerData.isOnline(), "Cannot give experience to offline player");
         if (value <= 0) {
@@ -204,8 +207,11 @@ public class PlayerProfessions {
         if (event.isCancelled()) return;
 
         // Display hologram
-        if (hologramLocation != null && profession.getOption(Profession.ProfessionOption.EXP_HOLOGRAMS))
-            MMOCoreUtils.displayIndicator(hologramLocation.add(.5, 1.5, .5), Language.EXP_HOLOGRAM.getFormat().replace("{exp}", MythicLib.plugin.getMMOConfig().decimal.format(event.getExperience())));
+        if (hologramLocation != null && profession.getOption(Profession.ProfessionOption.EXP_HOLOGRAMS)) {
+            // TODO custom location per profession/exp source.
+            hologramLocation.add(.5 + .7 * RANDOM.nextDouble(), 1.3 + RANDOM.nextDouble() / 3, .5 + .7 * RANDOM.nextDouble());
+            MMOCoreUtils.displayIndicator(hologramLocation, Language.EXP_HOLOGRAM.getFormat().replace("{exp}", MythicLib.plugin.getMMOConfig().decimal.format(event.getExperience())));
+        }
 
         final var maxLevel = profession.getMaxLevel();
         var currentExp = Math.max(0d, exp.getOrDefault(profession.getId(), 0d) + event.getExperience());
