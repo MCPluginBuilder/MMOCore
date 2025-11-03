@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.util.PreloadedObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
+import net.Indyuce.mmocore.experience.curve.ExperienceCurve;
 import net.Indyuce.mmocore.experience.droptable.ExperienceTable;
 import net.Indyuce.mmocore.util.formula.ScalingFormula;
 import org.bukkit.Location;
@@ -22,7 +23,8 @@ public class Profession implements ExperienceObject, PreloadedObject {
     private final String id, name;
     private final int maxLevel;
     private final Map<ProfessionOption, Boolean> options = new HashMap<>();
-    private final ExpCurve expCurve;
+    @NotNull
+    private final ExperienceCurve expCurve;
     private final ExperienceTable expTable;
 
     /**
@@ -44,9 +46,7 @@ public class Profession implements ExperienceObject, PreloadedObject {
         this.name = config.getString("name");
         Validate.notNull(name, "Could not load name");
 
-        expCurve = config.contains("exp-curve")
-                ? MMOCore.plugin.experience.getCurveOrThrow(config.get("exp-curve").toString().toLowerCase().replace("_", "-").replace(" ", "-"))
-                : ExpCurve.DEFAULT;
+        expCurve = ExperienceCurve.fromConfig(config.getString("exp-curve"));
         experience = ScalingFormula.fromConfig(config.get("experience"));
 
         ExperienceTable expTable = null;
@@ -99,12 +99,12 @@ public class Profession implements ExperienceObject, PreloadedObject {
     }
 
     @Override
-    public String getKey() {
+    public @NotNull String getKey() {
         return "profession_" + getId();
     }
 
     @Override
-    public ExpCurve getExpCurve() {
+    public @NotNull ExperienceCurve getExpCurve() {
         return expCurve;
     }
 

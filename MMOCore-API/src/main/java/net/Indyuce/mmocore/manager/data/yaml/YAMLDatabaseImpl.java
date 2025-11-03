@@ -161,7 +161,11 @@ public class YAMLDatabaseImpl extends YAMLFlatDatabase<PlayerData, OfflinePlayer
 
         // Saves the nodes levels
         config.set("skill-tree-level", null);
-        MMOCore.plugin.skillTreeManager.getAllNodes().forEach(node -> config.set("skill-tree-level." + node.getFullId(), data.getNodeLevel(node)));
+        config.createSection("skill-tree-level");
+        for (var node : MMOCore.plugin.skillTreeManager.getAllNodes()) {
+            final var nodeLevel = data.getNodeLevel(node);
+            if (nodeLevel > 0) config.set("skill-tree-level." + node.getFullId(), nodeLevel);
+        }
 
         // Skill levels
         config.set("skill", null);

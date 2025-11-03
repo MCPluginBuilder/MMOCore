@@ -6,7 +6,7 @@ import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.experience.EXPSource;
-import net.Indyuce.mmocore.experience.ExpCurve;
+import net.Indyuce.mmocore.experience.curve.ExperienceCurve;
 import net.Indyuce.mmocore.experience.ExperienceObject;
 import net.Indyuce.mmocore.experience.droptable.ExperienceTable;
 import org.bukkit.Location;
@@ -84,7 +84,7 @@ public class PlayerAttribute implements ExperienceObject {
     }
 
     @Override
-    public String getKey() {
+    public @NotNull String getKey() {
         return "attribute:" + getId().replace("-", "_");
     }
 
@@ -99,9 +99,9 @@ public class PlayerAttribute implements ExperienceObject {
         return expTable != null;
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public ExpCurve getExpCurve() {
+    public ExperienceCurve getExpCurve() {
         throw new RuntimeException("Attributes don't have experience");
     }
 

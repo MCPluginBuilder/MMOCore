@@ -8,8 +8,14 @@ experience:
     base: 13
     per-level: 2.5
 
-# Must match an existing exp curve filename from the 'expcurves' folder
-exp-curve: levels
+# Can be a file path to an existing .txt file inside the MMOCore/ folder.
+# | The TXT files contains only the experience required per level, one per line.
+# | Example: 'expcurves/profession_exp_curve.txt'
+# Or a formula using the {level} and PAPI placeholders.
+# | The formula should return the total experience required to reach the next
+# | level if {level} is the player's current profession level.
+# | Example: '{level} * 150'
+exp-curve: '{level} * 150'
 
 exp-sources:
 - 'mineblock{type=OAK_LOG;amount=1-3}'

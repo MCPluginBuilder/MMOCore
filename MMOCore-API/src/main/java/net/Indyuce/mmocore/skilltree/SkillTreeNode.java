@@ -9,7 +9,7 @@ import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.experience.EXPSource;
-import net.Indyuce.mmocore.experience.ExpCurve;
+import net.Indyuce.mmocore.experience.curve.ExperienceCurve;
 import net.Indyuce.mmocore.experience.ExperienceObject;
 import net.Indyuce.mmocore.experience.droptable.ExperienceTable;
 import net.Indyuce.mmocore.skilltree.display.DisplayMap;
@@ -204,7 +204,7 @@ public class SkillTreeNode implements ExperienceObject {
     public static final String KEY_PREFIX = "node";
 
     @Override
-    public String getKey() {
+    public @NotNull String getKey() {
         return KEY_PREFIX + ":" + getFullId().replace("-", "_");
     }
 
@@ -269,9 +269,9 @@ public class SkillTreeNode implements ExperienceObject {
         throw new RuntimeException("Skill trees don't have experience");
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public ExpCurve getExpCurve() {
+    public ExperienceCurve getExpCurve() {
         throw new RuntimeException("Skill trees don't have experience");
     }
 

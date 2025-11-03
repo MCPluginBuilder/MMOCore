@@ -1,10 +1,10 @@
 package net.Indyuce.mmocore.experience;
 
 import net.Indyuce.mmocore.api.player.PlayerData;
+import net.Indyuce.mmocore.experience.curve.ExperienceCurve;
 import net.Indyuce.mmocore.experience.dispenser.ExperienceDispenser;
 import net.Indyuce.mmocore.experience.droptable.ExperienceTable;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * General implementation for professions, classes and attributes.
@@ -17,6 +17,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface ExperienceObject extends ExperienceDispenser {
 
+    @NotNull
     String getKey();
 
     /**
@@ -24,14 +25,14 @@ public interface ExperienceObject extends ExperienceDispenser {
      *
      * @return Exp curve of that object
      */
-    @Nullable
-    ExpCurve getExpCurve();
+    @NotNull
+    ExperienceCurve getExpCurve();
 
     /**
-     * Should throw an error if called when
-     * {@link #hasExperienceTable()} returns false
+     * Throws an exception no experience table
      *
      * @return Table read when leveling up
+     * @see #hasExperienceTable()
      */
     @NotNull
     ExperienceTable getExperienceTable();

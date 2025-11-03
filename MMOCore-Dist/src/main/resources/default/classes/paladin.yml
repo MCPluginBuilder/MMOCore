@@ -35,8 +35,14 @@ display:
     #    item-model: 'minecraft:dirt'
     #    texture: '' # Skull texture (set 'item' to 'PLAYER_HEAD')
 
-# Must match an existing exp curve filename from the 'expcurves' folder
-exp-curve: levels
+# Can be a file path to an existing .txt file inside the MMOCore/ folder.
+# | The TXT files contains only the experience required per level, one per line.
+# | Example: 'expcurves/class_exp_curve.txt'
+# Or a formula using the {level} and PAPI placeholders.
+# | The formula should return the total experience required to reach the next
+# | level if {level} is the player's current class level.
+# | Example: '{level} * 200'
+exp-curve: '{level} * 200'
 
 skill-slots:
     1:

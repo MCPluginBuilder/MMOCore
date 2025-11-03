@@ -725,7 +725,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
      * @return Experience needed in order to reach next level
      */
     public long getLevelUpExperience() {
-        return getProfess().getExpCurve().getExperience(getLevel() + 1);
+        return getProfess().getExpCurve().getExperience(this, getLevel());
     }
 
     public boolean isOnline() {
@@ -752,7 +752,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     public void giveLevels(int value, @NotNull EXPSource source) {
         long equivalentExp = 0;
-        while (value-- > 0) equivalentExp += getProfess().getExpCurve().getExperience(getLevel() + value + 1);
+        while (value-- > 0) equivalentExp += getProfess().getExpCurve().getExperience(this, getLevel() + value);
         giveExperience(equivalentExp, source);
     }
 
@@ -1088,7 +1088,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
          * Loop for exp overload when leveling up, will continue
          * looping until exp is 0 or max currentLevel has been reached
          */
-        while (experience >= (experienceNeeded = getProfess().getExpCurve().getExperience(newLevel + 1))) {
+        while (experience >= (experienceNeeded = getProfess().getExpCurve().getExperience(this, newLevel))) {
 
             if (maxLevel > 0 && newLevel >= maxLevel) {
                 experience = 0;

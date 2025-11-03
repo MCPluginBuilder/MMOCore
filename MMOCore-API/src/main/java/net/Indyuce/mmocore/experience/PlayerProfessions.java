@@ -120,16 +120,25 @@ public class PlayerProfessions {
     }
 
     public long getLevelUpExperience(Profession profession) {
-        return profession.getExpCurve().getExperience(getLevel(profession) + 1);
+        return profession.getExpCurve().getExperience(playerData, getLevel(profession));
     }
 
+    @Deprecated
     public long getLevelUpExperience(String id) {
-        return MMOCore.plugin.professionManager.has(id) ? MMOCore.plugin.professionManager.get(id).getExpCurve().getExperience(getLevel(id) + 1) : 0;
+        final var prof = MMOCore.plugin.professionManager.get(id);
+        if (prof == null) return 0;
+        return prof.getExpCurve().getExperience(null, getLevel(id));
     }
 
     @Deprecated
     public void setLevel(Profession profession, int value) {
         setLevel(profession, value, PlayerLevelChangeEvent.Reason.UNKNOWN);
+    }
+
+    @Deprecated
+    public void takeLevels(@NotNull Profession profession, int value) {
+        int current = Math.max(1, level.getOrDefault(profession.getId(), 1));
+        level.put(profession.getId(), Math.max(1, current - value));
     }
 
     public void setLevel(@NotNull Profession profession, int newLevel, @NotNull PlayerLevelChangeEvent.Reason reason) {
@@ -146,12 +155,6 @@ public class PlayerProfessions {
         }
     }
 
-    @Deprecated
-    public void takeLevels(@NotNull Profession profession, int value) {
-        int current = Math.max(1, level.getOrDefault(profession.getId(), 1));
-        level.put(profession.getId(), Math.max(1, current - value));
-    }
-
     public void setExperience(Profession profession, double value) {
         exp.put(profession.getId(), value);
     }
@@ -159,7 +162,8 @@ public class PlayerProfessions {
     public void giveLevels(Profession profession, int value, EXPSource source) {
         long equivalentExp = 0;
         final var currentLevel = getLevel(profession);
-        while (value-- > 0) equivalentExp += profession.getExpCurve().getExperience(currentLevel + value + 1);
+        while (value-- > 0)
+            equivalentExp += profession.getExpCurve().getExperience(playerData, currentLevel + value);
         giveExperience(profession, equivalentExp, source);
     }
 
@@ -213,7 +217,7 @@ public class PlayerProfessions {
          * Loop for exp overload when leveling up, will continue
          * looping until exp is 0 or max newLevel has been reached
          */
-        while (currentExp >= (experienceNeeded = profession.getExpCurve().getExperience(newLevel))) {
+        while (currentExp >= (experienceNeeded = profession.getExpCurve().getExperience(playerData, newLevel))) {
 
             if (maxLevel > 0 && newLevel >= maxLevel) {
                 currentExp = 0;

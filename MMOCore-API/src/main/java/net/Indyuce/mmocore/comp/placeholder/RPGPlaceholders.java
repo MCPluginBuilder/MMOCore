@@ -200,14 +200,24 @@ public class RPGPlaceholders extends PlaceholderExpansion {
             if (playerData.hasSkillBound(slot))
                 return Double.toString(playerData.getCooldownMap().getCooldown(playerData.getBoundSkill(slot)));
             else return MMOCore.plugin.configManager.noSkillBoundPlaceholder;
-        } else if (identifier.startsWith("profession_experience_"))
+        }
+
+        // Current exp in profession
+        else if (identifier.startsWith("profession_experience_")) {
             return MythicLib.plugin.getMMOConfig().decimal.format(
                     playerData.getCollectionSkills().getExperience(identifier.substring(22).replace(" ", "-").replace("_", "-").toLowerCase()));
+        }
 
-        else if (identifier.startsWith("profession_next_level_"))
-            return String.valueOf(PlayerData.get(player).getCollectionSkills()
-                    .getLevelUpExperience(identifier.substring(22).replace(" ", "-").replace("_", "-").toLowerCase()));
+        // Exp needed to level up profession
+        else if (identifier.startsWith("profession_next_level_")) {
+            final var professionId = identifier.substring(22).replace(" ", "-").replace("_", "-").toLowerCase();
+            final @Nullable var profession = MMOCore.plugin.professionManager.get(professionId);
+            if (profession == null) return "{profession_not_found}";
+            final var professionLevel = playerData.getCollectionSkills().getLevel(profession);
+            return String.valueOf(profession.getExpCurve().getExperience(playerData, professionLevel));
+        }
 
+        // Number of online members in party
         else if (identifier.startsWith("party_count")) {
             final @Nullable AbstractParty party = playerData.getParty();
             return party == null ? "0" : String.valueOf(party.countMembers());
