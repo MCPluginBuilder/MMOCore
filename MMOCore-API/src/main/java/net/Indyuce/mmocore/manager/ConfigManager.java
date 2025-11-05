@@ -69,12 +69,6 @@ public class ConfigManager {
         if (!FileUtils.getFile(MMOCore.plugin, "exp-tables").exists())
             copyDefaultFile("exp-tables/default_exp_tables.yml");
 
-        if (!FileUtils.getFile(MMOCore.plugin, "expcurves").exists()) {
-            copyDefaultFile("expcurves/levels.txt");
-            copyDefaultFile("expcurves/mining.txt");
-            copyDefaultFile("expcurves/skill-tree-node.txt");
-        }
-
         if (!FileUtils.getFile(MMOCore.plugin, "loot-chests").exists())
             copyDefaultFile("loot-chests/default_loot_chests.yml");
 

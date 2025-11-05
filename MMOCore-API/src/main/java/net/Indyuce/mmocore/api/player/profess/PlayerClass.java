@@ -25,8 +25,8 @@ import net.Indyuce.mmocore.api.player.profess.resource.ResourceRegeneration;
 import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import net.Indyuce.mmocore.api.util.math.formula.LinearValue;
 import net.Indyuce.mmocore.experience.EXPSource;
-import net.Indyuce.mmocore.experience.ExpCurve;
 import net.Indyuce.mmocore.experience.ExperienceObject;
+import net.Indyuce.mmocore.experience.curve.ExperienceCurve;
 import net.Indyuce.mmocore.experience.droptable.ExperienceTable;
 import net.Indyuce.mmocore.loot.chest.particle.CastingParticle;
 import net.Indyuce.mmocore.player.stats.StatInfo;
@@ -59,7 +59,7 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
     private final ManaDisplayOptions manaDisplay;
 
     @NotNull
-    private final ExpCurve expCurve;
+    private final ExperienceCurve expCurve;
 
     @Nullable
     private final ExperienceTable expTable;
@@ -111,10 +111,14 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
         actionBarFormat = config.contains("action-bar") ? config.getString("action-bar") : null;
 
         // Exp curve
-        expCurve = config.contains("exp-curve")
-                ? MMOCore.plugin.experience.getCurveOrThrow(
-                config.get("exp-curve").toString().toLowerCase().replace("_", "-").replace(" ", "-"))
-                : ExpCurve.DEFAULT;
+        ExperienceCurve expCurve = ExperienceCurve.DEFAULT;
+        try {
+            expCurve = ExperienceCurve.fromConfig(config.getString("exp-curve"));
+        } catch (Throwable exception) {
+            MMOCore.log(Level.WARNING, "Could not load exp curve from class '" + id + "': " + exception.getMessage());
+            exception.printStackTrace();
+        }
+        this.expCurve = expCurve;
 
         // Main exp table
         ExperienceTable expTable = null;
@@ -261,7 +265,7 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
         manaDisplay = ManaDisplayOptions.DEFAULT;
         maxLevel = 0;
         displayOrder = 0;
-        expCurve = ExpCurve.DEFAULT;
+        expCurve = ExperienceCurve.DEFAULT;
         expTable = null;
         comboMap = null;
         castParticle = new CastingParticle(VParticle.INSTANT_EFFECT.get());
@@ -282,7 +286,7 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
     }
 
     @Override
-    public String getKey() {
+    public @NotNull String getKey() {
         return "class_" + getId();
     }
 
@@ -315,7 +319,7 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
     }
 
     @Override
-    public @NotNull ExpCurve getExpCurve() {
+    public @NotNull ExperienceCurve getExpCurve() {
         return expCurve;
     }
 

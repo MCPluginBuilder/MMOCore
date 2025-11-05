@@ -43,7 +43,7 @@ public class InfoCommandTreeNode extends CommandTreeNode {
 		for (Profession profession : MMOCore.plugin.professionManager.getAll())
 			sender.sendMessage(
 					ChatColor.YELLOW + profession.getName() + ": Lvl " + ChatColor.GOLD + playerData.getCollectionSkills().getLevel(profession)
-							+ ChatColor.YELLOW + " - " + ChatColor.GOLD + playerData.getCollectionSkills().getExperience(profession)
+							+ ChatColor.YELLOW + " - " + ChatColor.GOLD + MythicLib.plugin.getMMOConfig().decimal.format(playerData.getCollectionSkills().getExperience(profession))
 							+ ChatColor.YELLOW + " / " + ChatColor.GOLD + playerData.getCollectionSkills().getLevelUpExperience(profession));
 		sender.sendMessage(ChatColor.YELLOW + "----------------------------------------------------");
 		return CommandResult.SUCCESS;

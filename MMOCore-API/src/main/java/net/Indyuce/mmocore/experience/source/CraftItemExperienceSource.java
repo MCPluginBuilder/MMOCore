@@ -15,6 +15,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class CraftItemExperienceSource extends SpecificExperienceSource<Material> {
@@ -45,7 +46,7 @@ public class CraftItemExperienceSource extends SpecificExperienceSource<Material
 
             PlayerData data = PlayerData.get((Player) event.getWhoClicked());
 
-            /**
+            /*
              * This makes sure that the crafting recipe was performed correctly.
              *
              * In some scenarii, the CraftItemEvent (which is only a click event
@@ -62,27 +63,32 @@ public class CraftItemExperienceSource extends SpecificExperienceSource<Material
              * - https://git.lumine.io/mythiccraft/mmocore/-/issues/102
              * - https://www.spigotmc.org/threads/how-to-get-amount-of-item-crafted.377598/
              */
-            final int index = getLowerAmountIngredientIndex(event.getInventory().getMatrix());
-            final int oldAmount = event.getInventory().getMatrix()[index].getAmount();
-            final int itemsCraftedPerRecipe = event.getInventory().getResult().getAmount();
-            final Material resultType = event.getInventory().getResult().getType();
+            final var index = getLowerAmountIngredientIndex(event.getInventory().getMatrix());
+            final var oldItem = event.getInventory().getMatrix()[index];
+            final var oldAmount = oldItem.getAmount();
+            final var itemsCraftedPerRecipe = event.getInventory().getResult().getAmount();
+            final var resultType = event.getInventory().getResult().getType();
 
             Bukkit.getScheduler().runTask(MMOCore.plugin, () -> {
 
-                // First check
-                int newAmount = getAmount(event.getInventory().getMatrix()[index]);
+                final var newItem = event.getInventory().getMatrix()[index];
+                final var newAmount = getEffectiveNewAmount(newItem, oldItem);
+
                 if (newAmount >= oldAmount) return;
 
                 // Deduce amount crafted
-                int amountCrafted = (event.getClick().isShiftClick() ? oldAmount - newAmount : 1) * itemsCraftedPerRecipe;
+                final var amountCrafted = (event.getClick().isShiftClick() ? oldAmount - newAmount : 1) * itemsCraftedPerRecipe;
                 for (CraftItemExperienceSource source : getSources())
                     if (source.matches(data, resultType))
                         source.giveExperience(data, amountCrafted, event.getInventory().getLocation());
             });
         }
 
-        private int getAmount(@Nullable ItemStack item) {
-            return item == null || item.getType() == Material.AIR ? 0 : item.getAmount();
+        private int getEffectiveNewAmount(@Nullable ItemStack item, @NotNull ItemStack oldItem) {
+            // Some items are consumed and leave behind a different type (e.g. buckets)
+            // If that's the case just say all items were crafted
+            // Fixes https://gitlab.com/phoenix-dvpmt/mmocore/-/issues/1165
+            return item == null || item.getType() == Material.AIR || item.getType() != oldItem.getType() ? 0 : item.getAmount();
         }
 
         private int getLowerAmountIngredientIndex(ItemStack[] matrix) {

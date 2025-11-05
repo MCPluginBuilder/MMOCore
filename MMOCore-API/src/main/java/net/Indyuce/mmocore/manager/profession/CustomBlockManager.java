@@ -205,12 +205,15 @@ public class CustomBlockManager extends SpecificProfessionManager {
         this.protectVanillaBlocks = config.getBoolean("protect-vanilla-blocks");
         this.enableToolRestrictions = config.getBoolean("enable-tool-restrictions");
 
-        for (String key : config.getStringList("conditions"))
-            try {
-                customMineConditions.add(MMOCore.plugin.loadManager.loadCondition(new MMOLineConfig(key)));
-            } catch (IllegalArgumentException exception) {
-                MMOCore.plugin.getLogger().log(Level.WARNING, "Could not load custom mining condition '" + key + "': " + exception.getMessage());
-            }
+        // Avoid warnings if disabled
+        if (enabled)
+            for (String key : config.getStringList("conditions"))
+                try {
+                    customMineConditions.add(MMOCore.plugin.loadManager.loadCondition(new MMOLineConfig(key)));
+                } catch (IllegalArgumentException exception) {
+                    MMOCore.plugin.getLogger().log(Level.WARNING, "Could not load custom mining condition '" + key + "': " + exception.getMessage());
+                }
+        else customMineConditions.clear();
     }
 
     @Deprecated

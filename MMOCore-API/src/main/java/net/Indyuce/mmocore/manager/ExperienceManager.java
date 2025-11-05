@@ -1,9 +1,8 @@
 package net.Indyuce.mmocore.manager;
 
 import io.lumine.mythic.lib.util.FileUtils;
-import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.experience.ExpCurve;
+import net.Indyuce.mmocore.experience.curve.ExperienceCurve;
 import net.Indyuce.mmocore.experience.droptable.ExperienceTable;
 import net.Indyuce.mmocore.experience.source.type.ExperienceSource;
 import net.Indyuce.mmocore.manager.profession.ExperienceSourceManager;
@@ -14,7 +13,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class ExperienceManager implements MMOCoreManager {
-    private final Map<String, ExpCurve> expCurves = new HashMap<>();
     private final Map<String, ExperienceTable> expTables = new HashMap<>();
 
     /**
@@ -45,14 +43,29 @@ public class ExperienceManager implements MMOCoreManager {
         getManager(path).registerSource(source);
     }
 
+    @Deprecated
     public boolean hasCurve(String id) {
-        return expCurves.containsKey(id);
+        try {
+            ExperienceCurve.fromConfig("expcurves/" + id + ".txt");
+            return true;
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
+    @Deprecated
     @NotNull
-    public ExpCurve getCurveOrThrow(String id) {
-        Validate.isTrue(hasCurve(id), "Could not find exp curve with ID '" + id + "'");
-        return expCurves.get(id);
+    public ExperienceCurve getCurveOrThrow(String id) {
+        try {
+            return ExperienceCurve.fromConfig(id + ".txt");
+        } catch (Exception ignored) {
+            throw new IllegalArgumentException("Could not find exp curve with ID '" + id + "'");
+        }
+    }
+
+    @Deprecated
+    public Collection<ExperienceCurve> getCurves() {
+        return List.of();
     }
 
     @Deprecated
@@ -82,10 +95,6 @@ public class ExperienceManager implements MMOCoreManager {
         throw new IllegalArgumentException("Please provide either a string (exp table name) or a config section (locally define an exp table)");
     }
 
-    public Collection<ExpCurve> getCurves() {
-        return expCurves.values();
-    }
-
     public Collection<ExperienceTable> getTables() {
         return expTables.values();
     }
@@ -100,21 +109,15 @@ public class ExperienceManager implements MMOCoreManager {
     @Override
     public void initialize(boolean clearBefore) {
         if (clearBefore) {
-            expCurves.clear();
             expTables.clear();
 
             managers.forEach((c, manager) -> manager.close());
             managers.clear();
         }
 
-        // Exp curves
-        FileUtils.loadObjectsFromFolderRaw(MMOCore.plugin, "expcurves", file -> {
-            final ExpCurve curve = new ExpCurve(file);
-            expCurves.put(curve.getId(), curve);
-        }, "Could not load exp curve from file '%s': %s");
 
         // Exp tables
-        FileUtils.loadObjectsFromFolder(MMOCore.plugin ,"exp-tables", false, (key, config) -> {
+        FileUtils.loadObjectsFromFolder(MMOCore.plugin, "exp-tables", false, (key, config) -> {
             final ExperienceTable table = new ExperienceTable(config);
             expTables.put(table.getId(), table);
         }, "Could not load exp table '%s' from file '%s': %s");

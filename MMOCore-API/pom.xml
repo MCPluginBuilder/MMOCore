@@ -94,15 +94,16 @@
             <url>https://maven.enginehub.org/repo/</url>
         </repository>
 
-        <repository>
-            <id>dmulloy2-repo</id>
-            <url>https://repo.dmulloy2.net/repository/public/</url>
-        </repository>
-
         <!-- Party and Friends Repository -->
         <repository>
             <id>simonsators Repo</id>
             <url>https://simonsator.de/repo</url>
+        </repository>
+
+        <!-- Quests (plugin) -->
+        <repository>
+            <id>codemc-repo</id>
+            <url>https://repo.codemc.io/repository/maven-public/</url>
         </repository>
 
         <!-- Heroes Repository
@@ -227,9 +228,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.comphenix.protocol</groupId>
+            <groupId>net.dmulloy2</groupId>
             <artifactId>ProtocolLib</artifactId>
-            <version>4.8.0</version>
+            <version>5.4.0</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -325,9 +326,9 @@
 
         <!-- Quest Plugins -->
         <dependency>
-            <groupId>me.blackvein</groupId>
-            <artifactId>Quests</artifactId>
-            <version>4.4.1-b340</version>
+            <groupId>me.pikamug.quests</groupId>
+            <artifactId>quests-core</artifactId>
+            <version>5.2.7</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
