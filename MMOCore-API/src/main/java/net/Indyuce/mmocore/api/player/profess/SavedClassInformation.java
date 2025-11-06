@@ -316,7 +316,11 @@ public class SavedClassInformation implements ClassDataContainer {
         // Patch player data
         ///////////////////////////////////////////////
 
-        final int targetLevel, targetSkillPoints, targetAttributePoints;
+        final int targetLevel,
+                targetSkillPoints,
+                targetAttributePoints,
+                targetSkillReallocationPoints,
+                targetAttributeReallocationPoints;
         final double targetExp;
 
         // Fetch info from last class
@@ -325,6 +329,8 @@ public class SavedClassInformation implements ClassDataContainer {
             targetExp = lastClassPlayed.experience;
             targetSkillPoints = lastClassPlayed.skillPoints + lastClassPlayed.countSpentSkillPoints() - this.countSpentSkillPoints();
             targetAttributePoints = lastClassPlayed.attributePoints + lastClassPlayed.countSpentAttributePoints() - this.countSpentAttributePoints();
+            targetSkillReallocationPoints = lastClassPlayed.skillReallocationPoints;
+            targetAttributeReallocationPoints = lastClassPlayed.attributeReallocationPoints;
         }
 
         // Fetch info from saved class info
@@ -333,6 +339,8 @@ public class SavedClassInformation implements ClassDataContainer {
             targetExp = experience;
             targetSkillPoints = this.skillPoints;
             targetAttributePoints = this.attributePoints;
+            targetSkillReallocationPoints = this.skillReallocationPoints;
+            targetAttributeReallocationPoints = this.attributeReallocationPoints;
         }
 
         ///////////////////////////////////////////////
@@ -343,9 +351,9 @@ public class SavedClassInformation implements ClassDataContainer {
         player.setExperience(targetExp);
         player.setSkillPoints(targetSkillPoints);
         player.setAttributePoints(targetAttributePoints);
-        player.setAttributeReallocationPoints(attributeReallocationPoints);
+        player.setSkillReallocationPoints(targetSkillReallocationPoints);
+        player.setAttributeReallocationPoints(targetAttributeReallocationPoints);
         player.setSkillTreeReallocationPoints(skillTreeReallocationPoints);
-        player.setSkillReallocationPoints(skillReallocationPoints);
         player.setUnlockedItems(unlockedItems);
         player.setClass(profess);
         for (int slot : boundSkills.keySet()) {
