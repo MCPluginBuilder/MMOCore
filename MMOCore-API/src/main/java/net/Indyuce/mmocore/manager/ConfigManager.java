@@ -25,7 +25,8 @@ import java.util.logging.Level;
 public class ConfigManager {
     public boolean overrideVanillaExp, canCreativeCast, passiveSkillsNeedBinding, cobbleGeneratorXP, saveDefaultClassInfo,
             splitMainExp, splitProfessionExp, disableQuestBossBar, pvpModeEnabled, pvpModeInvulnerabilityCanDamage, forceClassSelection,
-            enableGlobalSkillTreeGUI, enableSpecificSkillTreeGUI, waypointAutoPathCalculation, waypointLinkReciprocity;
+            enableGlobalSkillTreeGUI, enableSpecificSkillTreeGUI, waypointAutoPathCalculation, waypointLinkReciprocity,
+            shareExp, shareSkillPts, shareAttributePts, shareSkillReallocPts, shareAttributeReallocPts;
     public String partyChatPrefix, noSkillBoundPlaceholder;
     public ChatColor staminaFull, staminaHalf, staminaEmpty;
     public long combatLogTimer, lootChestExpireTime, lootChestPlayerCooldown, globalSkillCooldown;
@@ -171,6 +172,13 @@ public class ConfigManager {
         cobbleGeneratorXP = MMOCore.plugin.getConfig().getBoolean("should-cobblestone-generators-give-exp");
         saveDefaultClassInfo = MMOCore.plugin.getConfig().getBoolean("save-default-class-info");
         overrideVanillaExp = MMOCore.plugin.getConfig().getBoolean("override-vanilla-exp");
+
+        // Data share across classes
+        shareExp = MMOCore.plugin.getConfig().getBoolean("share_across_classes.experience");
+        shareSkillPts = MMOCore.plugin.getConfig().getBoolean("share_across_classes.skill_points");
+        shareAttributePts = MMOCore.plugin.getConfig().getBoolean("share_across_classes.attribute_points");
+        shareSkillReallocPts = MMOCore.plugin.getConfig().getBoolean("share_across_classes.skill_reallocation_points");
+        shareAttributeReallocPts = MMOCore.plugin.getConfig().getBoolean("share_across_classes.attribute_reallocation_points");
     }
 
     @NotNull

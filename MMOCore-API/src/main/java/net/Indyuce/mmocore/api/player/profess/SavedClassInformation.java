@@ -316,32 +316,25 @@ public class SavedClassInformation implements ClassDataContainer {
         // Patch player data
         ///////////////////////////////////////////////
 
-        final int targetLevel,
-                targetSkillPoints,
-                targetAttributePoints,
-                targetSkillReallocationPoints,
-                targetAttributeReallocationPoints;
-        final double targetExp;
-
-        // Fetch info from last class
-        if (lastClassPlayed != null) {
-            targetLevel = lastClassPlayed.level;
-            targetExp = lastClassPlayed.experience;
-            targetSkillPoints = lastClassPlayed.skillPoints + lastClassPlayed.countSpentSkillPoints() - this.countSpentSkillPoints();
-            targetAttributePoints = lastClassPlayed.attributePoints + lastClassPlayed.countSpentAttributePoints() - this.countSpentAttributePoints();
-            targetSkillReallocationPoints = lastClassPlayed.skillReallocationPoints;
-            targetAttributeReallocationPoints = lastClassPlayed.attributeReallocationPoints;
-        }
-
-        // Fetch info from saved class info
-        else {
-            targetLevel = level;
-            targetExp = experience;
-            targetSkillPoints = this.skillPoints;
-            targetAttributePoints = this.attributePoints;
-            targetSkillReallocationPoints = this.skillReallocationPoints;
-            targetAttributeReallocationPoints = this.attributeReallocationPoints;
-        }
+        final var conf = MMOCore.plugin.configManager;
+        final var targetLevel = lastClassPlayed != null && conf.shareExp
+                ? lastClassPlayed.level
+                : level;
+        final var targetExp = lastClassPlayed != null && conf.shareExp
+                ? lastClassPlayed.experience
+                : experience;
+        final var targetSkillPoints = lastClassPlayed != null && conf.shareSkillPts
+                ? lastClassPlayed.skillPoints + lastClassPlayed.countSpentSkillPoints() - this.countSpentSkillPoints()
+                : this.skillPoints;
+        final var targetAttributePoints = lastClassPlayed != null && conf.shareAttributePts
+                ? lastClassPlayed.attributePoints + lastClassPlayed.countSpentAttributePoints() - this.countSpentAttributePoints()
+                : this.attributePoints;
+        final var targetSkillReallocationPoints = lastClassPlayed != null && conf.shareSkillReallocPts
+                ? lastClassPlayed.skillReallocationPoints
+                : this.skillReallocationPoints;
+        final var targetAttributeReallocationPoints = lastClassPlayed != null && conf.shareAttributeReallocPts
+                ? lastClassPlayed.attributeReallocationPoints
+                : this.attributeReallocationPoints;
 
         ///////////////////////////////////////////////
         // Apply player data

@@ -329,6 +329,20 @@ resource-bar-colors:
   stamina-half: 'DARK_GREEN'
   stamina-empty: 'WHITE'
 
+# Define what data you want to be passed along new
+# classes when a player changes class.
+share_across_classes:
+
+  # When toggling on this, all classes of the player
+  # will share experience and level. This only makes
+  # sense if all classes share the same exp curves!
+  experience: false
+
+  skill_points: false
+  attribute_points: false
+  skill_reallocation_points: false
+  attribute_reallocation_points: false
+
 # Requires WorldGuard to work. Do NOT enable unless
 # you have WG to avoid weird interact rule issues!
 #

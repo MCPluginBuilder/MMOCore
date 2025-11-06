@@ -738,9 +738,13 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     public void setLevel(int level, @NotNull PlayerLevelChangeEvent.Reason reason) {
 
+        // Compute effective new level
         final var oldLevel = getLevel();
         var newLevel = Math.max(1, level);
         if (getProfess().hasMaxLevel()) newLevel = Math.min(getProfess().getMaxLevel(), newLevel);
+
+        if (oldLevel == newLevel) return; // Safeguard when changing class
+
         this.level = newLevel;
 
         if (reason != PlayerLevelChangeEvent.Reason.CHOOSE_PROFILE) // No event, data is loaded async
