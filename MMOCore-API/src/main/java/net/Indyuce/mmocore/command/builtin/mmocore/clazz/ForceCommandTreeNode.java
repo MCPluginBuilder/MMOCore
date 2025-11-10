@@ -30,6 +30,11 @@ public class ForceCommandTreeNode extends CommandTreeNode {
 
         final var playerData = PlayerData.get(player);
 
+        // Cannot select already existing class
+        if (playerData.getProfess().equals(profess)) {
+            return explorer.fail("Player " + player.getName() + " is already a " + profess.getName() + ".");
+        }
+
         final var called = new PlayerChangeClassEvent(playerData, profess, PlayerChangeClassEvent.Reason.COMMAND_FORCE);
         Bukkit.getPluginManager().callEvent(called);
         if (called.isCancelled()) return explorer.fail("Bukkit event canceled");
