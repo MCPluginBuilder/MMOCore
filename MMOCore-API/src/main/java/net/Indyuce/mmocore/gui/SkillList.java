@@ -509,6 +509,15 @@ public class SkillList extends EditableInventory {
         }
 
         @Override
+        public void onOpen() {
+
+            // Auto select skill if there is only one skill slot
+            if (skillSlots.size() == 1) {
+                selected = skills.get(getPageIndex(0));
+            }
+        }
+
+        @Override
         public @NotNull String getRawName() {
             return guiName.replace("{skill}", selected.getSkill().getName());
         }
