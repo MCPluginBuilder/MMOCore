@@ -52,7 +52,7 @@ public class ListExperienceCurve implements ExperienceCurve {
 
     @Override
     public long getExperience(@NotNull PlayerData player, int level) {
-        Validate.isTrue(level > 0, "Level must be stricly positive");
-        return experience.get(Math.min(level, experience.size()));
+        Validate.isTrue(level > 0, "Level must be strictly positive");
+        return experience.get(Math.min(level, experience.size()) - 1);
     }
 }

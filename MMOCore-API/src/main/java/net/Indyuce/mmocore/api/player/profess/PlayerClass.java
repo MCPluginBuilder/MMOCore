@@ -116,7 +116,6 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
             expCurve = ExperienceCurve.fromConfig(config.getString("exp-curve"));
         } catch (Throwable exception) {
             MMOCore.log(Level.WARNING, "Could not load exp curve from class '" + id + "': " + exception.getMessage());
-            exception.printStackTrace();
         }
         this.expCurve = expCurve;
 
