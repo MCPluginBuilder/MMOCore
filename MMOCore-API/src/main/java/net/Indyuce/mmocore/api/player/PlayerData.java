@@ -775,7 +775,9 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
         getPlayer().sendExperienceChange(0.01f);
         getPlayer().setLevel(getLevel());
-        getPlayer().setExp(Math.max(0, Math.min(1, (float) experience / (float) getLevelUpExperience())));
+        // [Safeguard] Avoid division by zero
+        final var maxExp = Math.max(1, getLevelUpExperience());
+        getPlayer().setExp(Math.max(0, Math.min(1, (float) experience / (float) maxExp)));
     }
 
     public void setAttributePoints(int value) {
