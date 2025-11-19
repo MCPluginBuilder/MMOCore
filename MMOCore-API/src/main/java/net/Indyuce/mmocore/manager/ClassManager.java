@@ -92,7 +92,7 @@ public class ClassManager implements MMOCoreManager {
         for (PlayerClass profess : map.values())
             try {
                 profess.getPostLoadAction().performAction();
-            } catch (IllegalArgumentException exception) {
+            } catch (Exception exception) {
                 MMOCore.plugin.getLogger().log(Level.WARNING, "Could not post-load class '" + profess.getId() + "': " + exception.getMessage());
             }
 
