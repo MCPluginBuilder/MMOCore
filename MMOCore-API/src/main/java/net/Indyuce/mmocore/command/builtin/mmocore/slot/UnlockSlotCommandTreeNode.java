@@ -37,7 +37,7 @@ public class UnlockSlotCommandTreeNode extends CommandTreeNode {
         }
 
         if (skillSlot.isUnlockedByDefault()) {
-            sender.sendMessage(ChatColor.RED + "You can't lock a skill that is unlocked by default.");
+            sender.sendMessage(ChatColor.RED + "This skill slot is unlocked by default.");
             return CommandResult.FAILURE;
         }
 
