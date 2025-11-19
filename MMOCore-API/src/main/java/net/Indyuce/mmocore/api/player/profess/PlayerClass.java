@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.api.MMOLineConfig;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.gui.util.IconOptions;
 import io.lumine.mythic.lib.player.modifier.ModifierSource;
+import io.lumine.mythic.lib.player.particle.ParticleInformation;
 import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.skill.SimpleSkill;
@@ -15,7 +16,6 @@ import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.FileUtils;
 import io.lumine.mythic.lib.util.PostLoadAction;
 import io.lumine.mythic.lib.util.PreloadedObject;
-import io.lumine.mythic.lib.version.VParticle;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.profess.event.EventTrigger;
@@ -28,7 +28,6 @@ import net.Indyuce.mmocore.experience.EXPSource;
 import net.Indyuce.mmocore.experience.ExperienceObject;
 import net.Indyuce.mmocore.experience.curve.ExperienceCurve;
 import net.Indyuce.mmocore.experience.droptable.ExperienceTable;
-import net.Indyuce.mmocore.loot.chest.particle.CastingParticle;
 import net.Indyuce.mmocore.player.stats.StatInfo;
 import net.Indyuce.mmocore.skill.ClassSkill;
 import net.Indyuce.mmocore.skill.RegisteredSkill;
@@ -65,7 +64,7 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
     private final ExperienceTable expTable;
 
     @Nullable
-    private final CastingParticle castParticle;
+    private final ParticleInformation castParticle;
 
     private final List<SkillSlot> skillSlots = new ArrayList<>();
     private final List<SkillTree> skillTrees = new ArrayList<>();
@@ -171,7 +170,7 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
                     MMOCore.log(Level.WARNING, "Could not load trigger '" + key + "' from class '" + id + "':" + exception.getMessage());
                 }
 
-        // Class STATS, not attributes (historic reasons)
+        // Class STATS, not attributes (historical reasons)
         if (config.contains("attributes"))
             for (String key : config.getConfigurationSection("attributes").getKeys(false))
                 try {
@@ -191,20 +190,20 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
                     (key, exception) -> MMOCore.plugin.getLogger().log(Level.WARNING, "Could not load skill slot '" + key + "' from class '" + getId() + "': " + exception.getMessage()));
 
         // Class skills
-        for (RegisteredSkill registered : MMOCore.plugin.skillManager.getAll()) {
-            final String key = registered.getHandler().getId();
-            if (config.contains("skills." + key))
-                skills.put(key, new ClassSkill(registered, config.getConfigurationSection("skills." + key)));
-            else
-                skills.put(key, new ClassSkill(registered, 1, 1, false));
+        for (var registered : MMOCore.plugin.skillManager.getAll()) {
+            final var key = registered.getHandler().getId();
+            final var classSkill = config.contains("skills." + key)
+                    ? new ClassSkill(registered, config.getConfigurationSection("skills." + key))
+                    : new ClassSkill(registered, 1, 1, false);
+            skills.put(key, classSkill);
         }
 
         // Casting particle
-        CastingParticle castingParticle;
+        ParticleInformation castingParticle;
         try {
-            castingParticle = config.contains("cast-particle") ? new CastingParticle(config.getConfigurationSection("cast-particle")) : null;
-        } catch (RuntimeException exception) {
-            MMOCore.plugin.getLogger().log(Level.WARNING, "Could not load casting mode particle of class '" + getId() + "': " + exception.getMessage());
+            castingParticle = config.contains("cast-particle") ? ParticleInformation.fromConfig(config.get("cast-particle")) : null;
+        } catch (Exception exception) {
+            MMOCore.log(Level.WARNING, "Could not load casting mode particle of class '" + getId() + "': " + exception.getMessage());
             castingParticle = null;
         }
         this.castParticle = castingParticle;
@@ -267,7 +266,7 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
         expCurve = ExperienceCurve.DEFAULT;
         expTable = null;
         comboMap = null;
-        castParticle = new CastingParticle(VParticle.INSTANT_EFFECT.get());
+        castParticle = null;
         actionBarFormat = null;
         this.icon = new IconOptions(material);
         setOption(ClassOption.DISPLAY, false);
@@ -344,7 +343,7 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
     }
 
     @Nullable
-    public CastingParticle getCastParticle() {
+    public ParticleInformation getCastParticle() {
         return castParticle;
     }
 

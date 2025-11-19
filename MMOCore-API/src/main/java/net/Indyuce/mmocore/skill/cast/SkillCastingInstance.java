@@ -1,55 +1,36 @@
 package net.Indyuce.mmocore.skill.cast;
 
 import io.lumine.mythic.lib.UtilityMethods;
-import io.lumine.mythic.lib.util.lang3.Validate;
+import io.lumine.mythic.lib.util.Lazy;
+import io.lumine.mythic.lib.util.TemporaryHandler;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.skill.binding.BoundSkillInfo;
-import org.bukkit.Bukkit;
-import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public abstract class SkillCastingInstance extends BukkitRunnable implements Listener {
+public abstract class SkillCastingInstance extends TemporaryHandler {
     protected final PlayerData caster;
-    private final SkillCastingHandler handler;
+    protected final SkillCastingHandler handler;
+    private final Lazy<List<BoundSkillInfo>> activeSkills;
 
-    private static final int RUNNABLE_PERIOD = 10;
-
-    /**
-     * This variable temporarily stores the active skills that the player
-     * can try to cast.
-     */
-    private List<BoundSkillInfo> activeSkills;
-    private boolean open = true;
     private int j, sinceLastActivity;
 
     public SkillCastingInstance(@NotNull SkillCastingHandler handler, @NotNull PlayerData caster) {
         this.handler = handler;
         this.caster = caster;
+        this.activeSkills = Lazy.persistent(() -> caster.getBoundSkills().values().stream().filter(bound -> !bound.isPassive()).collect(Collectors.toList()));
 
-        runTaskTimer(MMOCore.plugin, 0, 1);
-        Bukkit.getPluginManager().registerEvents(this, MMOCore.plugin);
+        runTask(runnable -> runnable.runTaskTimer(MMOCore.plugin, 0, 1));
     }
 
+    @NotNull
     public PlayerData getCaster() {
         return caster;
-    }
-
-    public void close() {
-        Validate.isTrue(open, "Skill casting already closed");
-
-        open = false;
-
-        // Unregister listeners
-        HandlerList.unregisterAll(this);
-
-        // Cancel runnable
-        cancel();
     }
 
     public void refreshTimeOut() {
@@ -58,38 +39,48 @@ public abstract class SkillCastingInstance extends BukkitRunnable implements Lis
 
     @NotNull
     public List<BoundSkillInfo> getActiveSkills() {
-        if (activeSkills == null)
-            activeSkills = caster.getBoundSkills().values().stream().filter(bound -> !bound.isPassive()).collect(Collectors.toList());
-        return activeSkills;
+        return activeSkills.get();
     }
 
     private static final int PARTICLES_PER_TICK = 2;
+    private static final int RUNNABLE_PERIOD = 10;
 
     @Override
-    public void run() {
-        if (UtilityMethods.isInvalidated(caster.getMMOPlayerData()) || !caster.hasActiveSkillBound()) {
-            caster.leaveSkillCasting(true);
-            return;
-        }
+    protected @Nullable BukkitRunnable newTask() {
+        return new BukkitRunnable() {
 
-        // Check for timeout
-        if (handler.doesTimeOut() && sinceLastActivity++ > handler.getTimeoutDelay()) {
-            caster.leaveSkillCasting(true);
-            return;
-        }
+            @Override
+            public void run() {
+                if (UtilityMethods.isInvalidated(caster.getMMOPlayerData()) || !caster.hasActiveSkillBound()) {
+                    caster.leaveSkillCasting(true);
+                    return;
+                }
 
-        // Apply casting particles
-        if (caster.getProfess().getCastParticle() != null) for (int k = 0; k < PARTICLES_PER_TICK; k++) {
-            final double a = (double) (PARTICLES_PER_TICK * j + k) / 4;
-            caster.getProfess().getCastParticle().display(caster.getPlayer().getLocation().add(Math.cos(a), 1 + Math.sin(a / 3) / 1.3, Math.sin(a)));
-        }
+                // Check for timeout
+                if (handler.doesTimeOut() && sinceLastActivity++ > handler.getTimeoutDelay()) {
+                    caster.leaveSkillCasting(true);
+                    return;
+                }
 
-        // Apply casting mode-specific effects
-        if (j++ % RUNNABLE_PERIOD == 0) {
-            activeSkills = null;
-            onTick();
-        }
+                // Apply casting particles
+                final var castParticle = caster.getProfess().getCastParticle();
+                if (castParticle != null) for (int k = 0; k < PARTICLES_PER_TICK; k++) {
+                    final double a = (double) (PARTICLES_PER_TICK * j + k) / 4;
+                    castParticle.display(caster.getPlayer().getLocation().add(Math.cos(a), 1 + Math.sin(a / 3) / 1.3, Math.sin(a)));
+                }
+
+                // Apply casting mode-specific effects
+                if (j++ % RUNNABLE_PERIOD == 0) {
+                    activeSkills.flush();
+                    onTick();
+                }
+            }
+        };
     }
 
+    /**
+     * Method ran twice every second while
+     * the player is in casting mode
+     */
     public abstract void onTick();
 }

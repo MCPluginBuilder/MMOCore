@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+@Deprecated
 public class CastingParticle {
     private final Consumer<Location> display;
 
