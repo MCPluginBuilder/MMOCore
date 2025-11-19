@@ -48,10 +48,7 @@ import net.Indyuce.mmocore.party.PartyModule;
 import net.Indyuce.mmocore.party.PartyModuleType;
 import net.Indyuce.mmocore.party.PartyRelationHandler;
 import net.Indyuce.mmocore.party.provided.MMOCorePartyModule;
-import net.Indyuce.mmocore.script.mechanic.ExperienceMechanic;
-import net.Indyuce.mmocore.script.mechanic.ManaMechanic;
-import net.Indyuce.mmocore.script.mechanic.StaminaMechanic;
-import net.Indyuce.mmocore.script.mechanic.StelliumMechanic;
+import net.Indyuce.mmocore.script.mechanic.*;
 import net.Indyuce.mmocore.skill.cast.SkillCastingMode;
 import net.Indyuce.mmocore.skill.trigger.MMOCoreTriggerType;
 import org.bukkit.Bukkit;
@@ -125,6 +122,7 @@ public class MMOCore extends MMOPlugin {
         MythicLib.plugin.getSkills().registerMechanic("stamina", StaminaMechanic::new);
         MythicLib.plugin.getSkills().registerMechanic("stellium", StelliumMechanic::new);
         MythicLib.plugin.getSkills().registerMechanic("mmocore_experience", ExperienceMechanic::new);
+        MythicLib.plugin.getSkills().registerMechanic("cast_mmocore_skill", CastSkillMechanic::new, "mmocore_skill", "cast_skill");
 
         // Register extra objective, drop items...
         if (Bukkit.getPluginManager().getPlugin("WorldGuard") != null)
