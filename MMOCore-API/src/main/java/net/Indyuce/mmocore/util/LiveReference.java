@@ -30,6 +30,7 @@ import java.util.function.Function;
  * spare a null-check on runtime.
  *
  * @param <T> Type parameter
+ * @deprecated Use Lazy<T> instead
  */
 @Deprecated
 @NotUsed

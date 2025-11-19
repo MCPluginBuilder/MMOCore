@@ -117,14 +117,14 @@ public class MMOCore extends MMOPlugin {
         // Register MMOCore-specific objects
         MythicLib.plugin.getEntities().registerRelationHandler(new PartyRelationHandler());
         MythicLib.plugin.getEntities().registerRelationHandler(new GuildRelationHandler());
-        PlayerModifier.registerPlayerModifierType("attribute", configObject -> new AttributeModifier(configObject));
+        PlayerModifier.registerPlayerModifierType("attribute", AttributeModifier::new);
         MMOCoreTriggerType.registerAll();
 
         // Custom scripts
-        MythicLib.plugin.getSkills().registerMechanic("mana", config -> new ManaMechanic(config));
-        MythicLib.plugin.getSkills().registerMechanic("stamina", config -> new StaminaMechanic(config));
-        MythicLib.plugin.getSkills().registerMechanic("stellium", config -> new StelliumMechanic(config));
-        MythicLib.plugin.getSkills().registerMechanic("mmocore_experience", config -> new ExperienceMechanic(config));
+        MythicLib.plugin.getSkills().registerMechanic("mana", ManaMechanic::new);
+        MythicLib.plugin.getSkills().registerMechanic("stamina", StaminaMechanic::new);
+        MythicLib.plugin.getSkills().registerMechanic("stellium", StelliumMechanic::new);
+        MythicLib.plugin.getSkills().registerMechanic("mmocore_experience", ExperienceMechanic::new);
 
         // Register extra objective, drop items...
         if (Bukkit.getPluginManager().getPlugin("WorldGuard") != null)

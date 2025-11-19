@@ -115,17 +115,16 @@ public class PlayerAttributes {
 
         for (String key : config.getKeys(false))
             try {
-                final String id = key.toLowerCase().replace("_", "-").replace(" ", "-");
-                final var attribute = MMOCore.plugin.attributeManager.get(id);
-                Validate.notNull(attribute, "Could not find attribute called '" + id + "'");
+                final var attributeId = key.toLowerCase().replace("_", "-").replace(" ", "-");
+                final var attribute = MMOCore.plugin.attributeManager.getOrThrow(attributeId);
 
                 // [Backwards compatibility] Failsafe, ignore attributes that are not saved
                 if (!attribute.isSaved()) continue;
 
-                final var ins = new AttributeInstance(id);
+                final var ins = new AttributeInstance(attributeId);
                 ins.setBase(config.getInt(key));
-                instances.put(id, ins);
-            } catch (IllegalArgumentException exception) {
+                instances.put(attributeId, ins);
+            } catch (Exception exception) {
                 data.log(Level.WARNING, exception.getMessage());
             }
     }
@@ -279,23 +278,21 @@ public class PlayerAttributes {
              * even though the attribute was cancelled before hand
              */
             if (mod != null) {
-                if (mod instanceof Closeable)
-                    ((Closeable) mod).close();
+                if (mod instanceof Closeable) ((Closeable) mod).close();
                 updateStats();
             }
             return mod;
         }
 
         public void updateStats() {
-            final PlayerAttribute attr = MMOCore.plugin.attributeManager.get(id);
-            final int total = getTotal();
+            final var total = getTotal();
 
             // Remove ALL stat modifiers
-            for (StatInstance ins : data.getMMOPlayerData().getStatMap().getInstances())
+            for (var ins : data.getMMOPlayerData().getStatMap().getInstances())
                 ins.removeIf(str -> str.equals("attribute." + id));
 
             // Register new stat modifiers
-            attr.getBuffs().forEach(buff -> buff.multiply(total).register(data.getMMOPlayerData()));
+            attribute.get().getBuffs().forEach(buff -> buff.multiply(total).register(data.getMMOPlayerData()));
         }
     }
 
