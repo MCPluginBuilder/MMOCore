@@ -240,10 +240,17 @@ public class RPGPlaceholders extends PlaceholderExpansion {
             final @Nullable Player friend = Bukkit.getPlayer(playerData.getFriends().get(n));
             if (friend == null) return ERROR_PLACEHOLDER;
             return friend.getName();
-        } else if (identifier.startsWith("profession_"))
-            return String
-                    .valueOf(playerData.getCollectionSkills().getLevel(identifier.substring(11).replace(" ", "-").replace("_", "-").toLowerCase()));
+        }
 
+        // Profesion level
+        else if (identifier.startsWith("profession_")) {
+            final var professionId = UtilityMethods.kebabCase(identifier.substring(11));
+            final @Nullable var profession = MMOCore.plugin.professionManager.get(professionId);
+            if (profession == null) return "{profession_not_found}";
+            return String.valueOf(playerData.getCollectionSkills().getLevel(profession));
+        }
+
+        // Current Experience
         else if (identifier.equals("experience"))
             return MythicLib.plugin.getMMOConfig().decimal.format(playerData.getExperience());
 
