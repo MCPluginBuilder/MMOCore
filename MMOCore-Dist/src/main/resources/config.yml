@@ -53,8 +53,8 @@ custom-mining:
   # UNCOMMENT TO ENABLE CUSTOM MINING SERVERWIDE
   #conditions: []
   conditions:
-  - 'world{name="world,world_nether,world_the_end"}'
-  - 'region{name="example_region,example_region2,__global__"}'
+    - 'world{name="world,world_nether,world_the_end"}'
+    - 'region{name="example_region,example_region2,__global__"}'
 
   # Enable tool restrictions. See the following wiki page for more info
   # https://gitlab.com/phoenix-dvpmt/mmocore/-/wikis/Tool%20Restrictions
@@ -234,6 +234,12 @@ vanilla-exp-redirection:
 # level progress on the vanilla experience bar.
 # Requires a SERVER reload when changed.
 override-vanilla-exp: true
+
+# Ticks between two resource regeneration events.
+# Set to 20 by default (1 second), lowering this setting
+# will make resources regenerate faster AND increase
+# the number of resource regen events fired per second.
+player_resource_tick_period: 20
 
 # When enabled and when using a profile plugin, MMOCore will
 # force the user to choose a class. The profile will not be

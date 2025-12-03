@@ -10,7 +10,6 @@ import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.SpigotPlugin;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.attribute.AttributeModifier;
-import net.Indyuce.mmocore.api.player.profess.resource.PlayerResource;
 import net.Indyuce.mmocore.command.ToggleableCommand;
 import net.Indyuce.mmocore.command.builtin.mmocore.MMOCoreCommandTreeRoot;
 import net.Indyuce.mmocore.comp.citizens.CitizenInteractEventListener;
@@ -48,13 +47,13 @@ import net.Indyuce.mmocore.party.PartyModule;
 import net.Indyuce.mmocore.party.PartyModuleType;
 import net.Indyuce.mmocore.party.PartyRelationHandler;
 import net.Indyuce.mmocore.party.provided.MMOCorePartyModule;
+import net.Indyuce.mmocore.player.ResourceRegenRunnable;
 import net.Indyuce.mmocore.script.mechanic.*;
 import net.Indyuce.mmocore.skill.cast.SkillCastingMode;
 import net.Indyuce.mmocore.skill.trigger.MMOCoreTriggerType;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventPriority;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -179,20 +178,8 @@ public class MMOCore extends MMOPlugin {
             MMOCore.plugin.getLogger().log(Level.INFO, "Hooked onto MythicMobs");
         }
 
-        /*
-         * Resource regeneration. Must check if entity is dead otherwise regen
-         * will make the 'respawn' button glitched plus HURT entity effect bug
-         */
-        new BukkitRunnable() {
-            public void run() {
-                for (PlayerData player : PlayerData.getAll())
-                    if (player.isOnline() && !player.getPlayer().isDead())
-                        for (PlayerResource resource : PlayerResource.values()) {
-                            final var regenAmount = player.getProfess().getHandler(resource).getRegen(player);
-                            if (regenAmount != 0) resource.regen(player, regenAmount);
-                        }
-            }
-        }.runTaskTimer(MMOCore.plugin, 100, 20);
+        // Resource regen task
+        new ResourceRegenRunnable().schedule();
 
         /*
          * For the sake of the lord, make sure they aren't using MMOItems Mana and
