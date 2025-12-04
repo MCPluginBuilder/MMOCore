@@ -1,13 +1,10 @@
 package net.Indyuce.mmocore.skill.list;
 
 import io.lumine.mythic.lib.api.event.PlayerAttackEvent;
-import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.damage.DamageType;
-import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
-import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import io.lumine.mythic.lib.version.VParticle;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import org.bukkit.Sound;
@@ -39,14 +36,13 @@ public class Sneaky_Picky extends SkillHandler<SimpleSkillResult> implements Lis
 
     @EventHandler
     public void a(PlayerAttackEvent event) {
-        MMOPlayerData data = event.getAttacker().getData();
+        var data = event.getAttacker().getData();
         if (!event.getAttack().getDamage().hasType(DamageType.WEAPON) || PlayerData.get(data.getUniqueId()).isInCombat())
             return;
 
-        PassiveSkill skill = data.getPassiveSkillMap().getSkill(this);
-        if (skill == null)
-            return;
+        var skill = data.getPassiveSkillMap().getSkill(this);
+        if (skill == null) return;
 
-        skill.getTriggeredSkill().cast(new TriggerMetadata(event));
+        skill.getTriggeredSkill().cast(SkillMetadata.of(event));
     }
 }

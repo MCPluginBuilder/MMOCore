@@ -5,8 +5,8 @@ import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import io.lumine.mythic.lib.player.PlayerMetadata;
+import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.result.SkillResult;
-import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.SoundObject;
 import net.Indyuce.mmocore.MMOCore;
@@ -154,7 +154,7 @@ public class KeyCombos extends SkillCastingHandler {
             if (playerData.hasSkillBound(spellSlot) &&
                     !(boundSkill = playerData.getBoundSkill(spellSlot)).getSkill().getTrigger().isPassive()) {
                 final PlayerMetadata caster = playerData.getMMOPlayerData().getStatMap().cache(EquipmentSlot.MAIN_HAND);
-                final SkillResult result = boundSkill.toCastable(playerData).cast(new TriggerMetadata(caster, TriggerType.CAST, null, null));
+                final SkillResult result = boundSkill.toCastable(playerData).cast(SkillMetadata.of(caster));
                 if (!result.isSuccessful()) if (failSkillSound != null) failSkillSound.playTo(player);
             } else if (stayIn) {
                 if (failComboSound != null) failComboSound.playTo(player);

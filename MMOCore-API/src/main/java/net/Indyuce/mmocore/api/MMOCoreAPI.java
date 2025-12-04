@@ -2,10 +2,9 @@ package net.Indyuce.mmocore.api;
 
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.player.PlayerMetadata;
+import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.SkillResult;
-import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
-import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
@@ -71,8 +70,7 @@ public class MMOCoreAPI {
      */
     public SkillResult cast(PlayerData playerData, ClassSkill skill) {
         PlayerMetadata casterMeta = playerData.getMMOPlayerData().getStatMap().cache(EquipmentSlot.MAIN_HAND);
-        TriggerMetadata triggerMeta = new TriggerMetadata(casterMeta, TriggerType.API, null, null);
-        return new CastableSkill(skill, playerData).cast(triggerMeta);
+        return new CastableSkill(skill, playerData).cast(SkillMetadata.of(casterMeta));
     }
 
     /**
@@ -92,8 +90,7 @@ public class MMOCoreAPI {
      */
     public SkillResult cast(PlayerData playerData, RegisteredSkill skill, int level) {
         PlayerMetadata casterMeta = playerData.getMMOPlayerData().getStatMap().cache(EquipmentSlot.MAIN_HAND);
-        TriggerMetadata triggerMeta = new TriggerMetadata(casterMeta, TriggerType.API, null, null);
-        return new CastableSkill(new ClassSkill(skill, 0, 0), level, playerData).cast(triggerMeta);
+        return new CastableSkill(new ClassSkill(skill, 0, 0), level, playerData).cast(SkillMetadata.of(casterMeta));
     }
 
     /**
@@ -115,9 +112,8 @@ public class MMOCoreAPI {
      */
     public SkillResult cast(PlayerData playerData, SkillHandler<?> skill, int level) {
         PlayerMetadata casterMeta = playerData.getMMOPlayerData().getStatMap().cache(EquipmentSlot.MAIN_HAND);
-        TriggerMetadata triggerMeta = new TriggerMetadata(casterMeta, TriggerType.API, null, null);
         RegisteredSkill registered = Objects.requireNonNull(MMOCore.plugin.skillManager.getSkill(skill.getId()), "Could not find registered skill with such handler");
-        return new CastableSkill(new ClassSkill(registered, 0, 0), level, playerData).cast(triggerMeta);
+        return new CastableSkill(new ClassSkill(registered, 0, 0), level, playerData).cast(SkillMetadata.of(casterMeta));
     }
 
     public void setPartyModule(@NotNull PartyModule module) {

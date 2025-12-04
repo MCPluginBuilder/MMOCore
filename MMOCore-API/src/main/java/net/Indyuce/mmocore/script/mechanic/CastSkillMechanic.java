@@ -6,8 +6,6 @@ import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.SkillResult;
-import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
-import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.api.player.PlayerData;
@@ -40,17 +38,17 @@ public class CastSkillMechanic extends TargetMechanic {
         if (!applyRequirements) {
             // TODO [skill update] improve code, maybe move it to Skill interface in MythicLib
             SkillHandler handler = castable.getHandler();
-            SkillMetadata skillMetadata = new TriggerMetadata(targetData.getMMOPlayerData(), TriggerType.API).toSkillMetadata(castable);
+            SkillMetadata skillMetadata = SkillMetadata.of(targetData.getMMOPlayerData()).clone(castable);
             SkillResult result = handler.getResult(skillMetadata);
             if (!result.isSuccessful()) return;
 
             // Call first Bukkit event
-            final PlayerCastSkillEvent called = new PlayerCastSkillEvent(skillMetadata, result);
+            final PlayerCastSkillEvent called = new PlayerCastSkillEvent(castable, skillMetadata, result);
             Bukkit.getPluginManager().callEvent(called);
             if (called.isCancelled()) return;
 
             ((SkillHandler) castable.getHandler()).whenCast(result, skillMetadata);
-            Bukkit.getPluginManager().callEvent(new SkillCastEvent(skillMetadata, result));
+            Bukkit.getPluginManager().callEvent(new SkillCastEvent(castable, skillMetadata, result));
         }
 
         // Cast and check mana/cooldown requirements

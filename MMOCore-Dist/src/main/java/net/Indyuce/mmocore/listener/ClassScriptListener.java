@@ -1,6 +1,5 @@
 package net.Indyuce.mmocore.listener;
 
-import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerChangeClassEvent;
 import net.Indyuce.mmocore.api.event.PlayerLevelChangeEvent;
@@ -24,7 +23,7 @@ public class ClassScriptListener implements Listener {
         // With delay
         Bukkit.getScheduler().runTask(MMOCore.plugin, () -> {
             final var caster = event.getData().getMMOPlayerData();
-            caster.triggerSkills(new TriggerMetadata(caster, MMOCoreTriggerType.CLASS_CHOSEN));
+            caster.triggerSkills(MMOCoreTriggerType.CLASS_CHOSEN);
         });
     }
 
@@ -35,7 +34,7 @@ public class ClassScriptListener implements Listener {
         if (event.getReason() == PlayerLevelChangeEvent.Reason.LEVEL_UP)
             Bukkit.getScheduler().runTask(MMOCore.plugin, () -> {
                 final var caster = event.getData().getMMOPlayerData();
-                caster.triggerSkills(new TriggerMetadata(caster, MMOCoreTriggerType.LEVEL_UP));
+                caster.triggerSkills(MMOCoreTriggerType.LEVEL_UP);
             });
     }
 

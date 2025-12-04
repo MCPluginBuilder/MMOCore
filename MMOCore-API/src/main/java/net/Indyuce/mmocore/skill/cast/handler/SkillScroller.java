@@ -4,7 +4,7 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
-import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
+import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.SoundObject;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerKeyPressEvent;
@@ -112,7 +112,7 @@ public class SkillScroller extends SkillCastingHandler {
             // Cast skill
             var casting = (CustomSkillCastingInstance) playerData.getSkillCasting();
             var caster = playerData.getMMOPlayerData().getStatMap().cache(EquipmentSlot.MAIN_HAND);
-            var result = casting.getSelected().toCastable(playerData).cast(new TriggerMetadata(caster, null, null));
+            var result = casting.getSelected().toCastable(playerData).cast(SkillMetadata.of(caster));
 
             // Quit on cast? Only if successful
             if (result.isSuccessful() && quitOnCast) playerData.leaveSkillCasting();

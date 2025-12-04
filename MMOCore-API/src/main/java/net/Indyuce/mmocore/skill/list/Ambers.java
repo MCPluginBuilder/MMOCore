@@ -8,8 +8,6 @@ import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
-import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
-import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.EntityLocationType;
 import io.lumine.mythic.lib.util.ParabolicProjectile;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
@@ -62,7 +60,7 @@ public class Ambers extends SkillHandler<SimpleSkillResult> implements Listener 
         PassiveSkill passive = data.getPassiveSkillMap().getSkill(this);
         if (passive == null) return;
 
-        passive.getTriggeredSkill().cast(new TriggerMetadata(event, TriggerType.API));
+        passive.getTriggeredSkill().cast(SkillMetadata.of(event));
     }
 
     class Amber extends BukkitRunnable {
