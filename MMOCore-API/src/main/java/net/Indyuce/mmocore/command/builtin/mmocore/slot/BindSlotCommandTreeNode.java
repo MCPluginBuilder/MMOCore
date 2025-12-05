@@ -18,7 +18,7 @@ public class BindSlotCommandTreeNode extends CommandTreeNode {
 
         addArgument(Argument.PLAYER);
         addArgument(Arguments.INDEX);
-        addArgument(Arguments.SKILL);
+        addArgument(Argument.SKILL_HANDLER);
     }
 
     @Override
@@ -45,6 +45,6 @@ public class BindSlotCommandTreeNode extends CommandTreeNode {
         }
         playerData.bindSkill(slot, skill);
 
-        return explorer.success("Skill &6" + skill.getSkill().getHandler().getId() + "&e now bound to slot &6" + slot);
+        return explorer.success("Skill &6" + skill.getSkill().getId() + "&e now bound to slot &6" + slot);
     }
 }

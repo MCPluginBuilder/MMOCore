@@ -1,19 +1,20 @@
 package net.Indyuce.mmocore.skill.list;
 
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import net.Indyuce.mmocore.api.event.PlayerResourceUpdateEvent;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 
+@BuiltinSkillHandler(mods = {"extra"}, triggerable = false)
 public class Neptune_Gift extends SkillHandler<SimpleSkillResult> implements Listener {
-    public Neptune_Gift() {
-        super(false);
-
-        registerModifiers("extra");
+    public Neptune_Gift(ConfigurationSection config) {
+        super(config);
     }
 
     @NotNull

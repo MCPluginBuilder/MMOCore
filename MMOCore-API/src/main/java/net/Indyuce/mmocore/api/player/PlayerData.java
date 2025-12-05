@@ -7,6 +7,7 @@ import io.lumine.mythic.lib.data.SaveReason;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import io.lumine.mythic.lib.player.cooldown.CooldownMap;
+import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.Attributes;
@@ -160,7 +161,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         for (var entry : new HashMap<>(boundSkills).entrySet())
             try {
                 final @Nullable SkillSlot skillSlot = getProfess().getSkillSlot(entry.getKey());
-                final String skillId = entry.getValue().getClassSkill().getSkill().getHandler().getId();
+                final String skillId = entry.getValue().getClassSkill().getSkill().getId();
                 final @Nullable ClassSkill classSkill = getProfess().getSkill(skillId);
                 Validate.notNull(skillSlot, "Could not find skill slot n" + entry.getKey());
                 Validate.notNull(classSkill, "Could not find skill with ID '" + skillId + "'");
@@ -254,8 +255,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     private void castOnLoginScripts() {
 
         // Class Skills
-        for (ClassSkill skill : getProfess().getSkills())
-            if (skill.getSkill().getTrigger() == TriggerType.LOGIN)
+        for (var skill : getProfess().getSkills())
+            if (skill.getTrigger() == TriggerType.LOGIN)
                 skill.toCastable(this).cast(getMMOPlayerData());
 
         // Call Scripts
@@ -277,7 +278,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     public Map<Integer, String> mapBoundSkills() {
         Map<Integer, String> result = new HashMap<>();
         for (int slot : boundSkills.keySet())
-            result.put(slot, boundSkills.get(slot).getClassSkill().getSkill().getHandler().getId());
+            result.put(slot, boundSkills.get(slot).getClassSkill().getSkill().getId());
         return result;
     }
 
@@ -1228,12 +1229,12 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return getAttributes().mapPoints();
     }
 
-    public int getSkillLevel(@NotNull RegisteredSkill skill) {
-        return skills.getOrDefault(skill.getHandler().getId(), 1);
+    public int getSkillLevel(@NotNull SkillHandler<?> skill) {
+        return skills.getOrDefault(skill.getId(), 1);
     }
 
-    public void setSkillLevel(@NotNull RegisteredSkill skill, int level) {
-        setSkillLevel(skill.getHandler().getId(), level);
+    public void setSkillLevel(@NotNull SkillHandler<?> skill, int level) {
+        setSkillLevel(skill.getId(), level);
     }
 
     public void setSkillLevel(@NotNull String skill, int level) {
@@ -1440,6 +1441,16 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     //endregion
 
     //region Deprecated
+
+    @Deprecated
+    public void setSkillLevel(@NotNull RegisteredSkill skill, int level) {
+        setSkillLevel(skill.getHandler().getId(), level);
+    }
+
+    @Deprecated
+    public int getSkillLevel(@NotNull RegisteredSkill skill) {
+        return skills.getOrDefault(skill.getHandler().getId(), 1);
+    }
 
     @Deprecated
     public void takeLevels(int value) {

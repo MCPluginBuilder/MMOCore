@@ -102,7 +102,7 @@ public class PlayerStats {
         skillMap.removeModifiers("MMOCorePermanentSkill");
         for (ClassSkill skill : data.getProfess().getSkills())
             if (skill.isPermanent()
-                    && skill.getSkill().getTrigger() != TriggerType.LOGIN
+                    && skill.getTrigger() != TriggerType.LOGIN
                     && data.hasUnlocked(skill)
                     && data.hasUnlockedLevel(skill))
                 skillMap.addModifier(skill.toPassive(data));

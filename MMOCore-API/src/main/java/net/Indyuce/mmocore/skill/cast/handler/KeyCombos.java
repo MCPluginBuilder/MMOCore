@@ -152,7 +152,7 @@ public class KeyCombos extends SkillCastingHandler {
             // Cast spell
             final ClassSkill boundSkill;
             if (playerData.hasSkillBound(spellSlot) &&
-                    !(boundSkill = playerData.getBoundSkill(spellSlot)).getSkill().getTrigger().isPassive()) {
+                    !(boundSkill = playerData.getBoundSkill(spellSlot)).getTrigger().isPassive()) {
                 final PlayerMetadata caster = playerData.getMMOPlayerData().getStatMap().cache(EquipmentSlot.MAIN_HAND);
                 final SkillResult result = boundSkill.toCastable(playerData).cast(SkillMetadata.of(caster));
                 if (!result.isSuccessful()) if (failSkillSound != null) failSkillSound.playTo(player);

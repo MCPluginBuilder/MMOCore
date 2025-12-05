@@ -3,21 +3,22 @@ package net.Indyuce.mmocore.skill.list;
 import io.lumine.mythic.lib.api.event.PlayerAttackEvent;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.version.VParticle;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import org.bukkit.Sound;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 
+@BuiltinSkillHandler(mods = {"extra"}, triggerable = false)
 public class Sneaky_Picky extends SkillHandler<SimpleSkillResult> implements Listener {
-    public Sneaky_Picky() {
-        super(false);
-
-        registerModifiers("extra");
+    public Sneaky_Picky(ConfigurationSection config) {
+        super(config);
     }
 
     @NotNull

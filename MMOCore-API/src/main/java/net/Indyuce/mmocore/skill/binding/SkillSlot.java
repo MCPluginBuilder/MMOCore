@@ -6,9 +6,11 @@ import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.quest.trigger.SkillModifierTrigger;
 import net.Indyuce.mmocore.api.quest.trigger.Trigger;
+import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import net.Indyuce.mmocore.player.Unlockable;
 import net.Indyuce.mmocore.skill.ClassSkill;
 import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -93,8 +95,8 @@ public class SkillSlot implements Unlockable {
         return canManuallyBind;
     }
 
-    public boolean acceptsSkill(ClassSkill classSkill) {
-        return classSkill.getSkill().matchesFormula(formula);
+    public boolean acceptsSkill(@NotNull ClassSkill classSkill) {
+        return MMOCoreUtils.evaluateSkillFormula(classSkill.getSkill(), formula);
     }
 
     @Override

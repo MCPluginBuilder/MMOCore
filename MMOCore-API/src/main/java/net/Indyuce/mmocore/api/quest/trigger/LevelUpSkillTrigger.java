@@ -1,21 +1,20 @@
 package net.Indyuce.mmocore.api.quest.trigger;
 
+import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.MMOLineConfig;
-import net.Indyuce.mmocore.MMOCore;
+import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.quest.trigger.api.Removable;
-import net.Indyuce.mmocore.skill.RegisteredSkill;
 
 public class LevelUpSkillTrigger extends Trigger implements Removable {
-    private final RegisteredSkill skill;
+    private final SkillHandler<?> skill;
     private final int amount;
 
     public LevelUpSkillTrigger(MMOLineConfig config) {
         super(config);
 
-        config.validateKeys("skill", "amount");
-        amount = config.getInt("amount");
-        skill = MMOCore.plugin.skillManager.getSkillOrThrow(config.getString("skill"));
+        amount = config.integer("amount");
+        skill = MythicLib.plugin.getSkills().getHandlerOrThrow(config.string("skill"));
     }
 
     @Override

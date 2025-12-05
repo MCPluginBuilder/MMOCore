@@ -12,6 +12,7 @@ import io.lumine.mythic.lib.script.Script;
 import io.lumine.mythic.lib.skill.SimpleSkill;
 import io.lumine.mythic.lib.skill.Skill;
 import io.lumine.mythic.lib.skill.handler.MythicLibSkillHandler;
+import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.FileUtils;
 import io.lumine.mythic.lib.util.PostLoadAction;
@@ -190,8 +191,8 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
                     (key, exception) -> MMOCore.plugin.getLogger().log(Level.WARNING, "Could not load skill slot '" + key + "' from class '" + getId() + "': " + exception.getMessage()));
 
         // Class skills
-        for (var registered : MMOCore.plugin.skillManager.getAll()) {
-            final var key = registered.getHandler().getId();
+        for (var registered : MythicLib.plugin.getSkills().getHandlers()) {
+            final var key = registered.getId();
             final var classSkill = config.contains("skills." + key)
                     ? new ClassSkill(registered, config.getConfigurationSection("skills." + key))
                     : new ClassSkill(registered, 1, 1, false);
@@ -435,8 +436,13 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
     }
 
     @Nullable
+    public ClassSkill getSkill(SkillHandler<?> skill) {
+        return getSkill(skill.getId());
+    }
+
+    @Deprecated
     public ClassSkill getSkill(RegisteredSkill skill) {
-        return getSkill(skill.getHandler().getId());
+        return getSkill(skill.getHandler());
     }
 
     @Nullable

@@ -3,6 +3,7 @@ package net.Indyuce.mmocore.command.builtin.mmocore.skill;
 import io.lumine.mythic.lib.command.CommandTreeExplorer;
 import io.lumine.mythic.lib.command.CommandTreeNode;
 import io.lumine.mythic.lib.command.argument.Argument;
+import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.command.Arguments;
 import net.Indyuce.mmocore.skill.ClassSkill;
@@ -17,7 +18,7 @@ public class EditLevelCommandTreeNode extends CommandTreeNode {
     private final BiFunction<Integer, Integer, Integer> change;
 
     private final Argument<Player> argPlayer;
-    private final Argument<RegisteredSkill> argSkill;
+    private final Argument<SkillHandler<?>> argSkill;
     private final Argument<Integer> argLevel;
 
     public EditLevelCommandTreeNode(CommandTreeNode parent, String type, BiFunction<Integer, Integer, Integer> change) {
@@ -26,7 +27,7 @@ public class EditLevelCommandTreeNode extends CommandTreeNode {
         this.change = change;
 
         argPlayer = addArgument(Argument.PLAYER);
-        argSkill = addArgument(Arguments.SKILL);
+        argSkill = addArgument(Argument.SKILL_HANDLER);
         argLevel = addArgument(Arguments.INDEX.withKey("level"));
     }
 
@@ -34,7 +35,7 @@ public class EditLevelCommandTreeNode extends CommandTreeNode {
     public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
         Player player = explorer.parse(argPlayer);
         PlayerData playerData = PlayerData.get(player);
-        RegisteredSkill skill = explorer.parse(argSkill);
+        var skill = explorer.parse(argSkill);
         final var changeAmount = explorer.parse(argLevel);
 
         // Find equivalent class skill

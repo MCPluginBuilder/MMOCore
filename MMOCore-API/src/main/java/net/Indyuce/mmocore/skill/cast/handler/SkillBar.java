@@ -156,11 +156,11 @@ public class SkillBar extends SkillCastingHandler {
         }
 
         private boolean noMana(ClassSkill skill) {
-            return skill.getSkill().hasParameter("mana") && skill.getParameter("mana", caster) > caster.getMana();
+            return skill.getParameter("mana", caster) > caster.getMana();
         }
 
         private boolean noStamina(ClassSkill skill) {
-            return skill.getSkill().hasParameter("stamina") && skill.getParameter("stamina", caster) > caster.getStamina();
+            return skill.getParameter("stamina", caster) > caster.getStamina();
         }
 
         @Override

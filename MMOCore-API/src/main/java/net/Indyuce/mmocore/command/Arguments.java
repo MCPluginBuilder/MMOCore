@@ -64,6 +64,7 @@ public class Arguments {
                 return attribute;
             });
 
+    @Deprecated
     public static final Argument<@NotNull RegisteredSkill> SKILL = new Argument<>("skill",
             (explorer, list) -> MMOCore.plugin.skillManager.getAll().forEach(skill -> list.add(skill.getHandler().getId().toUpperCase())),
             (explorer, input) -> {

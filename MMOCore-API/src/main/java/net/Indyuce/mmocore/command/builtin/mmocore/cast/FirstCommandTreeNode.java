@@ -53,9 +53,9 @@ public class FirstCommandTreeNode extends CommandTreeNode {
             return CommandResult.FAILURE;
         }
 
-        ClassSkill skill = data.getBoundSkill(slots.get(slot - 1));
+        var skill = data.getBoundSkill(slots.get(slot - 1));
         Validate.notNull(skill, "Internal error: skill is null");
-        Validate.isTrue(!skill.getSkill().getTrigger().isPassive(), "Internal error: skill is passive");
+        Validate.isTrue(!skill.getTrigger().isPassive(), "Internal error: skill is passive");
 
         boolean success = skill.toCastable(data).cast(data.getMMOPlayerData()).isSuccessful();
         return success ? CommandResult.SUCCESS : CommandResult.FAILURE;

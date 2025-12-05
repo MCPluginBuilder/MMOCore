@@ -145,7 +145,7 @@ public class SkillList extends EditableInventory {
         public ItemStack getDisplayedItem(SkillViewerInventory inv, int n) {
             if (inv.selected == null) return new ItemStack(Material.AIR);
 
-            return getDisplayedItem(inv, new ItemOptions(n, inv.selected.getSkill().getRawIcon()));
+            return getDisplayedItem(inv, new ItemOptions(n, inv.selected.getSkill().getIcon()));
         }
 
         @Override
@@ -264,18 +264,18 @@ public class SkillList extends EditableInventory {
             if (skillSlot == null || !inv.playerData.hasUnlocked(skillSlot)) return new ItemStack(Material.AIR);
 
             final @Nullable ClassSkill boundSkill = inv.playerData.getBoundSkill(n + 1);
-            final ItemOptions options = boundSkill == null ? ItemOptions.index(n) : filledItem == null ? new ItemOptions(n, boundSkill.getSkill().getRawIcon()) : ItemOptions.model(n, filledItem, filledCMD);
+            final ItemOptions options = boundSkill == null ? ItemOptions.index(n) : filledItem == null ? new ItemOptions(n, boundSkill.getSkill().getIcon()) : ItemOptions.model(n, filledItem, filledCMD);
             return super.getDisplayedItem(inv, options);
         }
 
         @Override
         public Placeholders getPlaceholders(SkillViewerInventory inv, int n) {
-            RegisteredSkill selected = inv.selected.getSkill();
+            var selected = inv.selected.getSkill();
             final @NotNull SkillSlot skillSlot = inv.playerData.getProfess().getSkillSlot(n + 1);
             Placeholders holders = new Placeholders();
             holders.register("slot", skillSlot.getName());
             holders.register("selected", selected == null ? none : selected.getName());
-            RegisteredSkill skill = inv.playerData.hasSkillBound(n + 1) ? inv.playerData.getBoundSkill(n + 1).getSkill() : null;
+            var skill = inv.playerData.hasSkillBound(n + 1) ? inv.playerData.getBoundSkill(n + 1).getSkill() : null;
             holders.register("skill", skill == null ? none : skill.getName());
             return holders;
         }
@@ -389,7 +389,7 @@ public class SkillList extends EditableInventory {
             if (index >= inv.skills.size()) return new ItemStack(Material.AIR);
 
             ClassSkill skill = inv.skills.get(index);
-            return getDisplayedItem(inv, new ItemOptions(n, skill.getSkill().getRawIcon()));
+            return getDisplayedItem(inv, new ItemOptions(n, skill.getSkill().getIcon()));
         }
 
         @Override
@@ -431,7 +431,7 @@ public class SkillList extends EditableInventory {
 
         @Override
         public Placeholders getPlaceholders(SkillViewerInventory inv, int n) {
-            RegisteredSkill selected = inv.selected == null ? null : inv.selected.getSkill();
+            var selected = inv.selected == null ? null : inv.selected.getSkill();
             Placeholders holders = new Placeholders();
 
             holders.register("skill_caps", selected.getName().toUpperCase());

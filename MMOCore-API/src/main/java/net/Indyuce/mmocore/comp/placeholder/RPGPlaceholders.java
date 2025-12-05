@@ -16,7 +16,6 @@ import net.Indyuce.mmocore.experience.Profession;
 import net.Indyuce.mmocore.party.AbstractParty;
 import net.Indyuce.mmocore.skill.CastableSkill;
 import net.Indyuce.mmocore.skill.ClassSkill;
-import net.Indyuce.mmocore.skill.RegisteredSkill;
 import net.Indyuce.mmocore.skill.binding.BoundSkillInfo;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -74,7 +73,7 @@ public class RPGPlaceholders extends PlaceholderExpansion {
 
         else if (identifier.startsWith("skill_level_")) {
             String id = identifier.substring(12);
-            RegisteredSkill skill = MMOCore.plugin.skillManager.getSkillOrThrow(id);
+            var skill = MythicLib.plugin.getSkills().getHandlerOrThrow(id);
             return String.valueOf(playerData.getSkillLevel(skill));
         } else if (identifier.startsWith("skill_tree_points_")) {
             int length = "skill_tree_points_".length();
@@ -103,7 +102,7 @@ public class RPGPlaceholders extends PlaceholderExpansion {
             final String[] ids = identifier.substring(identifier.startsWith("skill_modifier_") ? 15 : 16).split(":");
             final String parameterId = ids[0];
             final String skillId = ids[1];
-            final RegisteredSkill skill = Objects.requireNonNull(MMOCore.plugin.skillManager.getSkill(skillId), "Could not find skill with ID '" + skillId + "'");
+            final var skill = MythicLib.plugin.getSkills().getHandlerOrThrow(skillId);
             final ClassSkill classSkill = Objects.requireNonNull(playerData.getProfess().getSkill(skill), "Class " + playerData.getProfess().getName() + " does not have skill with ID '" + skillId + "'");
             final CastableSkill castable = classSkill.toCastable(playerData);
             final double value = playerData.getMMOPlayerData().getSkillModifierMap().calculateValue(castable, parameterId);
@@ -161,7 +160,7 @@ public class RPGPlaceholders extends PlaceholderExpansion {
         else if (identifier.startsWith("id_bound_")) {
             final int slot = Math.max(1, Integer.parseInt(identifier.substring(9)));
             final ClassSkill info = playerData.getBoundSkill(slot);
-            return info == null ? "" : info.getSkill().getHandler().getId();
+            return info == null ? "" : info.getSkill().getId();
         }
 
         // Returns the key that needs to be pressed to cast slot in slot N
@@ -183,7 +182,7 @@ public class RPGPlaceholders extends PlaceholderExpansion {
         else if (identifier.startsWith("passive_bound_")) {
             final int slot = Integer.parseInt(identifier.substring(14));
             final ClassSkill skill = playerData.getBoundSkill(slot);
-            return String.valueOf(skill != null && skill.getSkill().getTrigger().isPassive());
+            return String.valueOf(skill != null && skill.getTrigger().isPassive());
         }
 
         // Returns the bound skill name

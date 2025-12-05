@@ -7,6 +7,8 @@ import io.lumine.mythic.lib.command.CommandTreeRoot;
 import io.lumine.mythic.lib.gson.JsonArray;
 import io.lumine.mythic.lib.gson.JsonObject;
 import io.lumine.mythic.lib.hologram.Hologram;
+import io.lumine.mythic.lib.skill.handler.SkillHandler;
+import io.lumine.mythic.lib.util.formula.BooleanExpression;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.version.VEnchantment;
@@ -58,6 +60,14 @@ public class MMOCoreUtils {
         final var called = new MMOCommandEvent(playerData, command);
         Bukkit.getServer().getPluginManager().callEvent(called);
         return called.isCancelled();
+    }
+
+    public static boolean evaluateSkillFormula(SkillHandler<?> skill, String formula) {
+        String parsedExpression = formula;
+        for (var category : skill.getCategories())
+            parsedExpression = parsedExpression.replace("<" + category + ">", "true");
+        parsedExpression = parsedExpression.replaceAll("<.*?>", "false");
+        return BooleanExpression.eval(parsedExpression);
     }
 
     @Deprecated

@@ -50,6 +50,9 @@ import net.Indyuce.mmocore.party.provided.MMOCorePartyModule;
 import net.Indyuce.mmocore.player.ResourceRegenRunnable;
 import net.Indyuce.mmocore.script.mechanic.*;
 import net.Indyuce.mmocore.skill.cast.SkillCastingMode;
+import net.Indyuce.mmocore.skill.list.Ambers;
+import net.Indyuce.mmocore.skill.list.Neptune_Gift;
+import net.Indyuce.mmocore.skill.list.Sneaky_Picky;
 import net.Indyuce.mmocore.skill.trigger.MMOCoreTriggerType;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -65,6 +68,7 @@ public class MMOCore extends MMOPlugin {
     public final RequestManager requestManager = new RequestManager();
     public final ConfigItemManager configItems = new ConfigItemManager();
     public final ActionBarManager actionBarManager = new ActionBarManager();
+    @Deprecated
     public final SkillManager skillManager = new SkillManager();
     public final ClassManager classManager = new ClassManager();
     public final DropTableManager dropTableManager = new DropTableManager();
@@ -115,6 +119,11 @@ public class MMOCore extends MMOPlugin {
         MythicLib.plugin.getEntities().registerRelationHandler(new GuildRelationHandler());
         PlayerModifier.registerPlayerModifierType("attribute", AttributeModifier::new);
         MMOCoreTriggerType.registerAll();
+
+        // Register MMOCore builtin skills
+        MythicLib.plugin.getSkills().registerBuiltinSkillHandlerType(Ambers.class);
+        MythicLib.plugin.getSkills().registerBuiltinSkillHandlerType(Neptune_Gift.class);
+        MythicLib.plugin.getSkills().registerBuiltinSkillHandlerType(Sneaky_Picky.class);
 
         // Custom scripts
         MythicLib.plugin.getSkills().registerMechanic("mana", ManaMechanic::new);
@@ -285,7 +294,6 @@ public class MMOCore extends MMOPlugin {
 
         configManager = new ConfigManager();
 
-        skillManager.initialize(clearBefore);
         mineManager.initialize(clearBefore);
         partyManager.initialize(clearBefore);
         attributeManager.initialize(clearBefore);

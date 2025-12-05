@@ -1,17 +1,20 @@
 package net.Indyuce.mmocore.skill;
 
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import io.lumine.mythic.lib.player.cooldown.CooldownObject;
 import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.skill.PassiveSkill;
+import io.lumine.mythic.lib.skill.handler.SkillHandler;
+import io.lumine.mythic.lib.skill.parameter.value.FormulaFailsafeException;
+import io.lumine.mythic.lib.skill.parameter.value.ScalingFormula;
+import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.util.math.formula.LinearValue;
 import net.Indyuce.mmocore.player.Unlockable;
-import net.Indyuce.mmocore.util.formula.FormulaFailsafeException;
-import net.Indyuce.mmocore.util.formula.ScalingFormula;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,20 +22,21 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class ClassSkill implements CooldownObject, Unlockable {
-    private final RegisteredSkill skill;
+    private final SkillHandler<?> skill;
     private final int unlockLevel, maxSkillLevel;
+    private final TriggerType trigger;
     private final boolean unlockedByDefault, permanent, upgradable;
     private final Map<String, ScalingFormula> parameters = new HashMap<>();
 
-    public ClassSkill(RegisteredSkill skill, int unlockLevel, int maxSkillLevel) {
+    public ClassSkill(SkillHandler<?> skill, int unlockLevel, int maxSkillLevel) {
         this(skill, unlockLevel, maxSkillLevel, true);
     }
 
-    public ClassSkill(RegisteredSkill skill, int unlockLevel, int maxSkillLevel, boolean unlockedByDefault) {
+    public ClassSkill(SkillHandler<?> skill, int unlockLevel, int maxSkillLevel, boolean unlockedByDefault) {
         this(skill, unlockLevel, maxSkillLevel, unlockedByDefault, MMOCore.plugin.configManager.passiveSkillsNeedBinding);
     }
 
-    public ClassSkill(RegisteredSkill skill, int unlockLevel, int maxSkillLevel, boolean unlockedByDefault, boolean needsBinding) {
+    public ClassSkill(SkillHandler<?> skill, int unlockLevel, int maxSkillLevel, boolean unlockedByDefault, boolean needsBinding) {
         this(skill, unlockLevel, maxSkillLevel, unlockedByDefault, needsBinding, true);
     }
 
@@ -45,37 +49,46 @@ public class ClassSkill implements CooldownObject, Unlockable {
      * <p>
      * It is also used by the MMOCore API to force players to cast abilities.
      */
-    public ClassSkill(RegisteredSkill skill, int unlockLevel, int maxSkillLevel, boolean unlockedByDefault, boolean needsBinding, boolean upgradable) {
+    public ClassSkill(SkillHandler<?> skill, int unlockLevel, int maxSkillLevel, boolean unlockedByDefault, boolean needsBinding, boolean upgradable) {
         this.skill = skill;
         this.unlockLevel = unlockLevel;
         this.maxSkillLevel = maxSkillLevel;
         this.unlockedByDefault = unlockedByDefault;
-        this.permanent = !needsBinding && skill.getTrigger().isPassive();
+        this.trigger = skill.getDefaultTriggerType();
+        this.permanent = !needsBinding && trigger.isPassive();
         this.upgradable = upgradable;
 
-        for (String param : skill.getHandler().getParameters())
-            this.parameters.put(param, skill.getParameterInfo(param));
+        for (var param : skill.getParameters())
+            this.parameters.put(param, skill.getDefaultFormula(param));
     }
 
-    public ClassSkill(RegisteredSkill skill, ConfigurationSection config) {
+    public ClassSkill(SkillHandler<?> skill, ConfigurationSection config) {
         this.skill = skill;
         unlockLevel = config.getInt("level");
         maxSkillLevel = config.getInt("max-level");
         unlockedByDefault = config.getBoolean("unlocked-by-default", true);
-        permanent = !config.getBoolean("needs-bound", MMOCore.plugin.configManager.passiveSkillsNeedBinding) && skill.getTrigger().isPassive();
+        this.trigger = config.contains("trigger")
+                ? UtilityMethods.prettyValueOf(TriggerType::valueOf, config.getString("trigger"), "No trigger with ID %s")
+                : skill.getDefaultTriggerType();
+        permanent = !config.getBoolean("needs-bound", MMOCore.plugin.configManager.passiveSkillsNeedBinding) && trigger.isPassive();
         upgradable = config.getBoolean("upgradable", true);
 
-        for (String param : skill.getHandler().getParameters()) {
-            var fallback = skill.getParameterInfo(param);
-            var formulaConfig = config.get(param);
-            var formula = formulaConfig == null ? fallback : ScalingFormula.fromConfig(formulaConfig, fallback);
+        for (var param : skill.getParameters()) {
+            final var fallback = skill.getDefaultFormula(param);
+            final var formulaConfig = config.get(param);
+            final var formula = formulaConfig == null ? fallback : ScalingFormula.fromConfig(formulaConfig, fallback);
             this.parameters.put(param, formula);
         }
     }
 
     @NotNull
-    public RegisteredSkill getSkill() {
+    public SkillHandler<?> getSkill() {
         return skill;
+    }
+
+    @NotNull
+    public TriggerType getTrigger() {
+        return trigger;
     }
 
     public int getUnlockLevel() {
@@ -101,8 +114,8 @@ public class ClassSkill implements CooldownObject, Unlockable {
 
     /**
      * @return Permanent skills are passive skills which do
-     * not have to be bound in order to apply their effects.
-     * Permanent skills can only be passive skills.
+     *         not have to be bound in order to apply their effects.
+     *         Permanent skills can only be passive skills.
      */
     public boolean isPermanent() {
         return permanent;
@@ -110,7 +123,7 @@ public class ClassSkill implements CooldownObject, Unlockable {
 
     @Override
     public String getUnlockNamespacedKey() {
-        return "skill:" + skill.getHandler().getId().toLowerCase();
+        return "skill:" + skill.getId().toLowerCase();
     }
 
     @Override
@@ -149,9 +162,9 @@ public class ClassSkill implements CooldownObject, Unlockable {
 
     public double getParameter(@NotNull String parameter, int level, @Nullable PlayerData caster) {
         try {
-            return getParameterFormula(parameter).evaluate(level, caster);
+            return getParameterFormula(parameter).evaluate(level, caster == null ? null : caster.getPlayer());
         } catch (FormulaFailsafeException exception) {
-            exception.log("Could not evaluate parameter '%s' of skill '%s'", parameter, getSkill().getHandler().getId());
+            exception.log("Could not evaluate parameter '%s' of skill '%s'", parameter, getSkill().getId());
             return exception.getFailsafe();
         }
     }
@@ -174,8 +187,8 @@ public class ClassSkill implements CooldownObject, Unlockable {
         // Skill parameters
         for (var param : parameters.keySet()) {
             var baseValue = getParameter(param, skillLevel, data);
-            var modifiedValue = data.getMMOPlayerData().getSkillModifierMap().calculateValue(skill.getHandler(), baseValue, param);
-            var formatted = skill.getDecimalFormat(param).format(modifiedValue);
+            var modifiedValue = data.getMMOPlayerData().getSkillModifierMap().calculateValue(skill, baseValue, param);
+            var formatted = skill.getParameterDecimalFormat(param).format(modifiedValue);
 
             placeholders.register(param, formatted);
         }
@@ -185,7 +198,7 @@ public class ClassSkill implements CooldownObject, Unlockable {
 
         // Build string arraylist
         List<String> list = new ArrayList<>();
-        skill.getLore().forEach(str -> list.add(placeholders.apply(data.getPlayer(), str)));
+        skill.getUiLore().forEach(str -> list.add(placeholders.apply(data.getPlayer(), str)));
 
         return list;
     }
@@ -202,20 +215,45 @@ public class ClassSkill implements CooldownObject, Unlockable {
      */
     @NotNull
     public PassiveSkill toPassive(PlayerData caster) {
-        Validate.isTrue(skill.getTrigger().isPassive(), "Skill is active");
-        return new PassiveSkill("MMOCore" + (permanent ? "Permanent" : "Passive") + "Skill", skill.getTrigger(), toCastable(caster), EquipmentSlot.OTHER, ModifierSource.OTHER);
+        Validate.isTrue(trigger.isPassive(), "Skill is active");
+        return new PassiveSkill("MMOCore" + (permanent ? "Permanent" : "Passive") + "Skill", trigger, toCastable(caster), EquipmentSlot.OTHER, ModifierSource.OTHER);
     }
 
     @Override
     public String getCooldownPath() {
-        return "skill_" + skill.getHandler().getId();
+        return "skill_" + skill.getId();
     }
 
     //region Deprecated
 
+    @Deprecated
+    public ClassSkill(RegisteredSkill skill, int unlockLevel, int maxSkillLevel) {
+        this(skill.getHandler(), unlockLevel, maxSkillLevel);
+    }
+
+    @Deprecated
+    public ClassSkill(RegisteredSkill skill, int unlockLevel, int maxSkillLevel, boolean unlockedByDefault) {
+        this(skill.getHandler(), unlockLevel, maxSkillLevel, unlockedByDefault);
+    }
+
+    @Deprecated
+    public ClassSkill(RegisteredSkill skill, int unlockLevel, int maxSkillLevel, boolean unlockedByDefault, boolean needsBinding) {
+        this(skill.getHandler(), unlockLevel, maxSkillLevel, unlockedByDefault, needsBinding);
+    }
+
+    @Deprecated
+    public ClassSkill(RegisteredSkill skill, int unlockLevel, int maxSkillLevel, boolean unlockedByDefault, boolean needsBinding, boolean upgradable) {
+        this(skill.getHandler(), unlockLevel, maxSkillLevel, unlockedByDefault, needsBinding, upgradable);
+    }
+
+    @Deprecated
+    public ClassSkill(RegisteredSkill skill, ConfigurationSection config) {
+        this(skill.getHandler(), config);
+    }
+
     /**
      * @see #getParameterFormula(String)
-     * Skill modifiers are now called parameters.
+     *         Skill modifiers are now called parameters.
      */
     @Deprecated
     public double getModifier(String modifier, int level) {
@@ -227,12 +265,12 @@ public class ClassSkill implements CooldownObject, Unlockable {
      */
     @Deprecated
     public void addModifier(String modifier, LinearValue linear) {
-        addParameter(modifier, linear.adapt());
+        addParameter(modifier, linear.adaptML());
     }
 
     @Deprecated
     public boolean needsBound() {
-        return getSkill().getTrigger().isPassive() && !isPermanent();
+        return trigger.isPassive() && !isPermanent();
     }
 
     /**
@@ -244,7 +282,7 @@ public class ClassSkill implements CooldownObject, Unlockable {
      */
     @Deprecated
     public void addParameter(String parameter, LinearValue linear) {
-        addParameter(parameter, linear.adapt());
+        addParameter(parameter, linear.adaptML());
     }
 
     @Deprecated

@@ -1,11 +1,11 @@
 package net.Indyuce.mmocore.loot.chest;
 
-import io.lumine.mythic.lib.api.math.ScalingFormula;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.loot.Weighted;
 import net.Indyuce.mmocore.loot.droptable.DropTable;
+import net.Indyuce.mmocore.util.formula.ScalingFormula;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,13 +22,13 @@ public class ChestTier implements Weighted {
 
     public ChestTier(ConfigurationSection config) {
         effect = config.isConfigurationSection("effect") ? new TierEffect(config.getConfigurationSection("effect")) : null;
-        capacity = config.contains("capacity") ? new ScalingFormula(config.get("capacity")) : null;
+        capacity = config.contains("capacity") ? ScalingFormula.fromConfig(config.get("capacity")) : null;
         chance = config.getDouble("chance");
         table = MMOCore.plugin.dropTableManager.loadDropTable(config.get("drops"));
     }
 
     public double rollCapacity(@NotNull PlayerData player) {
-        return capacity == null ? table.getCapacity() : capacity.calculate(player.getLevel());
+        return capacity == null ? table.getCapacity() : capacity.evaluate(player.getLevel(), player);
     }
 
     public double getChance() {

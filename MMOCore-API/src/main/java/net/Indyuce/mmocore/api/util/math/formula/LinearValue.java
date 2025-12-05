@@ -8,9 +8,9 @@ import org.bukkit.configuration.ConfigurationSection;
  * Bounded linear formula.
  *
  * @author Jules
- * @deprecated
  * @see net.Indyuce.mmocore.util.formula.ScalingFormula
  * @see LinearScalingFormula
+ * @deprecated
  */
 @Deprecated
 public class LinearValue {
@@ -125,6 +125,11 @@ public class LinearValue {
     @Deprecated
     public LinearScalingFormula adapt() {
         return new LinearScalingFormula(this.base, this.perLevel, this.min, this.max);
+    }
+
+    @Deprecated
+    public io.lumine.mythic.lib.skill.parameter.value.LinearScalingFormula adaptML() {
+        return new io.lumine.mythic.lib.skill.parameter.value.LinearScalingFormula(this.base, this.perLevel, this.min, this.max);
     }
 
     @Override

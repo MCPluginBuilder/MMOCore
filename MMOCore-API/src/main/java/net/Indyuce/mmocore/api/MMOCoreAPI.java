@@ -1,5 +1,6 @@
 package net.Indyuce.mmocore.api;
 
+import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.skill.SkillMetadata;
@@ -54,7 +55,7 @@ public class MMOCoreAPI {
      * @return Skill result (if it's canceled)
      */
     public SkillResult cast(PlayerData playerData, String skillId, int level) {
-        return cast(playerData, MMOCore.plugin.skillManager.getSkillOrThrow(skillId), level);
+        return cast(playerData, MythicLib.plugin.getSkills().getHandlerOrThrow(skillId), level);
     }
 
     /**
@@ -73,6 +74,12 @@ public class MMOCoreAPI {
         return new CastableSkill(skill, playerData).cast(SkillMetadata.of(casterMeta));
     }
 
+    @Deprecated
+    public SkillResult cast(PlayerData playerData, RegisteredSkill skill, int level) {
+        PlayerMetadata casterMeta = playerData.getMMOPlayerData().getStatMap().cache(EquipmentSlot.MAIN_HAND);
+        return new CastableSkill(new ClassSkill(skill.getHandler(), 0, 0), level, playerData).cast(SkillMetadata.of(casterMeta));
+    }
+
     /**
      * Forces a player to cast a skill. It has the effect of caching
      * the player stats so when casting multiple skills at the same
@@ -88,32 +95,9 @@ public class MMOCoreAPI {
      *                   <code>playerData.getSkillLevel(skill)</code>
      * @return Skill result (if it's canceled)
      */
-    public SkillResult cast(PlayerData playerData, RegisteredSkill skill, int level) {
-        PlayerMetadata casterMeta = playerData.getMMOPlayerData().getStatMap().cache(EquipmentSlot.MAIN_HAND);
-        return new CastableSkill(new ClassSkill(skill, 0, 0), level, playerData).cast(SkillMetadata.of(casterMeta));
-    }
-
-    /**
-     * Forces a player to cast a skill. It has the effect of caching
-     * the player stats so when casting multiple skills at the same
-     * time, it's better to copy and paste the content of this method
-     * and cache the content of the <code>caster</code> and <code>triggerMeta</code>
-     * fields for better performance.
-     * <p>
-     * Since the provided skill handler does NOT provide information about
-     * the skill modifiers, MMOCore tries to find a corresponding registered
-     * MMOCore skill in the MMOCore database. If it exists, it uses the
-     * modifiers from this skill, otherwise all modifiers are set to 0
-     *
-     * @param playerData Player casting the skill
-     * @param skill      Skill being cast
-     * @param level      Level of cast skill
-     * @return Skill result (if it's canceled)
-     */
     public SkillResult cast(PlayerData playerData, SkillHandler<?> skill, int level) {
         PlayerMetadata casterMeta = playerData.getMMOPlayerData().getStatMap().cache(EquipmentSlot.MAIN_HAND);
-        RegisteredSkill registered = Objects.requireNonNull(MMOCore.plugin.skillManager.getSkill(skill.getId()), "Could not find registered skill with such handler");
-        return new CastableSkill(new ClassSkill(registered, 0, 0), level, playerData).cast(SkillMetadata.of(casterMeta));
+        return new CastableSkill(new ClassSkill(skill, 0, 0), level, playerData).cast(SkillMetadata.of(casterMeta));
     }
 
     public void setPartyModule(@NotNull PartyModule module) {

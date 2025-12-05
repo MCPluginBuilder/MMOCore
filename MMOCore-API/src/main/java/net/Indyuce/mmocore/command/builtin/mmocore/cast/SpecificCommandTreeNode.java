@@ -46,7 +46,7 @@ public class SpecificCommandTreeNode extends CommandTreeNode {
             return CommandResult.FAILURE;
         }
 
-        if (skill.getSkill().getTrigger().isPassive()) {
+        if (skill.getTrigger().isPassive()) {
             sender.sendMessage(ChatColor.RED + "Skill '" + skill.getSkill().getName() + "' bound to slot " + slot + " is passive.");
             return CommandResult.FAILURE;
         }

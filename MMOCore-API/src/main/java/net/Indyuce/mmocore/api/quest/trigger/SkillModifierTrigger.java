@@ -1,16 +1,16 @@
 package net.Indyuce.mmocore.api.quest.trigger;
 
+import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.MMOLineConfig;
 import io.lumine.mythic.lib.player.modifier.ModifierType;
 import io.lumine.mythic.lib.player.skillmod.SkillModifier;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.util.lang3.Validate;
-import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.quest.trigger.api.Removable;
 import net.Indyuce.mmocore.api.quest.trigger.api.Temporary;
-import net.Indyuce.mmocore.skill.RegisteredSkill;
+import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -23,14 +23,13 @@ public class SkillModifierTrigger extends Trigger implements Removable, Temporar
     public SkillModifierTrigger(MMOLineConfig config) {
         super(config);
 
-        config.validateKeys("modifier");
-        config.validateKeys("amount");
-
-        final double amount = config.getDouble("amount");
-        final String parameter = config.getString("modifier");
+        final double amount = config.dble("amount");
+        final String parameter = config.string("modifier");
         final String formula = config.getString("formula", "true");
         final ModifierType type = config.contains("type") ? ModifierType.valueOf(UtilityMethods.enumName(config.getString("type"))) : ModifierType.FLAT;
-        final List<SkillHandler<?>> targetSkills = MMOCore.plugin.skillManager.getAll().stream().filter(skill -> skill.matchesFormula(formula)).map(RegisteredSkill::getHandler).collect(Collectors.toList());
+        final List<SkillHandler<?>> targetSkills = MythicLib.plugin.getSkills().getHandlers().stream()
+                .filter(skill -> MMOCoreUtils.evaluateSkillFormula(skill, formula))
+                .collect(Collectors.toList());
 
         mod = new SkillModifier(Trigger.STAT_MODIFIER_KEY, parameter, targetSkills, amount, type);
     }

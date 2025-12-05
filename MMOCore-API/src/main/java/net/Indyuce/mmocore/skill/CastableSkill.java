@@ -46,7 +46,7 @@ public class CastableSkill extends Skill {
     // TODO non conventional use of trigger
     @Override
     public TriggerType getTrigger() {
-        return skill.getSkill().getTrigger();
+        return skill.getTrigger();
     }
 
     public ClassSkill getSkill() {
@@ -138,7 +138,7 @@ public class CastableSkill extends Skill {
     @NotNull
     @Override
     public SkillHandler<?> getHandler() {
-        return skill.getSkill().getHandler();
+        return skill.getSkill();
     }
 
     @Override

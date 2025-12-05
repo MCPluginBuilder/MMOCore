@@ -6,6 +6,7 @@ import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.damage.DamageType;
 import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.skill.SkillMetadata;
+import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.def.SimpleSkillResult;
 import io.lumine.mythic.lib.util.EntityLocationType;
@@ -18,21 +19,21 @@ import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
+@BuiltinSkillHandler(mods = {"percent"}, triggerable = false)
 public class Ambers extends SkillHandler<SimpleSkillResult> implements Listener {
 
     @BackwardsCompatibility(version = "1.20.5")
     private final boolean legacyParticles = MythicLib.plugin.getVersion().isUnder(1, 20, 5);
 
-    public Ambers() {
-        super(false);
-
-        registerModifiers("percent");
+    public Ambers(ConfigurationSection config) {
+        super(config);
     }
 
     @NotNull
@@ -102,6 +103,7 @@ public class Ambers extends SkillHandler<SimpleSkillResult> implements Listener 
             }
 
             for (int j = 0; j < 5; j++)
+                // TODO move this sh*t to MythicLib
                 if (legacyParticles)
                     loc.getWorld().spawnParticle(VParticle.ENTITY_EFFECT.get(), loc, 0, 1, 0.647, 0, 1);
                 else
