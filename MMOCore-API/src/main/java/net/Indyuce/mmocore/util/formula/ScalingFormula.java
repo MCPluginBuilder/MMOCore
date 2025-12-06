@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface ScalingFormula {
+    // TODO merge with "NumericFormula" of Mythiclib for precompilation.
 
     public double evaluate(int skillLevel, @Nullable PlayerData playerData);
 

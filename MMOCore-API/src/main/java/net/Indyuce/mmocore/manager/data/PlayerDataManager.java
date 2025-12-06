@@ -25,7 +25,7 @@ public class PlayerDataManager extends SynchronizedDataManager<PlayerData, Offli
 
     @Override
     public Object newProfileDataModule() {
-        return new MMOCoreProfileDataModule(getOwningPlugin());
+        return new MMOCoreProfileDataModule(this);
     }
 
     public DefaultPlayerData getDefaultData() {

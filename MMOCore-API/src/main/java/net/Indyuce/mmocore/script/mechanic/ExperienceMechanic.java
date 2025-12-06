@@ -1,8 +1,8 @@
 package net.Indyuce.mmocore.script.mechanic;
 
 import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
@@ -14,7 +14,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 public class ExperienceMechanic extends TargetMechanic {
-    private final DoubleFormula amount;
+    private final NumericExpression amount;
     private final EXPSource source;
     @Nullable
     private final Profession profession;
@@ -22,8 +22,7 @@ public class ExperienceMechanic extends TargetMechanic {
     public ExperienceMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("amount");
-        amount = config.getDoubleFormula("amount");
+        amount = config.numericExpr("amount");
 
         if (config.contains("profession")) {
             String id = config.getString("profession").toLowerCase().replace("_", "-");

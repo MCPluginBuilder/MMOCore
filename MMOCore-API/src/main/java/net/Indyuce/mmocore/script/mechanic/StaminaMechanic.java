@@ -2,8 +2,8 @@ package net.Indyuce.mmocore.script.mechanic;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.DoubleFormula;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.api.event.PlayerResourceUpdateEvent;
@@ -12,16 +12,14 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 public class StaminaMechanic extends TargetMechanic {
-    private final DoubleFormula amount;
+    private final NumericExpression amount;
     private final Operation operation;
     private final PlayerResourceUpdateEvent.UpdateReason reason;
 
     public StaminaMechanic(ConfigObject config) {
         super(config);
 
-        config.validateKeys("amount");
-
-        amount = new DoubleFormula(config.getString("amount"));
+        amount = config.numericExpr("amount");
         reason = PlayerResourceUpdateEvent.UpdateReason.valueOf(UtilityMethods.enumName(config.getString("reason", "CUSTOM")));
         operation = config.contains("operation") ? Operation.valueOf(config.getString("operation").toUpperCase()) : Operation.GIVE;
     }

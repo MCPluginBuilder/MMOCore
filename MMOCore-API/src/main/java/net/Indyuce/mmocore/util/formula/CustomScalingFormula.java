@@ -1,7 +1,7 @@
 package net.Indyuce.mmocore.util.formula;
 
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.util.formula.NumericalExpression;
+import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
@@ -59,7 +59,7 @@ public class CustomScalingFormula implements ScalingFormula {
                 parsed = MythicLib.plugin.getPlaceholderParser().parse(playerData.getPlayer(), parsed);
 
             // Evaluate formula
-            return NumericalExpression.eval(parsed);
+            return NumericExpression.eval(parsed);
 
         } catch (RuntimeException exception) {
             throw new FormulaFailsafeException(exception, failsafe);
