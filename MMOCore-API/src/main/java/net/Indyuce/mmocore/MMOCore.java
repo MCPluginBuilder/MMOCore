@@ -2,7 +2,6 @@ package net.Indyuce.mmocore;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
-import io.lumine.mythic.lib.data.SynchronizedDataManager;
 import io.lumine.mythic.lib.metrics.bukkit.Metrics;
 import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.player.modifier.PlayerModifier;
@@ -337,10 +336,5 @@ public class MMOCore extends MMOPlugin {
 
     public boolean hasEconomy() {
         return economy != null && economy.isValid();
-    }
-
-    @Override
-    public @NotNull SynchronizedDataManager<?, ?> getRawPlayerDataManager() {
-        return this.playerDataManager;
     }
 }

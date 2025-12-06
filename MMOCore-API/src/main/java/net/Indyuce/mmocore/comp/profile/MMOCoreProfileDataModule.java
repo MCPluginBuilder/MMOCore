@@ -5,17 +5,17 @@ import fr.phoenixdevt.profiles.placeholder.PlaceholderProcessor;
 import fr.phoenixdevt.profiles.placeholder.PlaceholderRequest;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
-import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.profile.DefaultProfileDataModule;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.attribute.PlayerAttribute;
 import net.Indyuce.mmocore.experience.Profession;
+import net.Indyuce.mmocore.manager.data.PlayerDataManager;
 import org.jetbrains.annotations.NotNull;
 
 public class MMOCoreProfileDataModule extends DefaultProfileDataModule implements PlaceholderProcessor {
-    public MMOCoreProfileDataModule(@NotNull MMOPlugin plugin) {
-        super(plugin);
+    public MMOCoreProfileDataModule(@NotNull PlayerDataManager playerDataManager) {
+        super(playerDataManager);
     }
 
     @Override
