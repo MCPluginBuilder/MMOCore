@@ -3,8 +3,6 @@ package net.Indyuce.mmocore.api.player.attribute;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
-import io.lumine.mythic.lib.api.stat.StatInstance;
-import io.lumine.mythic.lib.gson.JsonElement;
 import io.lumine.mythic.lib.gson.JsonObject;
 import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.modifier.ModifierType;
@@ -19,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -87,8 +84,8 @@ public class PlayerAttributes {
      * @param json String JSON object
      */
     public void load(@NotNull String json) {
-        JsonObject jo = MythicLib.plugin.getGson().fromJson(json, JsonObject.class);
-        for (Entry<String, JsonElement> entry : jo.entrySet()) {
+        final var jo = MythicLib.plugin.getGson().fromJson(json, JsonObject.class);
+        for (var entry : jo.entrySet())
             try {
                 final String id = entry.getKey().toLowerCase().replace("_", "-").replace(" ", "-");
                 final var attribute = MMOCore.plugin.attributeManager.get(id);
@@ -100,10 +97,9 @@ public class PlayerAttributes {
                 final AttributeInstance ins = new AttributeInstance(id);
                 ins.setBase(entry.getValue().getAsInt());
                 instances.put(id, ins);
-            } catch (IllegalArgumentException exception) {
-                data.log(Level.WARNING, exception.getMessage());
+            } catch (Exception exception) {
+                data.log(Level.WARNING, "Could not load attribute '" + entry.getKey() + "' of player '" + getData().getUniqueId() + "', last value recorded is '" + entry.getValue() + "'. Reason: " + exception.getMessage());
             }
-        }
     }
 
     /**
