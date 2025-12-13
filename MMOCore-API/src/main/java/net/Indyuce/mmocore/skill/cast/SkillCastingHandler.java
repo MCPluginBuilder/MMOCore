@@ -8,16 +8,21 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class SkillCastingHandler implements Listener {
     private final int timeoutDelay;
-    private final boolean timesOut;
+    private final boolean timeOutEnabled;
+
+    public SkillCastingHandler() {
+        this.timeoutDelay = 0;
+        this.timeOutEnabled = false;
+    }
 
     public SkillCastingHandler(@NotNull ConfigurationSection config) {
-        timesOut = config.contains("time-out");
+        timeOutEnabled = config.contains("time-out");
         timeoutDelay = config.getInt("time-out");
-        Validate.isTrue(!timesOut || timeoutDelay > 0, "Timeout must be strictly positive or disabled");
+        Validate.isTrue(!timeOutEnabled || timeoutDelay > 0, "Timeout must be strictly positive or disabled");
     }
 
     public boolean doesTimeOut() {
-        return timesOut;
+        return timeOutEnabled;
     }
 
     public int getTimeoutDelay() {

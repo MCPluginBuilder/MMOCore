@@ -96,8 +96,6 @@ public class SkillBar extends SkillCastingHandler {
     }
 
     public class CustomSkillCastingInstance extends SkillCastingInstance {
-        private int j;
-
         CustomSkillCastingInstance(PlayerData playerData) {
             super(SkillBar.this, playerData);
         }
@@ -166,7 +164,7 @@ public class SkillBar extends SkillCastingHandler {
         @Override
         public void onTick() {
             if (actionBarOptions == null) return;
-            if (j++ % 2 == 0) {
+            if ((counter & 0b1111) == 0) {
                 var handler = caster.getMMOPlayerData().getActionBar();
                 if (!handler.canShow(ActionBarPriority.NORMAL)) return;
                 handler.show(ActionBarPriority.NORMAL, actionBarOptions.format(this));

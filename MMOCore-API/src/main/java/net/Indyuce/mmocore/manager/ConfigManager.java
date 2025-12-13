@@ -9,6 +9,7 @@ import net.Indyuce.mmocore.api.util.input.ChatInput;
 import net.Indyuce.mmocore.api.util.input.PlayerInput;
 import net.Indyuce.mmocore.api.util.input.PlayerInput.InputType;
 import net.Indyuce.mmocore.player.Message;
+import net.Indyuce.mmocore.skill.cast.SkillCastingMode;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -116,6 +117,14 @@ public class ConfigManager {
 
         final ConfigurationSection config = MMOCore.plugin.getConfig();
 
+        // Skill casting
+        try {
+            final var castingMode = SkillCastingMode.valueOf(UtilityMethods.enumName(config.getString("skill-casting.mode")));
+            castingMode.setCurrent(config.getConfigurationSection("skill-casting"));
+        } catch (RuntimeException exception) {
+            MMOCore.log(Level.WARNING, "Could not load skill casting: " + exception.getMessage());
+        }
+
         messages = new YamlFile(MMOCore.plugin, "messages").getContent(); // Backwards compatibility.
         partyChatPrefix = MMOCore.plugin.getConfig().getString("party.chat-prefix");
         maxPartyPlayers = Math.max(2, MMOCore.plugin.getConfig().getInt("party.max-players", 8));
@@ -126,7 +135,7 @@ public class ConfigManager {
             try {
                 combatLogDamageCauses.add(EntityDamageEvent.DamageCause.valueOf(UtilityMethods.enumName(key)));
             } catch (Exception exception) {
-                MMOCore.plugin.getLogger().log(Level.WARNING, "Could not find damage cause called '" + key + "'");
+                MMOCore.log(Level.WARNING, "Could not find damage cause called '" + key + "'");
             }
         enableGlobalSkillTreeGUI = MMOCore.plugin.getConfig().getBoolean("enable-global-skill-tree-gui");
         enableSpecificSkillTreeGUI = MMOCore.plugin.getConfig().getBoolean("enable-specific-skill-tree-gui");

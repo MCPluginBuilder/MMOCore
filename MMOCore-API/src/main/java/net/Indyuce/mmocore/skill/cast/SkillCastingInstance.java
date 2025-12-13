@@ -18,7 +18,7 @@ public abstract class SkillCastingInstance extends TemporaryHandler {
     protected final SkillCastingHandler handler;
     private final Lazy<List<BoundSkillInfo>> activeSkills;
 
-    private int j, sinceLastActivity;
+    protected int counter = -1, sinceLastActivity;
 
     public SkillCastingInstance(@NotNull SkillCastingHandler handler, @NotNull PlayerData caster) {
         this.handler = handler;
@@ -43,7 +43,7 @@ public abstract class SkillCastingInstance extends TemporaryHandler {
     }
 
     private static final int PARTICLES_PER_TICK = 2;
-    private static final int RUNNABLE_PERIOD = 10;
+    private static final int RUNNABLE_PERIOD = 0b111;
 
     @Override
     protected @Nullable BukkitRunnable newTask() {
@@ -65,12 +65,12 @@ public abstract class SkillCastingInstance extends TemporaryHandler {
                 // Apply casting particles
                 final var castParticle = caster.getProfess().getCastParticle();
                 if (castParticle != null) for (int k = 0; k < PARTICLES_PER_TICK; k++) {
-                    final double a = (double) (PARTICLES_PER_TICK * j + k) / 4;
+                    final double a = (double) (PARTICLES_PER_TICK * counter + k) / 4;
                     castParticle.display(caster.getPlayer().getLocation().add(Math.cos(a), 1 + Math.sin(a / 3) / 1.3, Math.sin(a)));
                 }
 
                 // Apply casting mode-specific effects
-                if (j++ % RUNNABLE_PERIOD == 0) {
+                if ((++counter & RUNNABLE_PERIOD) == 0) {
                     activeSkills.flush();
                     onTick();
                 }

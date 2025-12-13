@@ -1,13 +1,14 @@
 package net.Indyuce.mmocore.skill.cast;
 
-import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
+import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.skill.cast.handler.KeyCombos;
 import net.Indyuce.mmocore.skill.cast.handler.SkillBar;
 import net.Indyuce.mmocore.skill.cast.handler.SkillCastingDisabled;
 import net.Indyuce.mmocore.skill.cast.handler.SkillScroller;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -65,21 +66,31 @@ public enum SkillCastingMode {
 
     private final Function<ConfigurationSection, SkillCastingHandler> listenerLoader;
 
-    private static SkillCastingHandler current;
+    private static SkillCastingHandler CURRENT = new SkillCastingDisabled();
 
     SkillCastingMode(Function<ConfigurationSection, SkillCastingHandler> listenerLoader) {
         this.listenerLoader = listenerLoader;
     }
 
     public void setCurrent(@NotNull ConfigurationSection config) {
-        Validate.isTrue(current == null, "Skill casting mode already initialized");
-        current = listenerLoader.apply(config);
-        Bukkit.getPluginManager().registerEvents(current, MMOCore.plugin);
+
+        // Try to load new handler
+        // Might throw an exception in case of user config problem
+        final var newHandler = listenerLoader.apply(config);
+
+        // Unregister previous
+        if (CURRENT != null) {
+            for (var online : PlayerData.getAll()) if (online.isCasting()) online.leaveSkillCasting();
+            HandlerList.unregisterAll(CURRENT);
+        }
+
+        CURRENT = newHandler;
+        Bukkit.getPluginManager().registerEvents(CURRENT, MMOCore.plugin);
     }
 
     @NotNull
     public static SkillCastingHandler getInstance() {
-        return Objects.requireNonNull(current, "Skill casting mode hasn't been initialized yet");
+        return Objects.requireNonNull(CURRENT, "Skill casting mode hasn't been initialized yet");
     }
 
     /**

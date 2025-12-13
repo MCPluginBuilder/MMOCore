@@ -12,6 +12,10 @@ public class SkillCastingDisabled extends SkillCastingHandler {
         super(config);
     }
 
+    public SkillCastingDisabled() {
+        super();
+    }
+
     @NotNull
     @Override
     public SkillCastingInstance newInstance(@NotNull PlayerData player) {

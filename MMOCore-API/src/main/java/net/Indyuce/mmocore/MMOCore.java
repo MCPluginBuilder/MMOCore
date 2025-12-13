@@ -48,7 +48,6 @@ import net.Indyuce.mmocore.party.PartyRelationHandler;
 import net.Indyuce.mmocore.party.provided.MMOCorePartyModule;
 import net.Indyuce.mmocore.player.ResourceRegenRunnable;
 import net.Indyuce.mmocore.script.mechanic.*;
-import net.Indyuce.mmocore.skill.cast.SkillCastingMode;
 import net.Indyuce.mmocore.skill.list.Ambers;
 import net.Indyuce.mmocore.skill.list.Neptune_Gift;
 import net.Indyuce.mmocore.skill.list.Sneaky_Picky;
@@ -226,14 +225,6 @@ public class MMOCore extends MMOPlugin {
             guildModule = new MMOCoreGuildModule();
         }
 
-        // Skill casting
-        try {
-            final SkillCastingMode mode = SkillCastingMode.valueOf(UtilityMethods.enumName(getConfig().getString("skill-casting.mode")));
-            mode.setCurrent(getConfig().getConfigurationSection("skill-casting"));
-        } catch (RuntimeException exception) {
-            getLogger().log(Level.WARNING, "Could not load skill casting: " + exception.getMessage());
-        }
-
         // Load MMOCore-Bukkit module
         try {
             Class.forName("net.Indyuce.mmocore.MMOCoreBukkit").getConstructor(MMOCore.class).newInstance(this);
@@ -288,8 +279,7 @@ public class MMOCore extends MMOPlugin {
      * @param clearBefore True when issuing a plugin reload
      */
     public void initializePlugin(boolean clearBefore) {
-        if (clearBefore)
-            reloadConfig();
+        if (clearBefore) reloadConfig();
 
         configManager = new ConfigManager();
 
