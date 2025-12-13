@@ -3,9 +3,9 @@ package net.Indyuce.mmocore.skill.cast.handler;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
+import io.lumine.mythic.lib.message.SoundReader;
 import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.util.SoundObject;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerKeyPressEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
@@ -28,7 +28,7 @@ public class SkillScroller extends SkillCastingHandler {
     private final Keybind enterKey, castKey, scrollKey, scrollBackKey;
 
     @Nullable
-    private final SoundObject enterSound, changeSound, changeBackSound, leaveSound;
+    private final SoundReader enterSound, changeSound, changeBackSound, leaveSound;
 
     private final String actionBarFormat;
 
@@ -38,10 +38,10 @@ public class SkillScroller extends SkillCastingHandler {
         super(config);
 
         // Load sounds
-        enterSound = config.contains("sound.enter") ? new SoundObject(config.getConfigurationSection("sound.enter")) : null;
-        changeSound = config.contains("sound.change") ? new SoundObject(config.getConfigurationSection("sound.change")) : null;
-        changeBackSound = config.contains("sound.change-back") ? new SoundObject(config.getConfigurationSection("sound.change-back")) : null;
-        leaveSound = config.contains("sound.leave") ? new SoundObject(config.getConfigurationSection("sound.leave")) : null;
+        enterSound = config.contains("sound.enter") ? new SoundReader(config.getConfigurationSection("sound.enter")) : null;
+        changeSound = config.contains("sound.change") ? new SoundReader(config.getConfigurationSection("sound.change")) : null;
+        changeBackSound = config.contains("sound.change-back") ? new SoundReader(config.getConfigurationSection("sound.change-back")) : null;
+        leaveSound = config.contains("sound.leave") ? new SoundReader(config.getConfigurationSection("sound.leave")) : null;
 
         actionBarFormat = config.getString("action-bar-format", "CLICK TO CAST: {selected}");
         ignoreSneak = config.getBoolean("ignore-sneak");
@@ -88,7 +88,7 @@ public class SkillScroller extends SkillCastingHandler {
 
                 if (!playerData.leaveSkillCasting()) return;
 
-                if (leaveSound != null) leaveSound.playTo(player);
+                if (leaveSound != null) leaveSound.play(player);
                 return;
             }
 
@@ -101,7 +101,7 @@ public class SkillScroller extends SkillCastingHandler {
             // Enter casting mode
             if (!playerData.setSkillCasting()) return;
 
-            if (enterSound != null) enterSound.playTo(player);
+            if (enterSound != null) enterSound.play(player);
         }
 
         if (castKey.matches(event) && playerData.isCasting()) {
@@ -198,7 +198,7 @@ public class SkillScroller extends SkillCastingHandler {
 
             // Play sound
             var sound = delta > 0 || changeBackSound == null ? changeSound : changeBackSound; // Select sound
-            if (sound != null) sound.playTo(caster.getPlayer());
+            if (sound != null) sound.play(caster.getPlayer());
         }
     }
 

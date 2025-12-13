@@ -3,12 +3,12 @@ package net.Indyuce.mmocore.skill.cast.handler;
 import io.lumine.mythic.lib.api.event.skill.PlayerCastSkillEvent;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
+import io.lumine.mythic.lib.message.SoundReader;
 import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.result.SkillResult;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
-import io.lumine.mythic.lib.util.SoundObject;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerKeyPressEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
@@ -51,7 +51,7 @@ public class KeyCombos extends SkillCastingHandler {
     private final boolean stayIn, ignoreSneak;
 
     @Nullable
-    private final SoundObject beginComboSound, comboClickSound, failComboSound, failSkillSound;
+    private final SoundReader beginComboSound, comboClickSound, failComboSound, failSkillSound;
 
     public KeyCombos(@NotNull ConfigurationSection config) {
         super(config);
@@ -61,10 +61,10 @@ public class KeyCombos extends SkillCastingHandler {
         stayIn = config.getBoolean("stay-in");
 
         // Load sounds
-        beginComboSound = config.contains("sound.begin-combo") ? new SoundObject(config.getConfigurationSection("sound.begin-combo")) : null;
-        comboClickSound = config.contains("sound.combo-key") ? new SoundObject(config.getConfigurationSection("sound.combo-key")) : null;
-        failComboSound = config.contains("sound.fail-combo") ? new SoundObject(config.getConfigurationSection("sound.fail-combo")) : null;
-        failSkillSound = config.contains("sound.fail-skill") ? new SoundObject(config.getConfigurationSection("sound.fail-skill")) : null;
+        beginComboSound = config.contains("sound.begin-combo") ? new SoundReader(config.getConfigurationSection("sound.begin-combo")) : null;
+        comboClickSound = config.contains("sound.combo-key") ? new SoundReader(config.getConfigurationSection("sound.combo-key")) : null;
+        failComboSound = config.contains("sound.fail-combo") ? new SoundReader(config.getConfigurationSection("sound.fail-combo")) : null;
+        failSkillSound = config.contains("sound.fail-skill") ? new SoundReader(config.getConfigurationSection("sound.fail-skill")) : null;
 
         // Find initializer key
         initializerKey = Keybind.fromConfig(config.get("initializer-key"));
@@ -101,7 +101,7 @@ public class KeyCombos extends SkillCastingHandler {
                 if (event.getPressed().shouldCancelEvent()) event.setCancelled(true);
 
                 // Start combo
-                if (playerData.setSkillCasting() && beginComboSound != null) beginComboSound.playTo(player);
+                if (playerData.setSkillCasting() && beginComboSound != null) beginComboSound.play(player);
             }
             return;
         }
@@ -113,7 +113,7 @@ public class KeyCombos extends SkillCastingHandler {
             if (event.getPressed().shouldCancelEvent()) event.setCancelled(true);
 
             event.getData().leaveSkillCasting(true);
-            if (failComboSound != null) failComboSound.playTo(player);
+            if (failComboSound != null) failComboSound.play(player);
             return;
         }
 
@@ -128,7 +128,7 @@ public class KeyCombos extends SkillCastingHandler {
             // Start combo when there is NO initializer key
         else if (comboMap.isComboStart(event.getPressed()) && playerData.setSkillCasting()) {
             casting = (CustomSkillCastingInstance) playerData.getSkillCasting();
-            if (beginComboSound != null) beginComboSound.playTo(player);
+            if (beginComboSound != null) beginComboSound.play(player);
         }
 
         // Just return
@@ -138,7 +138,7 @@ public class KeyCombos extends SkillCastingHandler {
         casting.refreshTimeOut();
         casting.current.registerKey(event.getPressed());
         casting.onTick();
-        if (comboClickSound != null) comboClickSound.playTo(player);
+        if (comboClickSound != null) comboClickSound.play(player);
 
         // Cancel event if necessary
         if (event.getPressed().shouldCancelEvent()) event.setCancelled(true);
@@ -155,9 +155,9 @@ public class KeyCombos extends SkillCastingHandler {
                     !(boundSkill = playerData.getBoundSkill(spellSlot)).getTrigger().isPassive()) {
                 final PlayerMetadata caster = playerData.getMMOPlayerData().getStatMap().cache(EquipmentSlot.MAIN_HAND);
                 final SkillResult result = boundSkill.toCastable(playerData).cast(SkillMetadata.of(caster));
-                if (!result.isSuccessful()) if (failSkillSound != null) failSkillSound.playTo(player);
+                if (!result.isSuccessful()) if (failSkillSound != null) failSkillSound.play(player);
             } else if (stayIn) {
-                if (failComboSound != null) failComboSound.playTo(player);
+                if (failComboSound != null) failComboSound.play(player);
             }
 
             return;
@@ -167,7 +167,7 @@ public class KeyCombos extends SkillCastingHandler {
         if (casting.current.countKeys() >= casting.combos.getLongest()) {
             if (stayIn) casting.resetCurrentCombo();
             else playerData.leaveSkillCasting(true);
-            if (failComboSound != null) failComboSound.playTo(player);
+            if (failComboSound != null) failComboSound.play(player);
         }
     }
 
