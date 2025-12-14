@@ -86,11 +86,13 @@ public class AttributeView extends EditableInventory {
         @Override
         public Placeholders getPlaceholders(AttrInventory inv, int n) {
             int total = inv.playerData.getAttributes().getInstance(attribute).getTotal();
+            final var attrInst = inv.playerData.getAttributes().getInstance(attribute);
 
             Placeholders holders = new Placeholders();
             holders.register("name", attribute.getName());
             holders.register("buffs", attribute.getBuffs().size());
-            holders.register("spent", inv.playerData.getAttributes().getInstance(attribute).getBase());
+            holders.register("spent", attrInst.getBase());
+            holders.register("total", attrInst.getTotal());
             holders.register("max", attribute.getMax());
             holders.register("current", total);
             holders.register("attribute_points", inv.playerData.getAttributePoints());
@@ -124,7 +126,7 @@ public class AttributeView extends EditableInventory {
             if (attribute.hasMax()) pointsSpent = Math.min(pointsSpent, attribute.getMax() - ins.getBase());
 
             if (shiftClick && inv.playerData.getAttributePoints() < pointsSpent) {
-                Message.ATTRIBUTE_MISSING_POINT_SHIFT.send(inv.playerData, "shift_points",pointsSpent);
+                Message.ATTRIBUTE_MISSING_POINT_SHIFT.send(inv.playerData, "shift_points", pointsSpent);
                 return;
             }
 
