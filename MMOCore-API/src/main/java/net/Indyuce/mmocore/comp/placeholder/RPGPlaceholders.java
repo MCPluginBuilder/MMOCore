@@ -242,7 +242,7 @@ public class RPGPlaceholders extends PlaceholderExpansion {
             if (friend == null) return ERROR_PLACEHOLDER;
             return friend.getName();
         } else if (identifier.startsWith("party_member_excluded_self_")) {
-            final int n = Integer.parseInt(identifier.substring(13)) - 1;
+            final int n = Integer.parseInt(identifier.substring(27)) - 1;
             final @Nullable AbstractParty party = playerData.getParty();
             if (party == null) return ERROR_PLACEHOLDER;
             if (n >= party.countMembers()) return ERROR_PLACEHOLDER;
