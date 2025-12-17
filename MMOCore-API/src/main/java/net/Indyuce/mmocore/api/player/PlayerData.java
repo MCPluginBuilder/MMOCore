@@ -150,6 +150,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
      * /mmocore reload
      */
     public void reload() {
+
+        // TODO switch to lazy persistent?
         try {
             profess = profess == null ? null : MMOCore.plugin.classManager.get(profess.getId());
         } catch (NullPointerException exception) {
@@ -157,6 +159,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         }
 
         // Update references to dead skills in bound skills
+        // TODO switch to lazy persistent?
         for (var entry : new HashMap<>(boundSkills).entrySet())
             try {
                 final @Nullable SkillSlot skillSlot = getProfess().getSkillSlot(entry.getKey());
@@ -178,6 +181,10 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         setupSkillTrees();
         applyTemporaryTriggers();
         getStats().updateStats();
+
+        // Hardbind skills
+        for (var skillSlot : getProfess().getSlots())
+            if (skillSlot.getHardBind() != null) this.bindSkill(skillSlot.getSlot(), skillSlot.getHardBind());
 
         // Flush references to dead attributes
         attributes.reload();
@@ -1302,7 +1309,13 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         // Clear bound skills
         boundSkills.forEach((slot, info) -> info.close());
         boundSkills.clear();
+
+        // Apply temporary triggers (class exp-table triggers)
         applyTemporaryTriggers();
+
+        // Hardbind skills
+        for (var skillSlot : getProfess().getSlots())
+            if (skillSlot.getHardBind() != null) this.bindSkill(skillSlot.getSlot(), skillSlot.getHardBind());
 
         // Update stats
         if (isOnline()) getStats().updateStats();
@@ -1326,7 +1339,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
      */
     public void bindSkill(int slot, @NotNull ClassSkill skill) {
         Validate.notNull(skill, "Skill cannot be null");
-        if (slot <= 0) return;
+        if (slot <= 0) return; // TODO why is this not a Validate?
 
         // Friendly error in case server owner makes a skill permanent while players have already bound it
         if (skill.isPermanent()) {
@@ -1360,7 +1373,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
      * @return If the player has at least one active skill bound
      */
     public boolean hasActiveSkillBound() {
-        for (BoundSkillInfo bound : boundSkills.values())
+        for (var bound : boundSkills.values())
             if (!bound.isPassive()) return true;
         return false;
     }

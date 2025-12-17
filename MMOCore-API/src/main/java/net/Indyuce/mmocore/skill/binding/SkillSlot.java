@@ -1,17 +1,21 @@
 package net.Indyuce.mmocore.skill.binding;
 
+import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.MMOLineConfig;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
+import net.Indyuce.mmocore.api.player.profess.PlayerClass;
 import net.Indyuce.mmocore.api.quest.trigger.SkillModifierTrigger;
 import net.Indyuce.mmocore.api.quest.trigger.Trigger;
 import net.Indyuce.mmocore.player.Unlockable;
 import net.Indyuce.mmocore.skill.ClassSkill;
 import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 
 public class SkillSlot implements Unlockable {
@@ -22,6 +26,9 @@ public class SkillSlot implements Unlockable {
 
     private final boolean unlockedByDefault;
     private final boolean canManuallyBind;
+
+    @Nullable
+    private final ClassSkill hardbind;
 
     private final List<SkillModifierTrigger> buffs = new ArrayList<>();
 
@@ -38,17 +45,26 @@ public class SkillSlot implements Unlockable {
         this.canManuallyBind = canManuallyBind;
         this.unlockedByDefault = unlockedByDefault;
         this.buffs.addAll(buffs);
+        this.hardbind = null;
     }
 
     public static final String SKILL_MODIFIER_TRIGGER_KEY = "mmocoreSkillSlot";
 
+    @Deprecated(forRemoval = true)
     public SkillSlot(ConfigurationSection section) {
+        this(null, section);
+    }
+
+    public SkillSlot(@Nullable PlayerClass clazz, ConfigurationSection section) {
         this.slot = Integer.parseInt(section.getName());
         this.formula = section.contains("formula") ? section.getString("formula") : "true";
         this.name = section.getString("name");
         this.lore = section.getStringList("lore");
         this.unlockedByDefault = section.getBoolean("unlocked-by-default", true);
         this.canManuallyBind = section.getBoolean("can-manually-bind", true);
+        this.hardbind = clazz != null && section.contains("hardset")
+                ? Objects.requireNonNull(UtilityMethods.prettyValueOf(clazz::getSkill, section.getString("hardset"), "Could not find skill with ID '%s'"))
+                : null;
 
         // Load skill buffs
         if (section.contains("skill-buffs")) for (String skillBuff : section.getStringList("skill-buffs"))
@@ -78,6 +94,14 @@ public class SkillSlot implements Unlockable {
 
     public boolean isUnlockedByDefault() {
         return unlockedByDefault;
+    }
+
+    /**
+     * @return Skill hardcoded into that skill slot, if any
+     */
+    @Nullable
+    public ClassSkill getHardBind() {
+        return hardbind;
     }
 
     @Deprecated

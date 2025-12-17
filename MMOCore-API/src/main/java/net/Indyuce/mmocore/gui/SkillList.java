@@ -290,6 +290,12 @@ public class SkillList extends EditableInventory {
             int index = inv.slotSlots.indexOf(event.getSlot()) + 1;
             SkillSlot skillSlot = inv.playerData.getProfess().getSkillSlot(index);
 
+            // Prevent editing of hardbinds
+            if (skillSlot.getHardBind() != null) {
+                Message.CANNOT_EDIT_HARDBOUND_SLOT.send(inv.playerData);
+                return;
+            }
+
             // Select if the player is doing Shift Left Click
             if (event.getClick() == ClickType.SHIFT_LEFT) {
                 if (inv.playerData.hasSkillBound(index)) {

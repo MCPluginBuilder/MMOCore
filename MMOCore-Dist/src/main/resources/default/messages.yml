@@ -384,6 +384,9 @@ not-enough-skill-points-shift:
 skill-level-not-met:
   message: '&cYou cannot use this skill yet.'
   sound: ENTITY_VILLAGER_NO,1,2
+cannot-edit-hardbound-slot:
+  message: '&cYou cannot edit this skill slot.'
+  sound: ENTITY_VILLAGER_NO,1,2
 no-skill-bound:
   message: '&cYou don''t have any skill bound to this slot.'
   sound: ENTITY_VILLAGER_NO,1,2
