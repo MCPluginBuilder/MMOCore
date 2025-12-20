@@ -353,11 +353,12 @@ public class SkillList extends EditableInventory {
     //private static final NamespacedKey SKILL_ID_KEY = new NamespacedKey(MMOCore.plugin, "skill_id");
 
     public class SkillItem extends PhysicalItem<SkillViewerInventory> {
-        private final boolean upgradeOnClick;
+        private final boolean upgradeOnClick, disableClick;
 
         public SkillItem(ConfigurationSection config) {
             super(config);
 
+            disableClick = config.getBoolean("disable_click", false);
             upgradeOnClick = config.getBoolean("upgrade_on_click", false);
         }
 
@@ -419,10 +420,15 @@ public class SkillList extends EditableInventory {
 
         @Override
         public void onClick(@NotNull SkillViewerInventory inv, @NotNull InventoryClickEvent event) {
+
+            // Disable all clicks
+            if (disableClick) return;
+
             var clickSlot = inv.skillSlots.indexOf(event.getSlot());
             var index = inv.getPageIndex(clickSlot);
             var skillFocus = Objects.requireNonNull(inv.skills.get(index), "Skill at index " + index + " is null");
 
+            // Upgrade on click
             if (this.upgradeOnClick) {
                 inv.tryUpgrade(skillFocus, event, 0);
                 return;

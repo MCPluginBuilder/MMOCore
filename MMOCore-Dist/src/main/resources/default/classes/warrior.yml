@@ -56,18 +56,24 @@ skill-slots:
         name: "Skill Slot I"
         unlocked-by-default: true
         lore: []
+        # Permanently binds a skill to this slot
+        # Players won't be able to change the skill in this slot
+        #hardset: WEAKEN
     2:
         name: "Skill Slot II"
         unlocked-by-default: true
         lore: []
+        #hardset: COMBO_ATTACK
     3:
         name: "Skill Slot III"
         unlocked-by-default: true
         lore: []
+        #hardset: DEEP_WOUND
     4:
         name: "Skill Slot IV"
         unlocked-by-default: true
         lore: []
+        #hardset: FIRE_BERSERKER
 
 skill-trees:
     - 'general'
