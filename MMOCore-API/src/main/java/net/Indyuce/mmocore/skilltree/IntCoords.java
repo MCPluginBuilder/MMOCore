@@ -70,7 +70,7 @@ public class IntCoords {
         }
 
         if (object instanceof String) {
-            final String[] split = ((String) object).split("[:.,]");
+            final String[] split = ((String) object).split("[:., ]");
             Validate.isTrue(split.length > 1, "Must provide two coordinates, X and Y, got " + Arrays.asList(split));
             return new IntCoords(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
         }

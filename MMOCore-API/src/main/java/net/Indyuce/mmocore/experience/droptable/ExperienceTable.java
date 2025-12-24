@@ -11,11 +11,12 @@ import java.util.List;
 
 public class ExperienceTable {
     private final String id;
-    private final List<ExperienceItem> items = new ArrayList<>();
+    private final List<ExperienceItem> items;
 
     public ExperienceTable(ConfigurationSection config) {
         Validate.notNull(config, "Config cannot be null");
         id = config.getName();
+        this.items = new ArrayList<>();
 
         for (String str : config.getKeys(false))
             try {
@@ -24,6 +25,11 @@ public class ExperienceTable {
             } catch (RuntimeException exception) {
                 throw new RuntimeException("Could not load item '" + str + "': " + exception.getMessage());
             }
+    }
+
+    public ExperienceTable(List<String> items) {
+        this.id = "ExpTable";
+        this.items = List.of(new ExperienceItem(this.id, items));
     }
 
     public String getId() {
