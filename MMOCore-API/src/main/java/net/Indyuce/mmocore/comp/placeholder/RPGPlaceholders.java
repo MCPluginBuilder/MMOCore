@@ -24,6 +24,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -240,6 +241,16 @@ public class RPGPlaceholders extends PlaceholderExpansion {
             final @Nullable Player friend = Bukkit.getPlayer(playerData.getFriends().get(n));
             if (friend == null) return ERROR_PLACEHOLDER;
             return friend.getName();
+        } else if (identifier.startsWith("party_member_excluded_self_")) {
+            final int n = Integer.parseInt(identifier.substring(27)) - 1;
+            final @Nullable AbstractParty party = playerData.getParty();
+            if (party == null) return ERROR_PLACEHOLDER;
+            if (n >= party.countMembers()) return ERROR_PLACEHOLDER;
+            List<PlayerData> partyMembers = party.getOnlineMembers();
+            partyMembers.remove(playerData);
+            final @Nullable PlayerData member = partyMembers.get(n);;
+            if (member == null) return ERROR_PLACEHOLDER;
+            return member.getPlayer().getName();
         }
 
         // Profesion level
