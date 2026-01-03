@@ -287,8 +287,15 @@ public class SkillList extends EditableInventory {
 
         @Override
         public void onClick(@NotNull SkillViewerInventory inv, @NotNull InventoryClickEvent event) {
+            Validate.notNull(inv.slotSlots, "Internal error: slotSlots is null");
             int index = inv.slotSlots.indexOf(event.getSlot()) + 1;
             SkillSlot skillSlot = inv.playerData.getProfess().getSkillSlot(index);
+
+            // Prevent editing of hardbinds
+            if (skillSlot.getHardBind() != null) {
+                Message.CANNOT_EDIT_HARDBOUND_SLOT.send(inv.playerData);
+                return;
+            }
 
             // Select if the player is doing Shift Left Click
             if (event.getClick() == ClickType.SHIFT_LEFT) {
@@ -346,8 +353,13 @@ public class SkillList extends EditableInventory {
     //private static final NamespacedKey SKILL_ID_KEY = new NamespacedKey(MMOCore.plugin, "skill_id");
 
     public class SkillItem extends PhysicalItem<SkillViewerInventory> {
+        private final boolean upgradeOnClick, disableClick;
+
         public SkillItem(ConfigurationSection config) {
             super(config);
+
+            disableClick = config.getBoolean("disable_click", false);
+            upgradeOnClick = config.getBoolean("upgrade_on_click", false);
         }
 
         @Override
@@ -408,9 +420,20 @@ public class SkillList extends EditableInventory {
 
         @Override
         public void onClick(@NotNull SkillViewerInventory inv, @NotNull InventoryClickEvent event) {
+
+            // Disable all clicks
+            if (disableClick) return;
+
             var clickSlot = inv.skillSlots.indexOf(event.getSlot());
             var index = inv.getPageIndex(clickSlot);
             var skillFocus = Objects.requireNonNull(inv.skills.get(index), "Skill at index " + index + " is null");
+
+            // Upgrade on click
+            if (this.upgradeOnClick) {
+                inv.tryUpgrade(skillFocus, event, 0);
+                return;
+            }
+
             Message.SKILL_UI_FOCUS.send(inv.playerData, "skill", skillFocus.getSkill().getName());
             inv.selected = skillFocus;
             inv.open();
@@ -418,15 +441,12 @@ public class SkillList extends EditableInventory {
     }
 
     public class UpgradeItem extends PhysicalItem<SkillViewerInventory> {
-        private int shiftCost = 1;
+        private final int shiftCost;
 
         public UpgradeItem(ConfigurationSection config) {
             super(config);
 
-            if (config.contains("shift-cost")) {
-                this.shiftCost = config.getInt("shift-cost");
-                Validate.isTrue(shiftCost >= 1, "Upgrade shift-cost msut be 1 or above");
-            }
+            this.shiftCost = config.getInt("shift-cost", 5);
         }
 
         @Override
@@ -443,42 +463,8 @@ public class SkillList extends EditableInventory {
 
         @Override
         public void onClick(@NotNull SkillViewerInventory inv, @NotNull InventoryClickEvent event) {
-
-            if (!inv.playerData.hasUnlockedLevel(inv.selected)) {
-                Message.SKILL_LEVEL_NOT_MET.send(inv.playerData);
-                return;
-            }
-
-            if (!inv.selected.isUpgradable()) {
-                Message.CANNOT_UPGRADE_SKILL.send(inv.playerData);
-                return;
-            }
-
-            if (inv.playerData.getSkillPoints() < 1) {
-                Message.NOT_ENOUGH_SKILL_POINTS.send(inv.playerData);
-                return;
-            }
-
-            if (inv.selected.hasMaxLevel() && inv.playerData.getSkillLevel(inv.selected.getSkill()) >= inv.selected.getMaxLevel()) {
-                Message.SKILL_MAX_LEVEL_HIT.send(inv.playerData);
-                return;
-            }
-
-            if (event.getClick().isShiftClick()) {
-                if (inv.playerData.getSkillPoints() < shiftCost) {
-                    Message.NOT_ENOUGH_SKILL_POINTS_SHIFT.send(inv.playerData, "shift_points", shiftCost);
-                    return;
-                }
-
-                inv.playerData.giveSkillPoints(-shiftCost);
-                inv.playerData.setSkillLevel(inv.selected.getSkill(), inv.playerData.getSkillLevel(inv.selected.getSkill()) + shiftCost);
-            } else {
-                inv.playerData.giveSkillPoints(-1);
-                inv.playerData.setSkillLevel(inv.selected.getSkill(), inv.playerData.getSkillLevel(inv.selected.getSkill()) + 1);
-            }
-
-            Message.UPGRADE_SKILL.send(inv.playerData, "skill", inv.selected.getSkill().getName(), "level", inv.playerData.getSkillLevel(inv.selected.getSkill()));
-            inv.open();
+            Validate.isTrue(inv.selected != null, "No skill selected");
+            inv.tryUpgrade(inv.selected, event, shiftCost);
         }
     }
 
@@ -487,9 +473,10 @@ public class SkillList extends EditableInventory {
         // Cached information
         private final List<ClassSkill> skills;
         private final List<Integer> skillSlots;
+        @Nullable("null if no slot item is defined")
         private final List<Integer> slotSlots;
 
-        // Skill the player selected
+        @Nullable("null if no skill available")
         private ClassSkill selected;
 
         private final PlayerData playerData;
@@ -500,10 +487,10 @@ public class SkillList extends EditableInventory {
             this.playerData = playerData;
             skills = playerData.getProfess().getSkills().stream().filter(playerData::hasUnlocked).sorted(Comparator.comparingInt(ClassSkill::getUnlockLevel)).collect(Collectors.toList());
             skillSlots = getEditable().getByFunction("skill").getSlots();
-
-            Validate.notNull(getEditable().getByFunction("slot"), "Your skill GUI config file is out-of-date, please regenerate it.");
-            slotSlots = getEditable().getByFunction("slot").getSlots();
             selected = skills.get(0);
+
+            var slotItem = getEditable().getByFunction("slot");
+            slotSlots = slotItem != null ? slotItem.getSlots() : null;
 
             enablePagination(skillSlots.size());
         }
@@ -525,6 +512,46 @@ public class SkillList extends EditableInventory {
         @Override
         public int getMaxPage() {
             return computeMaxPage(skills.size());
+        }
+
+        void tryUpgrade(ClassSkill skill, InventoryClickEvent event, int shiftCost) {
+            if (!playerData.hasUnlockedLevel(skill)) {
+                Message.SKILL_LEVEL_NOT_MET.send(playerData);
+                return;
+            }
+
+            if (!skill.isUpgradable()) {
+                Message.CANNOT_UPGRADE_SKILL.send(playerData);
+                return;
+            }
+
+            if (playerData.getSkillPoints() < 1) {
+                Message.NOT_ENOUGH_SKILL_POINTS.send(playerData);
+                return;
+            }
+
+            if (skill.hasMaxLevel() && playerData.getSkillLevel(skill.getSkill()) >= skill.getMaxLevel()) {
+                Message.SKILL_MAX_LEVEL_HIT.send(playerData);
+                return;
+            }
+
+            if (shiftCost > 0 && event.getClick().isShiftClick()) {
+                if (playerData.getSkillPoints() < shiftCost) {
+                    Message.NOT_ENOUGH_SKILL_POINTS_SHIFT.send(playerData, "shift_points", shiftCost);
+                    return;
+                }
+
+                playerData.giveSkillPoints(-shiftCost);
+                playerData.setSkillLevel(skill.getSkill(), playerData.getSkillLevel(skill.getSkill()) + shiftCost);
+            } else {
+                playerData.giveSkillPoints(-1);
+                playerData.setSkillLevel(skill.getSkill(), playerData.getSkillLevel(skill.getSkill()) + 1);
+            }
+
+            Message.UPGRADE_SKILL.send(playerData,
+                    "skill", skill.getSkill().getName(),
+                    "level", playerData.getSkillLevel(skill.getSkill()));
+            open();
         }
     }
 }

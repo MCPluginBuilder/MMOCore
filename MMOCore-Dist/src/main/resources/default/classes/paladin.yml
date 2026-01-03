@@ -49,18 +49,24 @@ skill-slots:
         name: "&aSkill Slot I"
         unlocked-by-default: true
         lore: []
+        # Permanently binds a skill to this slot
+        # Players won't be able to change the skill in this slot
+        #hardset: HUMAN_SHIELD
     2:
         name: "&aSkill Slot II"
         unlocked-by-default: true
         lore: []
+        #hardset: GREATER_HEALINGS
     3:
         name: "&aSkill Slot III"
         unlocked-by-default: true
         lore: []
+        #hardset: AMBERS
     4:
         name: "&aSkill Slot IV"
         unlocked-by-default: true
         lore: []
+        #hardset: DEEP_WOUND
 
 skill-trees:
     - 'general'

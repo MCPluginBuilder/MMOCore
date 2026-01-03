@@ -86,13 +86,19 @@ public class ExperienceManager implements MMOCoreManager {
     @NotNull
     public ExperienceTable loadExperienceTable(Object obj) {
 
+        // From configuration section
         if (obj instanceof ConfigurationSection)
             return new ExperienceTable((ConfigurationSection) obj);
 
+        // From list of strings
+        if (obj instanceof List)
+            return new ExperienceTable((List<String>) obj);
+
+        // From string (predefined table)
         if (obj instanceof String)
             return MMOCore.plugin.experience.getTableOrThrow(obj.toString());
 
-        throw new IllegalArgumentException("Please provide either a string (exp table name) or a config section (locally define an exp table)");
+        throw new IllegalArgumentException("Expected either a string, list of strings, or config section");
     }
 
     public Collection<ExperienceTable> getTables() {
@@ -114,7 +120,6 @@ public class ExperienceManager implements MMOCoreManager {
             managers.forEach((c, manager) -> manager.close());
             managers.clear();
         }
-
 
         // Exp tables
         FileUtils.loadObjectsFromFolder(MMOCore.plugin, "exp-tables", false, (key, config) -> {

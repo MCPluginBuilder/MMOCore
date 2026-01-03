@@ -180,16 +180,6 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
                     MMOCore.plugin.getLogger().log(Level.WARNING, "Could not load stat info '" + key + "' from class '"
                             + id + "': " + exception.getMessage());
                 }
-
-        // Skill slots
-        if (config.isConfigurationSection("skill-slots"))
-            FileUtils.iterateConfigSectionList(
-                    config.getConfigurationSection("skill-slots"),
-                    skillSlots,
-                    SkillSlot::new,
-                    index -> new SkillSlot(index, "true", "&eUnconfigured Skill Slot " + MMOCoreUtils.intToRoman(index), new ArrayList<>(), false, true, new ArrayList<>()),
-                    (key, exception) -> MMOCore.plugin.getLogger().log(Level.WARNING, "Could not load skill slot '" + key + "' from class '" + getId() + "': " + exception.getMessage()));
-
         // Class skills
         for (var registered : MythicLib.plugin.getSkills().getHandlers()) {
             final var key = registered.getId();
@@ -198,6 +188,18 @@ public class PlayerClass implements ExperienceObject, PreloadedObject {
                     : new ClassSkill(registered, 1, 1, false);
             skills.put(key, classSkill);
         }
+
+        // Skill slots
+        // Must load after class skills.
+        final var skillSlotsConfig = config.getConfigurationSection("skill-slots");
+        if (skillSlotsConfig != null)
+            FileUtils.iterateConfigSectionList(
+                    skillSlotsConfig,
+                    skillSlots,
+                    configSection -> new SkillSlot(this, configSection),
+                    index -> new SkillSlot(index, "true", "&eUnconfigured Skill Slot " + MMOCoreUtils.intToRoman(index), new ArrayList<>(), false, true, new ArrayList<>()),
+                    (key, exception) -> MMOCore.plugin.getLogger().log(Level.WARNING, "Could not load skill slot '" + key + "' from class '" + getId() + "': " + exception.getMessage()));
+
 
         // Casting particle
         ParticleInformation castingParticle;
