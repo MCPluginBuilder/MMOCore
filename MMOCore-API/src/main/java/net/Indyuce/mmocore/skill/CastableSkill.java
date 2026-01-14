@@ -5,7 +5,6 @@ import io.lumine.mythic.lib.comp.flags.CustomFlag;
 import io.lumine.mythic.lib.player.cooldown.CooldownInfo;
 import io.lumine.mythic.lib.skill.Skill;
 import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import net.Indyuce.mmocore.api.event.PlayerResourceUpdateEvent;
 import net.Indyuce.mmocore.api.player.PlayerActivity;
@@ -32,12 +31,16 @@ public class CastableSkill extends Skill {
     }
 
     public CastableSkill(@NotNull ClassSkill skill, int fixedLevel, @NotNull PlayerData caster) {
+        super(skill.getSkill());
+
         this.skill = skill;
         this.skillLevel = () -> fixedLevel;
         this.caster = caster;
     }
 
     public CastableSkill(@NotNull ClassSkill skill, @NotNull PlayerData caster) {
+        super(skill.getSkill());
+
         this.skill = skill;
         this.caster = caster;
         this.skillLevel = () -> this.caster.getSkillLevel(skill.getSkill());
@@ -133,12 +136,6 @@ public class CastableSkill extends Skill {
         }
 
         if (!getTrigger().isPassive()) casterData.setLastActivity(PlayerActivity.CAST_SKILL);
-    }
-
-    @NotNull
-    @Override
-    public SkillHandler<?> getHandler() {
-        return skill.getSkill();
     }
 
     @Override
