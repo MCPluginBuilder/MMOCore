@@ -1,10 +1,18 @@
 id: 'combat'
 name: '&4Combat'
+type: PROXIMITY
 lore:
   - '&6This skill tree is used for combat abilities!'
-type: PROXIMITY
-item: DIAMOND_AXE
 max-point-spent: 20
+
+icon:
+  material: IRON_AXE
+  item_flags: [HIDE_ATTRIBUTES]
+  #custom_model_data: 10
+  #custom_model_data_string: 'off_hand'
+  #item_model: 'minecraft:dirt'
+  #tooltip_style: 'myplugin:tooltip_style_1'
+
 nodes:
   a1:
     name: 'Cooldown Reduction I'

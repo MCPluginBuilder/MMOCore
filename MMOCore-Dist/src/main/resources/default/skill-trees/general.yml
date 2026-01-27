@@ -1,10 +1,17 @@
 id: 'general'
 name: '&4General'
 type: CUSTOM
-item: 'DIAMOND_AXE'
-lore: 
-- '&6General skill tree'
+lore:
+  - '&6General skill tree'
 max-point-spent: 11
+
+icon:
+  material: DIAMOND_AXE
+  item_flags: [HIDE_ATTRIBUTES]
+  #custom_model_data: 10
+  #custom_model_data_string: 'off_hand'
+  #item_model: 'minecraft:dirt'
+  #tooltip_style: 'myplugin:tooltip_style_1'
 
 nodes:
 

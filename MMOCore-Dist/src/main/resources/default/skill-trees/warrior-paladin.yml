@@ -1,10 +1,17 @@
 id: 'warrior-paladin'
 name: '&4Warrior & Paladin'
 type: 'custom'
-item: 'DIAMOND_AXE'
-lore: 
-- '&6Available to strong bois, Warriors and Paladins only'
+lore:
+  - '&6Available to strong bois, Warriors and Paladins only'
 max-point-spent: 21
+
+icon:
+  material: SHIELD
+  item_flags: [HIDE_ATTRIBUTES]
+  #custom_model_data: 10
+  #custom_model_data_string: 'off_hand'
+  #item_model: 'minecraft:dirt'
+  #tooltip_style: 'myplugin:tooltip_style_1'
 
 nodes:
 

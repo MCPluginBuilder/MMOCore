@@ -1,11 +1,19 @@
 id: 'example_loop'
 name: '&4Loop Skill Tree'
+type: CUSTOM
 lore:
   - '&6This skill tree demonstrates how to'
   - '&6do loops with node parents'
-type: CUSTOM
-item: DIAMOND_AXE
 max-point-spent: 20
+
+icon:
+  material: DIAMOND_AXE
+  item_flags: [HIDE_ATTRIBUTES]
+  #custom_model_data: 10
+  #custom_model_data_string: 'off_hand'
+  #item_model: 'minecraft:dirt'
+  #tooltip_style: 'myplugin:tooltip_style_1'
+
 nodes:
 
 

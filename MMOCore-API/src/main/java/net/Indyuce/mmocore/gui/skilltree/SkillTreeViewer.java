@@ -214,15 +214,14 @@ public class SkillTreeViewer extends EditableInventory {
 
             SkillTree skillTree = inv.skillTrees.get(index);
             //We display with the material corresponding to the skillTree
-            ItemStack item = super.getDisplayedItem(inv, ItemOptions.material(n, skillTree.getItem()));
+            ItemStack item = super.getDisplayedItem(inv, new ItemOptions(n, skillTree.getIcon()));
 
             ItemMeta meta = item.getItemMeta();
-            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES); // Hardcode 'hide-flags' on
             meta.setDisplayName(skillTree.getName());
-            meta.setCustomModelData(skillTree.getCustomModelData());
             PersistentDataContainer container = meta.getPersistentDataContainer();
             container.set(new NamespacedKey(MMOCore.plugin, "skill-tree-id"), PersistentDataType.STRING, skillTree.getId());
             item.setItemMeta(meta);
+
             return item;
         }
 

@@ -1,10 +1,17 @@
 id: 'mage-arcane-mage'
 name: '&4Mage'
 type: CUSTOM
-item: 'DIAMOND_AXE'
 lore:
   - '&6Available to Mages only'
 max-point-spent: 21
+
+icon:
+  material: BOOK
+  #item_flags: [HIDE_ATTRIBUTES]
+  #custom_model_data: 10
+  #custom_model_data_string: 'off_hand'
+  #item_model: 'minecraft:dirt'
+  #tooltip_style: 'myplugin:tooltip_style_1'
 
 nodes:
 

@@ -36,8 +36,7 @@ import java.util.logging.Level;
 public abstract class SkillTree implements RegisteredObject {
     private final String id, name;
     private final List<String> lore = new ArrayList<>();
-    private final Material item;
-    private final int customModelData;
+    private final IconOptions icon;
     protected final Map<String, SkillTreeNode> nodes = new HashMap<>();
     protected final int maxPointSpent;
     protected final List<SkillTreeNode> roots = new ArrayList<>();
@@ -47,8 +46,14 @@ public abstract class SkillTree implements RegisteredObject {
         this.id = Objects.requireNonNull(config.getString("id"), "Could not find skill tree id");
         this.name = MythicLib.plugin.parseColors(Objects.requireNonNull(config.getString("name"), "Could not find skill tree name"));
         Objects.requireNonNull(config.getStringList("lore"), "Could not find skill tree lore").forEach(str -> lore.add(MythicLib.plugin.parseColors(str)));
-        this.item = Material.valueOf(UtilityMethods.enumName(Objects.requireNonNull(config.getString("item"), "Could not find item")));
-        this.customModelData = config.getInt("custom-model-data", 0);
+
+        // [Backwards compatibility syntax]
+        if (config.contains("custom-model-data") || config.contains("item")){
+            config.set("item_flags", List.of("HIDE_ATTRIBUTES")); // Force hide_flags to true
+            this.icon = IconOptions.from(config);
+        }
+        else this.icon = IconOptions.from(config.get("icon"));
+
         Validate.isTrue(config.isConfigurationSection("nodes"), "Could not find any nodes in the tree");
         this.maxPointSpent = config.getInt("max-point-spent", Integer.MAX_VALUE);
 
@@ -91,10 +96,6 @@ public abstract class SkillTree implements RegisteredObject {
 
     public int getMaxPointSpent() {
         return maxPointSpent;
-    }
-
-    public int getCustomModelData() {
-        return customModelData;
     }
 
     public void addRoot(@NotNull SkillTreeNode node) {
@@ -352,8 +353,8 @@ public abstract class SkillTree implements RegisteredObject {
     }
 
     @NotNull
-    public Material getItem() {
-        return item;
+    public IconOptions getIcon() {
+        return icon;
     }
 
     @Override
@@ -417,6 +418,17 @@ public abstract class SkillTree implements RegisteredObject {
     }
 
     //region Deprecated
+
+    @Deprecated
+    public int getCustomModelData() {
+        var found = this.icon.getCustomModelDataInt();
+        return found == null ? 0 : found;
+    }
+
+    @Deprecated
+    public Material getItem() {
+        return this.icon.getMaterialElse(Material.BARRIER);
+    }
 
     @Deprecated
     private void loadLegacyPaths(ConfigurationSection config) {
