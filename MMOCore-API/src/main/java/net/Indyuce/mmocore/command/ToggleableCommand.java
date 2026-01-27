@@ -19,6 +19,7 @@ import java.util.function.Supplier;
  * Commands which can be disabled using commands.yml
  */
 public enum ToggleableCommand {
+    CAST("cast", "mmocore.cast", "Enter casting mode", CastCommand::new),
     PLAYER("player", "mmocore.profile", "Displays player stats", PlayerStatsCommand::new, "p", "profile"),
     ATTRIBUTES("attributes", "mmocore.attributes", "Display and manage attributes", AttributesCommand::new, "att", "stats"),
     CLASS("class", "mmocore.class-select", "Select a new class", ClassCommand::new, "c"),

@@ -13,6 +13,9 @@ commands:
     description: Main command.
     aliases: [ rpg ]
 permissions:
+  mmocore.cast:
+    description: Access to /cast
+    default: op
   mmocore.admin:
     description: Access to /mmocore
     default: op
