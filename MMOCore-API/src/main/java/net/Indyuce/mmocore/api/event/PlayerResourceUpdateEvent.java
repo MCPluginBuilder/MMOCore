@@ -159,6 +159,14 @@ public class PlayerResourceUpdateEvent extends PlayerDataEvent implements Cancel
         TRIGGER,
 
         /**
+         * When a player's "Max Resource" stat decreases so that the player's
+         * current resource value needs to be brought down to avoid exceeding the
+         * new max resource value, the player's current resource value gets updated
+         * using this reason.
+         */
+        CLAMPING,
+
+        /**
          * When using the resource command {@link ResourceCommandTreeNode}
          */
         COMMAND,

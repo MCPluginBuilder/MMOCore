@@ -3,6 +3,7 @@ package net.Indyuce.mmocore.command.builtin.mmocore.admin;
 import io.lumine.mythic.lib.command.CommandTreeExplorer;
 import io.lumine.mythic.lib.command.CommandTreeNode;
 import io.lumine.mythic.lib.command.argument.Argument;
+import net.Indyuce.mmocore.api.event.PlayerResourceUpdateEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.profess.resource.PlayerResource;
 import net.Indyuce.mmocore.api.quest.trigger.ManaTrigger;
@@ -58,7 +59,7 @@ public class ResourceCommandTreeNode extends CommandTreeNode {
 			}
 
 			PlayerData data = PlayerData.get(player);
-			resource.getConsumer(action).accept(data, amount);
+			resource.getConsumer(action).accept(data, amount, PlayerResourceUpdateEvent.UpdateReason.COMMAND);
 			return explorer.success(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " now has " + ChatColor.GOLD + resource.getCurrent(data)
 					+ ChatColor.YELLOW + " " + type + " points.");
 		}

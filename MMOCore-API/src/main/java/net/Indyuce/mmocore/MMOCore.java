@@ -9,6 +9,7 @@ import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.SpigotPlugin;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.attribute.AttributeModifier;
+import net.Indyuce.mmocore.api.player.profess.resource.PlayerResource;
 import net.Indyuce.mmocore.command.ToggleableCommand;
 import net.Indyuce.mmocore.command.builtin.mmocore.MMOCoreCommandTreeRoot;
 import net.Indyuce.mmocore.comp.citizens.CitizenInteractEventListener;
@@ -46,6 +47,7 @@ import net.Indyuce.mmocore.party.PartyModule;
 import net.Indyuce.mmocore.party.PartyModuleType;
 import net.Indyuce.mmocore.party.PartyRelationHandler;
 import net.Indyuce.mmocore.party.provided.MMOCorePartyModule;
+import net.Indyuce.mmocore.player.MaxResourceStatUpdateListener;
 import net.Indyuce.mmocore.player.ResourceRegenRunnable;
 import net.Indyuce.mmocore.script.mechanic.*;
 import net.Indyuce.mmocore.skill.list.Ambers;
@@ -187,6 +189,11 @@ public class MMOCore extends MMOPlugin {
 
         // Resource regen task
         new ResourceRegenRunnable().schedule();
+
+        // Clamp resource on max-resource stat changes
+        // Fixes https://gitlab.com/phoenix-dvpmt/mythiclib/-/issues/311
+        for (var playerResource : PlayerResource.values())
+            MythicLib.plugin.getStats().computeStat(playerResource.getMaxStat()).addUpdateListener(new MaxResourceStatUpdateListener(playerResource));
 
         /*
          * For the sake of the lord, make sure they aren't using MMOItems Mana and

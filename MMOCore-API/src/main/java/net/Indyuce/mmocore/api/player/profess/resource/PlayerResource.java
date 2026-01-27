@@ -1,68 +1,58 @@
 package net.Indyuce.mmocore.api.player.profess.resource;
 
+import io.lumine.mythic.lib.util.TriConsumer;
 import io.lumine.mythic.lib.version.Attributes;
 import net.Indyuce.mmocore.api.event.PlayerResourceUpdateEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.profess.ClassOption;
 import net.Indyuce.mmocore.api.quest.trigger.ManaTrigger;
 import net.Indyuce.mmocore.command.builtin.mmocore.admin.ResourceCommandTreeNode;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public enum PlayerResource {
 
     HEALTH(data -> data.getPlayer().getHealth(),
             data -> data.getPlayer().getAttribute(Attributes.MAX_HEALTH).getValue(),
-            (data, amount) -> data.heal(amount, PlayerResourceUpdateEvent.UpdateReason.REGENERATION),
-            (data, amount) -> data.heal(amount, PlayerResourceUpdateEvent.UpdateReason.COMMAND),
-            (data, amount) -> data.heal(-amount, PlayerResourceUpdateEvent.UpdateReason.COMMAND),
-            (data, amount) -> data.getPlayer().setHealth(amount)),
+            PlayerData::heal,
+            (data, amount, reason) -> data.getPlayer().setHealth(amount)),
 
     MANA(PlayerData::getMana,
             data -> data.getStats().getStat("MAX_MANA"),
-            (data, amount) -> data.giveMana(amount, PlayerResourceUpdateEvent.UpdateReason.REGENERATION),
-            (data, amount) -> data.giveMana(amount, PlayerResourceUpdateEvent.UpdateReason.COMMAND),
-            (data, amount) -> data.giveMana(-amount, PlayerResourceUpdateEvent.UpdateReason.COMMAND),
-            (data, amount) -> data.setMana(amount, PlayerResourceUpdateEvent.UpdateReason.COMMAND)),
+            PlayerData::giveMana,
+            PlayerData::setMana),
 
     STAMINA(PlayerData::getStamina,
             data -> data.getStats().getStat("MAX_STAMINA"),
-            (data, amount) -> data.giveStamina(amount, PlayerResourceUpdateEvent.UpdateReason.REGENERATION),
-            (data, amount) -> data.giveStamina(amount, PlayerResourceUpdateEvent.UpdateReason.COMMAND),
-            (data, amount) -> data.giveStamina(-amount, PlayerResourceUpdateEvent.UpdateReason.COMMAND),
-            (data, amount) -> data.setStamina(amount, PlayerResourceUpdateEvent.UpdateReason.COMMAND)),
+            PlayerData::giveStamina,
+            PlayerData::setStamina),
 
     STELLIUM(PlayerData::getStellium,
             data -> data.getStats().getStat("MAX_STELLIUM"),
-            (data, amount) -> data.giveStellium(amount, PlayerResourceUpdateEvent.UpdateReason.REGENERATION),
-            (data, amount) -> data.giveStellium(amount, PlayerResourceUpdateEvent.UpdateReason.COMMAND),
-            (data, amount) -> data.giveStellium(-amount, PlayerResourceUpdateEvent.UpdateReason.COMMAND),
-            (data, amount) -> data.setStellium(amount, PlayerResourceUpdateEvent.UpdateReason.COMMAND));
+            PlayerData::giveStellium,
+            PlayerData::setStellium);
 
-    private final String regenStat, maxRegenStat;
+    private final String regenStat, maxRegenStat, maxStat;
     private final ClassOption offCombatRegen;
     private final Function<PlayerData, Double> current, max;
-    private final BiConsumer<PlayerData, Double> regen;
 
     // Used for MMOCore commands
-    private final BiConsumer<PlayerData, Double> set, give, take;
+    private final TriConsumer<PlayerData, Double, PlayerResourceUpdateEvent.UpdateReason> set, take, give;
 
-    PlayerResource(Function<PlayerData, Double> current,
-                   Function<PlayerData, Double> max,
-                   BiConsumer<PlayerData, Double> regen,
-                   BiConsumer<PlayerData, Double> give,
-                   BiConsumer<PlayerData, Double> take,
-                   BiConsumer<PlayerData, Double> set) {
+    PlayerResource(@NotNull Function<PlayerData, Double> current,
+                   @NotNull Function<PlayerData, Double> max,
+                   @NotNull TriConsumer<PlayerData, Double, PlayerResourceUpdateEvent.UpdateReason> give,
+                   @NotNull TriConsumer<PlayerData, Double, PlayerResourceUpdateEvent.UpdateReason> set) {
         this.regenStat = name() + "_REGENERATION";
         this.maxRegenStat = "MAX_" + name() + "_REGENERATION";
+        this.maxStat = "MAX_" + name();
         this.offCombatRegen = ClassOption.valueOf("OFF_COMBAT_" + name() + "_REGEN");
         this.current = current;
         this.max = max;
-        this.regen = regen;
         this.give = give;
-        this.take = take;
         this.set = set;
+        this.take = (data, amount, reason) -> this.give.accept(data, -amount, reason);
     }
 
     /**
@@ -70,6 +60,13 @@ public enum PlayerResource {
      */
     public String getRegenStat() {
         return regenStat;
+    }
+
+    /**
+     * @return Stat which corresponds to resource regeneration scaling with the player's max health
+     */
+    public String getMaxStat() {
+        return maxStat;
     }
 
     /**
@@ -90,14 +87,14 @@ public enum PlayerResource {
     /**
      * @return Current resource of the given player
      */
-    public double getCurrent(PlayerData player) {
+    public double getCurrent(@NotNull PlayerData player) {
         return current.apply(player);
     }
 
     /**
      * @return Max amount of that resource of the given player
      */
-    public double getMax(PlayerData player) {
+    public double getMax(@NotNull PlayerData player) {
         return max.apply(player);
     }
 
@@ -107,14 +104,25 @@ public enum PlayerResource {
      * @param player Player to regen
      * @param amount Amount to regen
      */
-    public void regen(PlayerData player, double amount) {
-        regen.accept(player, amount);
+    public void regen(@NotNull PlayerData player, double amount) {
+        this.give.accept(player, amount, PlayerResourceUpdateEvent.UpdateReason.REGENERATION);
+    }
+
+    /**
+     * Sets a player resource. Whatever resource, a bukkit event is triggered
+     *
+     * @param player Player to regen
+     * @param amount Amount to set
+     * @param reason Reason for the update
+     */
+    public void setCurrent(@NotNull PlayerData player, double amount, @NotNull PlayerResourceUpdateEvent.UpdateReason reason) {
+        this.set.accept(player, amount, reason);
     }
 
     /**
      * Used by MMOCore admin commands here: {@link ResourceCommandTreeNode}
      */
-    public BiConsumer<PlayerData, Double> getConsumer(ManaTrigger.Operation operation) {
+    public TriConsumer<PlayerData, Double, PlayerResourceUpdateEvent.UpdateReason> getConsumer(ManaTrigger.Operation operation) {
         switch (operation) {
             case SET:
                 return set;
@@ -123,7 +131,7 @@ public enum PlayerResource {
             case GIVE:
                 return give;
             default:
-                throw new IllegalArgumentException("Operation cannot be null");
+                throw new IllegalArgumentException("Operation not supported");
         }
     }
 }
