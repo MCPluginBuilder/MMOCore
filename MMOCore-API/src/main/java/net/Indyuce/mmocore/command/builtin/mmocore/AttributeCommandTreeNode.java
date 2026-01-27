@@ -16,6 +16,28 @@ public class AttributeCommandTreeNode extends CommandTreeNode {
 
         addChild(new ActionCommandTreeNode(this, "give", 1));
         addChild(new ActionCommandTreeNode(this, "take", -1));
+        addChild(new CheckCommandTreeNode(this));
+    }
+
+    static class CheckCommandTreeNode extends CommandTreeNode {
+        private final Argument<Player> argPlayer;
+        private final Argument<PlayerAttribute> argAttribute;
+
+        public CheckCommandTreeNode(CommandTreeNode parent) {
+            super(parent, "check");
+
+            argPlayer = addArgument(Argument.PLAYER);
+            argAttribute = addArgument(Arguments.ATTRIBUTE);
+        }
+
+        @Override
+        public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
+            final var player = explorer.parse(argPlayer);
+            final var attribute = explorer.parse(argAttribute);
+
+            PlayerAttributes.AttributeInstance instance = PlayerData.get(player).getAttributes().getInstance(attribute);
+            return explorer.success("&6" + player.getName() + "&e has &6" + instance.getBase() + "&e points spent in " + attribute.getName() + " (total = &6" + instance.getTotal() + "&e).");
+        }
     }
 
     static class ActionCommandTreeNode extends CommandTreeNode {
