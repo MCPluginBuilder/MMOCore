@@ -88,6 +88,7 @@ public class KeyCombos extends SkillCastingHandler {
     public void whenPressingKey(PlayerKeyPressEvent event) {
         PlayerData playerData = event.getData();
         Player player = playerData.getPlayer();
+        if (ignoreSneak && player.isSneaking()) return;
         if (player.getGameMode() == GameMode.CREATIVE && !MMOCore.plugin.configManager.canCreativeCast) return;
 
         // Don't start combos if no skills are bound
