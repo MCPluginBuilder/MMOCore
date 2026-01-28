@@ -23,12 +23,12 @@ public class ForceClassProfileDataModule implements ProfileDataModule {
     private final NamespacedKey key;
 
     public ForceClassProfileDataModule() {
+        this.key = new NamespacedKey(MMOCore.plugin, "force_class_select");
+
         final var registration = Bukkit.getServicesManager().getRegistration(ProfileProvider.class);
         Validate.notNull(registration, "Could not find ProfileAPI registration provider");
         final var profileProvider = registration.getProvider();
         profileProvider.registerModule(this);
-
-        this.key = new NamespacedKey(MMOCore.plugin, "force_class_select");
     }
 
     @Override
@@ -46,6 +46,7 @@ public class ForceClassProfileDataModule implements ProfileDataModule {
      */
     @EventHandler
     public void onProfileCreate(ProfileCreateEvent event) {
+        final var playerData = PlayerData.get(event.getPlayerData().getPlayer());
 
         // Will be prompted on profile application in proxy-mode
         if (MythicLib.plugin.getProfileMode() == ProfileMode.PROXY) {
@@ -53,7 +54,6 @@ public class ForceClassProfileDataModule implements ProfileDataModule {
             return;
         }
 
-        final PlayerData playerData = PlayerData.get(event.getPlayerData().getPlayer());
         InventoryManager.CLASS_SELECT.newInventory(playerData, () -> event.validate(this)).open();
     }
 
@@ -62,8 +62,14 @@ public class ForceClassProfileDataModule implements ProfileDataModule {
         final var playerData = PlayerData.get(event.getPlayerData().getPlayer());
         playerData.bufferForceClassSelection(() -> {
             if (playerData.getProfess().hasOption(ClassOption.DEFAULT))
-                InventoryManager.CLASS_SELECT.newInventory(playerData, () -> event.validate(this)).open();
-            else event.validate(this);
+                InventoryManager.CLASS_SELECT.newInventory(playerData, () -> {
+                    playerData.hasChosenClass = true;
+                    event.validate(this);
+                }).open();
+            else {
+                playerData.hasChosenClass = true;
+                event.validate(this);
+            }
         });
     }
 
@@ -74,6 +80,8 @@ public class ForceClassProfileDataModule implements ProfileDataModule {
 
     @EventHandler
     public void onProfileUnload(ProfileUnloadEvent event) {
-        event.validate(this);
+        // TODO improve code
+        final var playerData = PlayerData.get(event.getPlayerData().getPlayer());
+        if (playerData.hasChosenClass) event.validate(this);
     }
 }
