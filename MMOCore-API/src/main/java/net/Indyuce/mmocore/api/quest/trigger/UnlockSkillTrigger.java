@@ -1,21 +1,20 @@
 package net.Indyuce.mmocore.api.quest.trigger;
 
+import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.MMOLineConfig;
-import net.Indyuce.mmocore.MMOCore;
+import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.quest.trigger.api.Removable;
 import net.Indyuce.mmocore.skill.ClassSkill;
-import net.Indyuce.mmocore.skill.RegisteredSkill;
 import org.jetbrains.annotations.Nullable;
 
 public class UnlockSkillTrigger extends Trigger implements Removable {
-    private final RegisteredSkill skill;
+    private final SkillHandler<?> skill;
 
     public UnlockSkillTrigger(MMOLineConfig config) {
         super(config);
 
-        config.validateKeys("skill");
-        skill = MMOCore.plugin.skillManager.getSkillOrThrow(config.getString("skill"));
+        skill = MythicLib.plugin.getSkills().getHandler(config.string("skill"));
     }
 
     @Override

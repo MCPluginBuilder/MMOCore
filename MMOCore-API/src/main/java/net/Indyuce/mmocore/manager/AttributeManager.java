@@ -43,7 +43,7 @@ public class AttributeManager implements MMOCoreManager {
         if (clearBefore)
             map.clear();
 
-        FileUtils.loadObjectsFromFolder(MMOCore.plugin, "attributes", false, (key, config) -> {
+        FileUtils.loadObjectsFromFolder(MMOCore.plugin, "attributes", (key, config) -> {
             final String path = key.toLowerCase().replace("_", "-").replace(" ", "-");
             map.put(path, new PlayerAttribute(config));
         }, "Could not load attribute '%s' from file '%s': %s");

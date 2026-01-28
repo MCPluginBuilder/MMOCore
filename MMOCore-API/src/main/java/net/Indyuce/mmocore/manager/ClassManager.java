@@ -85,7 +85,7 @@ public class ClassManager implements MMOCoreManager {
             triggerHandlers.forEach(HandlerList::unregisterAll);
         }
 
-        FileUtils.loadObjectsFromFolder(MMOCore.plugin, "classes", true, (name, config) -> {
+        FileUtils.loadSingleObjectsFromFolder(MMOCore.plugin, "classes", (name, config) -> {
             register(new PlayerClass(name, config));
         }, "Could not load class from file '%s': %s");
 

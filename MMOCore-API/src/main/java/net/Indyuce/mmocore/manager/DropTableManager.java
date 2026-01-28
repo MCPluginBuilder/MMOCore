@@ -64,7 +64,7 @@ public class DropTableManager implements MMOCoreManager {
 		if (clearBefore) map.clear();
 
 		// Load drop tables
-		FileUtils.loadObjectsFromFolder(MMOCore.plugin, "drop-tables", false, (name, config) -> {
+		FileUtils.loadObjectsFromFolder(MMOCore.plugin, "drop-tables", (name, config) -> {
             register(new DropTable(config));
         }, "Could not load drop table '%s' from file '%s': %s");
 

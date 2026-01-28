@@ -71,12 +71,12 @@ public class ProfessionManager implements MMOCoreManager {
 		professionManagers.forEach(manager -> manager.initialize(clearBefore));
 
         // Register professions
-		FileUtils.loadObjectsFromFolder(MMOCore.plugin, "professions", true, (name, config) -> {
+        FileUtils.loadSingleObjectsFromFolder(MMOCore.plugin, "professions", (name, config) -> {
             register(new Profession(name, config));
         }, "Could not load profession from file '%s': %s");
 
 		// Load profession-specific configurations
-		for (Profession profession : professions.values())
+		for (var profession : professions.values())
 			try {
 				profession.getPostLoadAction().performAction();
 			} catch (IllegalArgumentException exception) {

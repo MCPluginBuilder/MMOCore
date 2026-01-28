@@ -36,7 +36,7 @@ public class QuestManager implements MMOCoreManager {
     public void initialize(boolean clearBefore) {
         if (clearBefore) quests.clear();
 
-        FileUtils.loadObjectsFromFolder(MMOCore.plugin, "quests", true, (key, config) -> {
+        FileUtils.loadSingleObjectsFromFolder(MMOCore.plugin, "quests", (key, config) -> {
             register(new Quest(key, config));
         }, "Could not load quest from file '%s': %s");
 

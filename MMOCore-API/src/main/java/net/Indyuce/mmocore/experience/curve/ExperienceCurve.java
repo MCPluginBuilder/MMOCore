@@ -1,6 +1,5 @@
 package net.Indyuce.mmocore.experience.curve;
 
-import io.lumine.mythic.lib.util.FileUtils;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import org.jetbrains.annotations.NotNull;
@@ -31,27 +30,18 @@ public interface ExperienceCurve {
     @NotNull
     public static ExperienceCurve fromConfig(@Nullable String configInput) {
 
-        // [BACKWARDS COMPATIBILITY] Load from predefined file
-        try {
-            if (configInput == null) throw new RuntimeException();
-            final var expCurveFile = FileUtils.getFile(MMOCore.plugin, "expcurves/" + configInput + ".txt");
-            return new ListExperienceCurve(expCurveFile);
-        } catch (Exception ignored) {
-        }
-
         if (configInput == null) {
             return DEFAULT;
         }
 
-        // Load from file
-        else if (configInput.endsWith(".txt")) {
-            final var expCurveFile = FileUtils.getFile(MMOCore.plugin, configInput);
-            return new ListExperienceCurve(expCurveFile);
+        // Is it an exp curve ID?
+        try {
+            return MMOCore.plugin.experience.getCurveOrThrow(configInput);
+        } catch (Exception exception) {
+            // Ignore
         }
 
         // Load as formula
-        else {
-            return new FormulaExperienceCurve(configInput);
-        }
+        return new FormulaExperienceCurve(configInput);
     }
 }

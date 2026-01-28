@@ -48,8 +48,9 @@ public class SkillTreeManager extends MMOCoreRegister<SkillTree> {
             skillTreeNodes.clear();
         }
 
-        FileUtils.loadObjectsFromFolder(MMOCore.plugin, "skill-trees", true,
-                (key, config) -> register(loadSkillTree(config)), "Could not load skill tree from file '%s': %s");
+        FileUtils.loadSingleObjectsFromFolder(MMOCore.plugin, "skill-trees", (key, config) -> {
+            register(loadSkillTree(config));
+        }, "Could not load skill tree from file '%s': %s");
     }
 
     @NotNull

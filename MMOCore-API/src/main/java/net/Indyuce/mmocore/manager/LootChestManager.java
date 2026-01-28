@@ -67,7 +67,7 @@ public class LootChestManager implements MMOCoreManager {
             regions.clear();
         }
 
-        FileUtils.loadObjectsFromFolder(MMOCore.plugin, "loot-chests", false, (key, config) -> {
+        FileUtils.loadObjectsFromFolder(MMOCore.plugin, "loot-chests", (key, config) -> {
             LootChestRegion region = new LootChestRegion(config);
             regions.put(region.getId(), region);
         }, "Could not load loot chest region '%s' from file '%s': %s");
