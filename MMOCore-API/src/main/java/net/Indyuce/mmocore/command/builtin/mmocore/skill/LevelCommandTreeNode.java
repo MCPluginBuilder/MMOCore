@@ -9,5 +9,6 @@ public class LevelCommandTreeNode extends CommandTreeNode {
 
         addChild(new EditLevelCommandTreeNode(this, "give", Integer::sum));
         addChild(new EditLevelCommandTreeNode(this, "set", (old, amount) -> amount));
+        addChild(new EditLevelCommandTreeNode(this, "take", (old, amount) -> old - amount));
     }
 }

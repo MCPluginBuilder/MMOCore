@@ -88,6 +88,20 @@ public class ExperienceItem {
             triggers.add(MMOCore.plugin.loadManager.loadTrigger(new MMOLineConfig(triggerFormat)));
     }
 
+    public ExperienceItem(String key, List<String> lines) {
+        this.id = key + "_singleton";
+        period = 1;
+        firstTrigger = 1;
+        lastTrigger = Integer.MAX_VALUE;
+        fixedLevel = -1;
+        claimChance = 1;
+        failReduction = 0;
+        triggers = new ArrayList<>(lines.size());
+
+        for (var triggerFormat : lines)
+            triggers.add(MMOCore.plugin.loadManager.loadTrigger(new MMOLineConfig(triggerFormat)));
+    }
+
     public String getId() {
         return id;
     }
@@ -96,7 +110,7 @@ public class ExperienceItem {
      * @param professionLevel The profession level the player just reached
      * @param timesCollected  Amount of times the exp item has already been claimed by the player
      * @return If the item should be claimed right now taking into
-     *         account the randomness factor from the 'chance' parameter
+     * account the randomness factor from the 'chance' parameter
      */
     public boolean roll(int professionLevel, int timesCollected) {
 

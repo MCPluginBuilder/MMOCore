@@ -5,10 +5,7 @@ import org.apache.commons.lang3.Validate;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Holds information about a parent/child node in a skill tree.
@@ -42,6 +39,26 @@ public class ParentInformation {
         this.type = type;
         this.reciprocal = reciprocal;
         this.minLevel = Math.max(1, minLevel);
+    }
+
+    public ParentInformation(@NotNull SkillTreeNode child,
+                             @NotNull SkillTreeNode parent,
+                             @NotNull ParentType type,
+                             @NotNull List<String> pathListRaw) {
+        this.child = child;
+        this.parent = parent;
+        this.type = type;
+        this.reciprocal = false;
+        this.minLevel = 1;
+
+        // Read paths
+        pathListRaw.forEach(string -> this.elements.put(IntCoords.from(string), null));
+
+        // All paths are loaded => cache their shapes
+        for (var element : this.elements.keySet()) {
+            final var previousValue = this.elements.put(element, computePathShape(element));
+            Validate.isTrue(previousValue == null, "Path shape already computed?");
+        }
     }
 
     public ParentInformation(@NotNull SkillTreeNode child,
@@ -149,7 +166,7 @@ public class ParentInformation {
 
     /**
      * @return Minimum level of parent node required
-     *         for the child node to be reachable.
+     * for the child node to be reachable.
      */
     public int getLevel() {
         return minLevel;
@@ -180,6 +197,11 @@ public class ParentInformation {
         if (configObject instanceof Integer) {
             // TODO try to infer paths from 'paths' config for backwards compatibility
             return new ParentInformation(child, parent, parentType, false, (Integer) configObject);
+        }
+
+        // From list, path list, level hard-set to 1
+        if (configObject instanceof List) {
+            return new ParentInformation(child, parent, parentType, (List<String>) configObject);
         }
 
         // From config section

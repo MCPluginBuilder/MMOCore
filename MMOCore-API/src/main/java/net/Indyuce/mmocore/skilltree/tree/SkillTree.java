@@ -217,8 +217,9 @@ public abstract class SkillTree implements RegisteredObject {
             unreachableCheck.add(node);
             playerData.setNodeState(node, NodeState.FULLY_LOCKED);
             for (var edge : node.getChildren()) // Propagate
-                if (!unreachableCheck.contains(edge.getChild()) && isUnreachable(edge.getChild(), playerData))
-                    unreachable.push(edge.getChild());
+                if (edge.getType() == ParentType.STRONG) // TODO improve.
+                    if (!unreachableCheck.contains(edge.getChild()) && isUnreachable(edge.getChild(), playerData))
+                        unreachable.push(edge.getChild());
         }
 
         // PASS 4

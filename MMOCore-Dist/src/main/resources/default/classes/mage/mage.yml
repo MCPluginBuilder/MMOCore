@@ -66,18 +66,24 @@ skill-slots:
         skill-buffs:
             - 'skill_buff{modifier="cooldown";amount=-50;type="RELATIVE"}'
             - 'skill_buff{modifier="damage";amount=30;type="RELATIVE"}'
+        # Permanently binds a skill to this slot
+        # Players won't be able to change the skill in this slot
+        #hardset: POWER_MARK
     2:
         name: "&aSkill Slot II"
         unlocked-by-default: true
         lore: []
+        #hardset: ICE_SPIKES
     3:
         name: "&aSkill Slot III"
         unlocked-by-default: true
         lore: []
+        #hardset: FIREBALL
     4:
         name: "&aSkill Slot IV"
         unlocked-by-default: true
         lore: []
+        #hardset: WARP
 
 # This is the default mana display options, however it is not mandatory
 # to have it in your class config file. Other classes do not have this
