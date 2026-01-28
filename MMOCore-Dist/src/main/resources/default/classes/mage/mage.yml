@@ -105,6 +105,11 @@ mana:
 
 cast-particle:
     particle: SPELL_INSTANT
+    color:
+        red: 100
+        green: 149
+        blue: 237
+    power: 2
 
 # Special resource regeneration: (when out of combat),
 # players can regen a set % of their maximum mana/missing mana.

@@ -70,6 +70,14 @@ skill-slots:
         lore: []
         #hardset: WARP
 
+cast-particle:
+    particle: SPELL_INSTANT
+    color:
+        red: 100
+        green: 149
+        blue: 237
+    power: 2
+
 # The maximum level players can reach
 max-level: 100
 
