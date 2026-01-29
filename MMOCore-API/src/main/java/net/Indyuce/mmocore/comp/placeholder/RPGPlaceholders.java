@@ -4,7 +4,6 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.util.AltChar;
 import io.lumine.mythic.lib.manager.StatManager;
-import io.lumine.mythic.lib.util.lang3.Validate;
 import io.lumine.mythic.lib.version.Attributes;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import net.Indyuce.mmocore.MMOCore;
@@ -22,9 +21,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
 import java.util.UUID;
-import java.util.logging.Level;
 
 
 public class RPGPlaceholders extends PlaceholderExpansion {
@@ -53,7 +50,8 @@ public class RPGPlaceholders extends PlaceholderExpansion {
         return MMOCore.plugin.getDescription().getVersion();
     }
 
-    private static final String ERROR_PLACEHOLDER = "InternalError";
+    private static final String ERROR_PLACEHOLDER = "";
+    private static final String NO_PLAYER_PLACEHOLDER = "OfflinePlayer";
     private static final String NO_MATCH_PLACEHOLDER = "NoMatch";
 
     @Override
@@ -63,8 +61,8 @@ public class RPGPlaceholders extends PlaceholderExpansion {
         try {
             playerData = PlayerData.get(player);
         } catch (Exception exception) {
-            MMOCore.log(Level.WARNING, "Error while parsing placeholder '" + identifier + "': Player data not found");
-            return ERROR_PLACEHOLDER;
+            //MMOCore.log(Level.WARNING, "Error while parsing placeholder '" + identifier + "': Player data not found");
+            return NO_PLAYER_PLACEHOLDER;
         }
 
         try {
@@ -95,8 +93,7 @@ public class RPGPlaceholders extends PlaceholderExpansion {
             // Points spent in skill tree
             /////////////////////////////////////////////////////////////////////////////////////////////////
             if (identifier.startsWith("skill_tree_points_")) {
-                int length = "skill_tree_points_".length();
-                String id = identifier.substring(length);
+                String id = identifier.substring(18);
                 return String.valueOf(PlayerData.get(player).getSkillTreePoints(id));
             }
 
@@ -108,7 +105,7 @@ public class RPGPlaceholders extends PlaceholderExpansion {
                 final String parameterId = ids[0];
                 final int skillSlot = Integer.parseInt(ids[1]);
                 final ClassSkill found = playerData.getBoundSkill(skillSlot);
-                Validate.notNull(found, "No skill bound at slot " + skillSlot);
+                if (found == null) return String.valueOf(0); // silent fail
                 final CastableSkill castable = found.toCastable(playerData);
                 final double value = playerData.getMMOPlayerData().getSkillModifierMap().calculateValue(castable, parameterId);
                 return MythicLib.plugin.getMMOConfig().decimal.format(value);
@@ -121,7 +118,8 @@ public class RPGPlaceholders extends PlaceholderExpansion {
                 final String parameterId = ids[0];
                 final String skillId = ids[1];
                 final var skill = MythicLib.plugin.getSkills().getHandlerOrThrow(skillId);
-                final var classSkill = Objects.requireNonNull(playerData.getProfess().getSkill(skill), "Class " + playerData.getProfess().getName() + " does not have skill with ID '" + skillId + "'");
+                final var classSkill = playerData.getProfess().getSkill(skill);
+                if (classSkill == null) return String.valueOf(0); // silent fail
                 final var castable = classSkill.toCastable(playerData);
                 final double value = playerData.getMMOPlayerData().getSkillModifierMap().calculateValue(castable, parameterId);
                 return MythicLib.plugin.getMMOConfig().decimal.format(value);
@@ -131,7 +129,7 @@ public class RPGPlaceholders extends PlaceholderExpansion {
             /////////////////////////////////////////////////////////////////////////////////////////////////
             if (identifier.startsWith("attribute_points_spent_")) {
                 final String attributeId = identifier.substring(23);
-                final var attributeInstance = Objects.requireNonNull(playerData.getAttributes().getInstance(attributeId), "Could not find attribute with ID '" + attributeId + "'");
+                final var attributeInstance = playerData.getAttributes().getInstance(attributeId);
                 return String.valueOf(attributeInstance.getBase());
             }
 
@@ -226,7 +224,7 @@ public class RPGPlaceholders extends PlaceholderExpansion {
             /////////////////////////////////////////////////////////////////////////////////////////////////
             if (identifier.startsWith("cast_slot_offset_")) {
                 final Player online = player.getPlayer();
-                Validate.notNull(online, "Player is offline");
+                if (online == null) return String.valueOf(0);
                 final int query = Integer.parseInt(identifier.substring(17));
 
                 BoundSkillInfo bound = playerData.getBoundSkills().get(query);
@@ -275,7 +273,7 @@ public class RPGPlaceholders extends PlaceholderExpansion {
             if (identifier.startsWith("profession_next_level_")) {
                 final var professionId = identifier.substring(22).replace(" ", "-").replace("_", "-").toLowerCase();
                 final @Nullable var profession = MMOCore.plugin.professionManager.get(professionId);
-                Validate.notNull(profession, "Profession not found with ID " + professionId);
+                if (profession == null) return String.valueOf(0);
                 final var professionLevel = playerData.getCollectionSkills().getLevel(profession);
                 return String.valueOf(profession.getExpCurve().getExperience(playerData, professionLevel));
             }
@@ -292,10 +290,10 @@ public class RPGPlaceholders extends PlaceholderExpansion {
             if (identifier.startsWith("party_member_")) {
                 final int n = Integer.parseInt(identifier.substring(13)) - 1;
                 final @Nullable AbstractParty party = playerData.getParty();
-                if (party == null) return ERROR_PLACEHOLDER;
-                if (n >= party.countMembers()) return ERROR_PLACEHOLDER;
+                if (party == null) return "";
+                if (n >= party.countMembers()) return "";
                 final @Nullable PlayerData member = party.getMember(n);
-                if (member == null) return ERROR_PLACEHOLDER;
+                if (member == null) return "";
                 return member.getPlayer().getName();
             }
 
@@ -312,9 +310,9 @@ public class RPGPlaceholders extends PlaceholderExpansion {
             /////////////////////////////////////////////////////////////////////////////////////////////////
             if (identifier.startsWith("online_friend_")) {
                 final int n = Integer.parseInt(identifier.substring(14)) - 1;
-                if (n >= playerData.getFriends().size()) return ERROR_PLACEHOLDER;
+                if (n >= playerData.getFriends().size()) return "";
                 final @Nullable Player friend = Bukkit.getPlayer(playerData.getFriends().get(n));
-                if (friend == null) return ERROR_PLACEHOLDER;
+                if (friend == null) return "";
                 return friend.getName();
             }
 
@@ -323,7 +321,7 @@ public class RPGPlaceholders extends PlaceholderExpansion {
             if (identifier.startsWith("profession_")) {
                 final var professionId = UtilityMethods.kebabCase(identifier.substring(11));
                 final @Nullable var profession = MMOCore.plugin.professionManager.get(professionId);
-                Validate.notNull(profession, "Profession not found with ID " + professionId);
+                if (profession == null) return String.valueOf(0);
                 return String.valueOf(playerData.getCollectionSkills().getLevel(profession));
             }
 
@@ -487,12 +485,12 @@ public class RPGPlaceholders extends PlaceholderExpansion {
             }
 
         } catch (Exception exception) {
-            MMOCore.log(Level.WARNING, "Error while parsing placeholder '" + identifier + "':");
-            exception.printStackTrace();
+            //MMOCore.log(Level.WARNING, "Error while parsing placeholder '" + identifier + "':");
+            //exception.printStackTrace();
             return ERROR_PLACEHOLDER;
         }
 
-        MMOCore.log(Level.WARNING, "Could not match placeholder '" + identifier + "'");
+        //MMOCore.log(Level.WARNING, "Could not match placeholder '" + identifier + "'");
         return NO_MATCH_PLACEHOLDER;
     }
 }
