@@ -6,7 +6,7 @@ import org.bukkit.OfflinePlayer;
 
 public class PlaceholderAPIParser implements PlaceholderParser {
     public PlaceholderAPIParser() {
-        new RPGPlaceholders().register();
+        new MMOCorePlaceholderExpansion().register();
     }
 
     @Override

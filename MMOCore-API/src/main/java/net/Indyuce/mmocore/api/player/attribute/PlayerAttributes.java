@@ -133,6 +133,10 @@ public class PlayerAttributes {
         return getInstance(attribute).getTotal();
     }
 
+    public int getAttribute(String attribute) {
+        return getInstance(attribute).getTotal();
+    }
+
     public Collection<AttributeInstance> getInstances() {
         return instances.values();
     }
