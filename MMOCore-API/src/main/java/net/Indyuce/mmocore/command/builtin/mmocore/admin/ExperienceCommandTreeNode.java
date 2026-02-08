@@ -5,17 +5,15 @@ import io.lumine.mythic.lib.command.CommandTreeExplorer;
 import io.lumine.mythic.lib.command.CommandTreeNode;
 import io.lumine.mythic.lib.command.argument.Argument;
 import io.lumine.mythic.lib.util.TriConsumer;
-import io.lumine.mythic.lib.util.lang3.Validate;
-import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.command.Arguments;
 import net.Indyuce.mmocore.experience.EXPSource;
 import net.Indyuce.mmocore.experience.PlayerProfessions;
 import net.Indyuce.mmocore.experience.Profession;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.BiConsumer;
 
@@ -23,6 +21,7 @@ public class ExperienceCommandTreeNode extends CommandTreeNode {
     public ExperienceCommandTreeNode(CommandTreeNode parent) {
         super(parent, "exp");
 
+        addChild(new CheckCommandTreeNode(this));
         addChild(new ActionCommandTreeNode(this, "set", PlayerData::setExperience, PlayerProfessions::setExperience));
         addChild(new ActionCommandTreeNode(this, "give", (data, value) -> data.giveExperience(value, EXPSource.COMMAND), (professions, profession,
                                                                                                                           value) -> professions.giveExperience(profession, value, EXPSource.COMMAND)));
@@ -30,56 +29,72 @@ public class ExperienceCommandTreeNode extends CommandTreeNode {
                                                                                                                            value) -> professions.giveExperience(profession, -value, EXPSource.COMMAND)));
     }
 
-    public static class ActionCommandTreeNode extends CommandTreeNode {
-        private final BiConsumer<PlayerData, Long> main;
-        private final TriConsumer<PlayerProfessions, Profession, Long> profession;
+    public static class CheckCommandTreeNode extends CommandTreeNode {
+        private final Argument<Player> argPlayer;
+        private final Argument<Profession> argProfession;
 
-        public ActionCommandTreeNode(CommandTreeNode parent, String type, BiConsumer<PlayerData, Long> main,
-                                     TriConsumer<PlayerProfessions, Profession, Long> profession) {
+        public CheckCommandTreeNode(CommandTreeNode parent) {
+            super(parent, "check");
+
+            argPlayer = addArgument(Argument.PLAYER);
+            argProfession = addArgument(Arguments.PROFESSION.withFallback(explorer -> null));
+        }
+
+        @Override
+        public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
+            final var player = explorer.parse(this.argPlayer);
+            final @Nullable var profession = explorer.parse(this.argProfession);
+
+            PlayerData data = PlayerData.get(player);
+            final var formatter = MythicLib.plugin.getMMOConfig().decimal;
+
+            if (profession == null)
+                return explorer.success("&6" + player.getName() + "&e has &6" + formatter.format(data.getExperience()) + "&e class EXP.");
+
+            final var currentExp = data.getCollectionSkills().getExperience(profession);
+            return explorer.success("&6" + player.getName() + "&e has &6" + formatter.format(currentExp) + "&e EXP in &6" + profession.getName() + "&e.");
+        }
+    }
+
+    public static class ActionCommandTreeNode extends CommandTreeNode {
+        private final BiConsumer<PlayerData, Double> main;
+        private final TriConsumer<PlayerProfessions, Profession, Double> profession;
+
+        private final Argument<Player> argPlayer;
+        private final Argument<Double> argAmount;
+        private final Argument<Profession> argProfession;
+
+        public ActionCommandTreeNode(CommandTreeNode parent,
+                                     String type,
+                                     BiConsumer<PlayerData, Double> main,
+                                     TriConsumer<PlayerProfessions, Profession, Double> profession) {
             super(parent, type);
 
             this.main = main;
             this.profession = profession;
 
-            addArgument(Argument.PLAYER);
-            addArgument(Arguments.PROFESSION);
-            addArgument(Argument.AMOUNT_INT);
+            argPlayer = addArgument(Argument.PLAYER);
+            argProfession = addArgument(Arguments.PROFESSION);
+            argAmount = addArgument(Argument.AMOUNT_DOUBLE);
         }
 
         @Override
-        public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
-            if (args.length < 6)
-                return CommandResult.THROW_USAGE;
-
-            Player player = Bukkit.getPlayer(args[3]);
-            if (player == null) {
-                return explorer.fail("Could not find the player called " + args[3] + ".");
-            }
-
-            long amount;
-            try {
-                amount = Long.parseLong(args[5]);
-                Validate.isTrue(amount >= 0);
-            } catch (RuntimeException exception) {
-                return explorer.fail( args[5] + " is not a valid number.");
-            }
+        public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
+            final var player = explorer.parse(this.argPlayer);
+            final var amount = explorer.parse(this.argAmount);
+            final @Nullable var profession = explorer.parse(this.argProfession);
 
             PlayerData data = PlayerData.get(player);
-            if (args[4].equalsIgnoreCase("main")) {
+            final var formatter = MythicLib.plugin.getMMOConfig().decimal;
+
+            if (profession == null) {
                 main.accept(data, amount);
-                return explorer.success(ChatColor.GOLD + player.getName() + ChatColor.YELLOW
-                        + " now has " + ChatColor.GOLD + MythicLib.plugin.getMMOConfig().decimal.format(data.getExperience()) + ChatColor.YELLOW + " EXP.");
+                return explorer.success("&6" + player.getName() + "&e now has &6" + formatter.format(data.getExperience()) + "&e class EXP.");
             }
 
-            String format = args[4].toLowerCase().replace("_", "-");
-            if (!MMOCore.plugin.professionManager.has(format)) {
-                return explorer.fail(format + " is not a valid profession.");
-            }
-
-            Profession profession = MMOCore.plugin.professionManager.get(format);
             this.profession.accept(data.getCollectionSkills(), profession, amount);
-            return explorer.success(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " now has " + ChatColor.GOLD
-                    + data.getCollectionSkills().getExperience(profession) + ChatColor.YELLOW + " EXP in " + profession.getName() + ".");
+            final var currentExp = data.getCollectionSkills().getExperience(profession);
+            return explorer.success("&6" + player.getName() + "&e now has &6" + formatter.format(currentExp) + "&e EXP in &6" + profession.getName() + "&e.");
         }
     }
 }
