@@ -3,7 +3,7 @@ package net.Indyuce.mmocore.command.builtin.mmocore.admin;
 import io.lumine.mythic.lib.command.CommandTreeExplorer;
 import io.lumine.mythic.lib.command.CommandTreeNode;
 import io.lumine.mythic.lib.command.argument.Argument;
-import io.lumine.mythic.lib.data.SaveReason;
+import io.lumine.mythic.lib.profile.SessionUpdateReason;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import org.bukkit.Bukkit;
@@ -32,7 +32,7 @@ public class SaveDataTreeNode extends CommandTreeNode {
             return CommandResult.FAILURE;
         }
 
-        MMOCore.plugin.playerDataManager.saveData(PlayerData.get(player), SaveReason.AUTOSAVE);
+        MMOCore.plugin.playerDataManager.saveData(PlayerData.get(player), SessionUpdateReason.AUTOSAVE);
 
         return CommandResult.SUCCESS;
     }

@@ -3,11 +3,11 @@ package net.Indyuce.mmocore.manager.data.sql;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.data.DataLoadResult;
-import io.lumine.mythic.lib.data.SaveReason;
 import io.lumine.mythic.lib.data.sql.SQLDatabase;
 import io.lumine.mythic.lib.gson.JsonArray;
 import io.lumine.mythic.lib.gson.JsonElement;
 import io.lumine.mythic.lib.gson.JsonObject;
+import io.lumine.mythic.lib.profile.SessionUpdateReason;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerLevelChangeEvent;
@@ -195,7 +195,7 @@ public class SQLDatabaseImpl extends SQLDatabase<PlayerData, OfflinePlayerData> 
     }
 
     @Override
-    public void saveData(PlayerData data, @NotNull SaveReason saveReason) {
+    public void saveData(PlayerData data, @NotNull SessionUpdateReason saveReason) {
         final UUID effectiveId = data.getEffectiveId();
         UtilityMethods.debug(MMOCore.plugin, "SQL", "Saving data for: '" + effectiveId + "'...");
 
@@ -227,7 +227,7 @@ public class SQLDatabaseImpl extends SQLDatabase<PlayerData, OfflinePlayerData> 
         updater.addData("quests", data.getQuestData().toJsonString());
         updater.addData("class_info", createClassInfoData(data).toString());
         updater.addJSONArray("unlocked_items", data.getUnlockedItems());
-        if (saveReason != SaveReason.AUTOSAVE) updater.addData("is_saved", 1);
+        if (saveReason != SessionUpdateReason.AUTOSAVE) updater.addData("is_saved", 1);
 
         updater.executeRequest(saveReason);
 

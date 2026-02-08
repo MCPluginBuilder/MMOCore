@@ -1,8 +1,8 @@
 package net.Indyuce.mmocore.manager.data.sql;
 
-import io.lumine.mythic.lib.data.SaveReason;
 import io.lumine.mythic.lib.gson.JsonArray;
 import io.lumine.mythic.lib.gson.JsonObject;
+import io.lumine.mythic.lib.profile.SessionUpdateReason;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.manager.data.yaml.YAMLDatabaseImpl;
@@ -25,7 +25,7 @@ public class PlayerDataTableUpdater {
         this.effectiveId = playerData.getEffectiveId();
     }
 
-    public void executeRequest(@NotNull SaveReason saveReason) {
+    public void executeRequest(@NotNull SessionUpdateReason saveReason) {
         final String request = "INSERT INTO " + provider.getUserDataTableName() + "(" + SQLDatabaseImpl.UUID_FIELD_NAME + ", " + formatCollection(requestMap.keySet(), false)
                 + ") VALUES('" + effectiveId + "'," + formatCollection(requestMap.values(), true) + ")" +
                 " ON DUPLICATE KEY UPDATE " + formatMap() + ";";

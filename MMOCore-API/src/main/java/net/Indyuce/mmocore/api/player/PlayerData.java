@@ -3,10 +3,10 @@ package net.Indyuce.mmocore.api.player;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
-import io.lumine.mythic.lib.data.SaveReason;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
 import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import io.lumine.mythic.lib.player.cooldown.CooldownMap;
+import io.lumine.mythic.lib.profile.SessionUpdateReason;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import io.lumine.mythic.lib.util.lang3.Validate;
@@ -588,13 +588,13 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     }
 
     @Override
-    public void onSaved(@NotNull SaveReason reason) {
+    public void onSaved(@NotNull SessionUpdateReason reason) {
         super.onSaved(reason);
 
         // Saves player health before saveData as the player will be considered offline into it if it is async
         lastHealth = getPlayer().getHealth();
 
-        if (reason == SaveReason.AUTOSAVE) return;
+        if (reason == SessionUpdateReason.AUTOSAVE) return;
 
         // Remove from party if it is MMO Party Module
         if (MMOCore.plugin.partyModule instanceof MMOCorePartyModule) {
