@@ -234,11 +234,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         getMMOPlayerData().getProfileSession().addOpenCallback(session -> this.onProfileSessionReady());
     }
 
-    @Override
-    protected void onSessionClosed() {
-        hasChosenClass = false;
-    }
-
     //region Force class selection
 
     private Runnable bufferedForcedClassSelectionCallback;
