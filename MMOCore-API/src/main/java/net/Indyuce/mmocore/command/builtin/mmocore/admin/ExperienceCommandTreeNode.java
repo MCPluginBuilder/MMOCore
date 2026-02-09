@@ -10,23 +10,29 @@ import net.Indyuce.mmocore.command.Arguments;
 import net.Indyuce.mmocore.experience.EXPSource;
 import net.Indyuce.mmocore.experience.PlayerProfessions;
 import net.Indyuce.mmocore.experience.Profession;
+import net.Indyuce.mmocore.util.QuadConsumer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.function.BiConsumer;
 
 public class ExperienceCommandTreeNode extends CommandTreeNode {
     public ExperienceCommandTreeNode(CommandTreeNode parent) {
         super(parent, "exp");
 
         addChild(new CheckCommandTreeNode(this));
-        addChild(new ActionCommandTreeNode(this, "set", PlayerData::setExperience, PlayerProfessions::setExperience));
-        addChild(new ActionCommandTreeNode(this, "give", (data, value) -> data.giveExperience(value, EXPSource.COMMAND), (professions, profession,
-                                                                                                                          value) -> professions.giveExperience(profession, value, EXPSource.COMMAND)));
-        addChild(new ActionCommandTreeNode(this, "take", (data, value) -> data.giveExperience(-value, EXPSource.COMMAND), (professions, profession,
-                                                                                                                           value) -> professions.giveExperience(profession, -value, EXPSource.COMMAND)));
+        addChild(new ActionCommandTreeNode(this, "set",
+                false,
+                (data, value, split) -> data.setExperience(value),
+                (professions, profession, value, split) -> professions.setExperience(profession, value)));
+        addChild(new ActionCommandTreeNode(this, "give",
+                true,
+                (data, value, split) -> data.giveExperience(value, EXPSource.COMMAND, null, split),
+                (professions, profession, value, split) -> professions.giveExperience(profession, value, EXPSource.COMMAND, null, split)));
+        addChild(new ActionCommandTreeNode(this, "take",
+                false,
+                (data, value, split) -> data.giveExperience(-value, EXPSource.COMMAND),
+                (professions, profession, value, split) -> professions.giveExperience(profession, -value, EXPSource.COMMAND)));
     }
 
     public static class CheckCommandTreeNode extends CommandTreeNode {
@@ -57,17 +63,19 @@ public class ExperienceCommandTreeNode extends CommandTreeNode {
     }
 
     public static class ActionCommandTreeNode extends CommandTreeNode {
-        private final BiConsumer<PlayerData, Double> main;
-        private final TriConsumer<PlayerProfessions, Profession, Double> profession;
+        private final TriConsumer<PlayerData, Double, Boolean> main;
+        private final QuadConsumer<PlayerProfessions, Profession, Double, Boolean> profession;
 
         private final Argument<Player> argPlayer;
         private final Argument<Double> argAmount;
         private final Argument<Profession> argProfession;
+        private final Argument<Boolean> argSplit;
 
         public ActionCommandTreeNode(CommandTreeNode parent,
                                      String type,
-                                     BiConsumer<PlayerData, Double> main,
-                                     TriConsumer<PlayerProfessions, Profession, Double> profession) {
+                                     boolean hasSplit,
+                                     TriConsumer<PlayerData, Double, Boolean> main,
+                                     QuadConsumer<PlayerProfessions, Profession, Double, Boolean> profession) {
             super(parent, type);
 
             this.main = main;
@@ -76,6 +84,7 @@ public class ExperienceCommandTreeNode extends CommandTreeNode {
             argPlayer = addArgument(Argument.PLAYER);
             argProfession = addArgument(Arguments.PROFESSION);
             argAmount = addArgument(Argument.AMOUNT_DOUBLE);
+            argSplit = hasSplit ? addArgument(Argument.BOOLEAN.withKey("split").withFallback(explorer -> true)) : null;
         }
 
         @Override
@@ -83,16 +92,17 @@ public class ExperienceCommandTreeNode extends CommandTreeNode {
             final var player = explorer.parse(this.argPlayer);
             final var amount = explorer.parse(this.argAmount);
             final @Nullable var profession = explorer.parse(this.argProfession);
+            final var split = this.argSplit != null && explorer.parse(this.argSplit);
 
             PlayerData data = PlayerData.get(player);
             final var formatter = MythicLib.plugin.getMMOConfig().decimal;
 
             if (profession == null) {
-                main.accept(data, amount);
+                main.accept(data, amount, split);
                 return explorer.success("&6" + player.getName() + "&e now has &6" + formatter.format(data.getExperience()) + "&e class EXP.");
             }
 
-            this.profession.accept(data.getCollectionSkills(), profession, amount);
+            this.profession.accept(data.getCollectionSkills(), profession, amount, split);
             final var currentExp = data.getCollectionSkills().getExperience(profession);
             return explorer.success("&6" + player.getName() + "&e now has &6" + formatter.format(currentExp) + "&e EXP in &6" + profession.getName() + "&e.");
         }
