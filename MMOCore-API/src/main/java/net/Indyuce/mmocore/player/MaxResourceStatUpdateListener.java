@@ -16,7 +16,11 @@ public class MaxResourceStatUpdateListener implements StatUpdateListener {
 
     @Override
     public void onUpdate(@NotNull StatInstance statInstance) {
-        final var maxResourceValue = statInstance.getTotal();
+
+        // Use final value (not total) otherwise Max Health causes a problem
+        // Fixes a bug with items that provide NEGATIVE Max Health
+        // Minecraft naturally clamps max health to at least 1
+        final var maxResourceValue = statInstance.getFinal();
 
         // Clamp current resource value
         final var mmocoreData = PlayerData.get(statInstance.getMap().getPlayerData().getUniqueId());
