@@ -80,7 +80,6 @@ public class ForceClassProfileDataModule implements ProfileDataModule {
 
     @EventHandler
     public void onProfileUnload(ProfileUnloadEvent event) {
-        // TODO improve code
         final var playerData = PlayerData.get(event.getPlayerData().getPlayer());
         if (playerData.hasChosenClass) event.validate(this);
     }

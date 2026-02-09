@@ -236,7 +236,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     //region Force class selection
 
-    private Runnable bufferedForcedClassSelectionCallback;
+    private volatile Runnable bufferedForcedClassSelectionCallback;
     private final AtomicBoolean bufferedForcedClassSelection = new AtomicBoolean(false);
     public boolean hasChosenClass = false;
 
