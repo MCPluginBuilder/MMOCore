@@ -1,6 +1,7 @@
 package net.Indyuce.mmocore.command.builtin.mmocore;
 
 import io.lumine.mythic.lib.command.CommandTreeRoot;
+import net.Indyuce.mmocore.command.MMOCoreCommands;
 import net.Indyuce.mmocore.command.builtin.mmocore.admin.AdminCommandTreeNode;
 import net.Indyuce.mmocore.command.builtin.mmocore.booster.BoosterCommandTreeNode;
 import net.Indyuce.mmocore.command.builtin.mmocore.clazz.ClassCommandTreeNode;
@@ -9,10 +10,12 @@ import net.Indyuce.mmocore.command.builtin.mmocore.quest.QuestCommandTreeNode;
 import net.Indyuce.mmocore.command.builtin.mmocore.skill.SkillCommandTreeNode;
 import net.Indyuce.mmocore.command.builtin.mmocore.skilltree.SkillTreeCommandNode;
 import net.Indyuce.mmocore.command.builtin.mmocore.waypoint.WaypointsCommandTreeNode;
+import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.NotNull;
 
 public class MMOCoreCommandTreeRoot extends CommandTreeRoot {
-    public MMOCoreCommandTreeRoot() {
-        super("mmocore", "mmocore.admin");
+    public MMOCoreCommandTreeRoot(@NotNull ConfigurationSection config) {
+        super(MMOCoreCommands.MMOCORE, config);
 
         addChild(new ReloadCommandTreeNode(this));
         addChild(new CastCommandTreeNode(this));

@@ -2,6 +2,8 @@ package net.Indyuce.mmocore.manager;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.util.FileUtils;
+import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
+import io.lumine.mythic.lib.util.config.ConfigVersioner;
 import io.lumine.mythic.lib.util.config.YamlFile;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.ConfigMessage;
@@ -36,12 +38,16 @@ public class ConfigManager {
     public int maxPartyLevelDifference, maxPartyPlayers, minCombatLevel, maxCombatLevelDifference, skillTreeScrollStepX, skillTreeScrollStepY, waypointWarpTime;
     public final List<EntityDamageEvent.DamageCause> combatLogDamageCauses = new ArrayList<>();
 
+    private static final List<Runnable> CONFIG_UPDATES = ConfigVersioner.nops(9, ConfigManager::fixMMOCoreCommand);
+
     /*
      * The instance must be created after the other managers since all it does
      * is to update them based on the config except for the classes which are
      * already loaded based on the config
      */
     public ConfigManager() {
+
+        ConfigVersioner.applyConfigVersioner(MMOCore.plugin, CONFIG_UPDATES);
 
         // Backwards compatibility for older configs
         {
@@ -188,6 +194,13 @@ public class ConfigManager {
         shareAttributePts = MMOCore.plugin.getConfig().getBoolean("share_across_classes.attribute_points");
         shareSkillReallocPts = MMOCore.plugin.getConfig().getBoolean("share_across_classes.skill_reallocation_points");
         shareAttributeReallocPts = MMOCore.plugin.getConfig().getBoolean("share_across_classes.attribute_reallocation_points");
+    }
+
+    @BackwardsCompatibility(version = "1.13.1-SNAPSHOT")
+    private static void fixMMOCoreCommand() {
+        final var commands = new YamlFile(MMOCore.plugin, "commands");
+        commands.getContent().set("mmocore.verbose", "ALL");
+        commands.save();
     }
 
     @NotNull

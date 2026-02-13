@@ -10,7 +10,8 @@ api-version: 1.14
 website: www.phoenixdevt.fr
 commands:
   mmocore:
-    description: Main command.
+    description: Main plugin command.
+    permission: 'mmocore.admin'
     aliases: [ rpg ]
 permissions:
   mmocore.cast:

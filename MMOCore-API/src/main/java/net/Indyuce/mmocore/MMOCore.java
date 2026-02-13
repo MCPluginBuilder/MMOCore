@@ -2,6 +2,7 @@ package net.Indyuce.mmocore;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.command.BuiltinCommand;
 import io.lumine.mythic.lib.metrics.bukkit.Metrics;
 import io.lumine.mythic.lib.module.MMOPlugin;
 import io.lumine.mythic.lib.player.modifier.PlayerModifier;
@@ -10,8 +11,7 @@ import io.lumine.mythic.lib.version.SpigotPlugin;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.attribute.AttributeModifier;
 import net.Indyuce.mmocore.api.player.profess.resource.PlayerResource;
-import net.Indyuce.mmocore.command.ToggleableCommand;
-import net.Indyuce.mmocore.command.builtin.mmocore.MMOCoreCommandTreeRoot;
+import net.Indyuce.mmocore.command.MMOCoreCommands;
 import net.Indyuce.mmocore.comp.citizens.CitizenInteractEventListener;
 import net.Indyuce.mmocore.comp.citizens.CitizensMMOLoader;
 import net.Indyuce.mmocore.comp.mythicmobs.MythicHook;
@@ -247,13 +247,8 @@ public class MMOCore extends MMOPlugin {
         // load guild data after loading player data
         nativeGuildManager.load();
 
-        // Toggleable Commands
-        ToggleableCommand.loadCommands();
-
-        // Register MMOCore command what soever
-        MMOCoreCommandTreeRoot mmoCoreCommand = new MMOCoreCommandTreeRoot();
-        getCommand("mmocore").setExecutor(mmoCoreCommand);
-        getCommand("mmocore").setTabCompleter(mmoCoreCommand);
+        // Init commands
+        BuiltinCommand.initializeAll(this, MMOCoreCommands.class);
     }
 
     @Override
