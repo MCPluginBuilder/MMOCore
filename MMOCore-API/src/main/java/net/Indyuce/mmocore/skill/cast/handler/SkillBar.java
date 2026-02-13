@@ -1,5 +1,6 @@
 package net.Indyuce.mmocore.skill.cast.handler;
 
+import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.message.PlayerMessage;
 import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import net.Indyuce.mmocore.MMOCore;
@@ -209,7 +210,7 @@ public class SkillBar extends SkillCastingHandler {
                         .replace("{skill}", skill.getSkill().getName()));
             }
 
-            return MMOCore.plugin.placeholderParser.parse(data.getPlayer(), builder.toString());
+            return MythicLib.plugin.getPlaceholderParser().parse(data.getPlayer(), builder.toString());
         }
     }
 }

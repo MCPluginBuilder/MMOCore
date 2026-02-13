@@ -26,6 +26,7 @@ public class ConfigMessage {
     private final List<String> lines = new ArrayList<>();
     private final boolean papiPlaceholders, actionbar, raw;
 
+    @Deprecated
     private ConfigMessage(@NotNull String key) {
         this.key = key;
 
@@ -183,10 +184,11 @@ public class ConfigMessage {
      * @deprecated
      */
     @NotNull
+    @Deprecated
     private String format(@Nullable Player player, String input) {
         input = MythicLib.plugin.parseColors(input);
         if (!papiPlaceholders || player == null) return input; // Optimization
-        return MMOCore.plugin.placeholderParser.parse(player, input);
+        return MythicLib.plugin.getPlaceholderParser().parse(player, input);
     }
 
     /**

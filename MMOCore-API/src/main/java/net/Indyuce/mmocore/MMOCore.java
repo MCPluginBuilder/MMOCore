@@ -16,9 +16,7 @@ import net.Indyuce.mmocore.comp.citizens.CitizenInteractEventListener;
 import net.Indyuce.mmocore.comp.citizens.CitizensMMOLoader;
 import net.Indyuce.mmocore.comp.mythicmobs.MythicHook;
 import net.Indyuce.mmocore.comp.mythicmobs.MythicMobsMMOLoader;
-import net.Indyuce.mmocore.comp.placeholder.DefaultParser;
-import net.Indyuce.mmocore.comp.placeholder.PlaceholderAPIParser;
-import net.Indyuce.mmocore.comp.placeholder.PlaceholderParser;
+import net.Indyuce.mmocore.comp.placeholder.MMOCorePlaceholderExpansion;
 import net.Indyuce.mmocore.comp.region.DefaultRegionHandler;
 import net.Indyuce.mmocore.comp.region.RegionHandler;
 import net.Indyuce.mmocore.comp.region.WorldGuardMMOLoader;
@@ -99,7 +97,6 @@ public class MMOCore extends MMOPlugin {
     public ConfigManager configManager;
     public VaultEconomy economy;
     public RegionHandler regionHandler = new DefaultRegionHandler();
-    public PlaceholderParser placeholderParser = new DefaultParser();
 
     // Modules
     @NotNull
@@ -166,7 +163,7 @@ public class MMOCore extends MMOPlugin {
         if (Bukkit.getPluginManager().getPlugin("Vault") != null) economy = new VaultEconomy();
 
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            placeholderParser = new PlaceholderAPIParser();
+            new MMOCorePlaceholderExpansion().register();
             getLogger().log(Level.INFO, "Hooked onto PlaceholderAPI");
         }
 
