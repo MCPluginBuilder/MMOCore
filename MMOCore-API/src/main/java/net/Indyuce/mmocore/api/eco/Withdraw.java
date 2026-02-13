@@ -1,6 +1,6 @@
 package net.Indyuce.mmocore.api.eco;
 
-import io.lumine.mythic.lib.api.util.SmartGive;
+import io.lumine.mythic.lib.util.SmartGive;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.player.Message;
 import net.Indyuce.mmocore.util.item.CurrencyItemBuilder;
@@ -99,7 +99,7 @@ public class Withdraw implements Listener {
         int note = worth / 10 * 10;
         int coins = worth - note;
 
-        SmartGive smart = new SmartGive(player);
+        var smart = new SmartGive(player);
         if (note > 0)
             smart.give(new CurrencyItemBuilder("NOTE", note).build());
 

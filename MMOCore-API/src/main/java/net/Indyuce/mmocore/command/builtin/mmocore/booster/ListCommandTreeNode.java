@@ -6,32 +6,31 @@ import io.lumine.mythic.lib.command.CommandTreeNode;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.util.math.format.DelayFormat;
 import net.Indyuce.mmocore.experience.Booster;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class ListCommandTreeNode extends CommandTreeNode {
-	public ListCommandTreeNode(CommandTreeNode parent) {
-		super(parent, "list");
-	}
+    public ListCommandTreeNode(CommandTreeNode parent) {
+        super(parent, "list");
+    }
 
-	@Override
-	public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
-		if (!(sender instanceof Player))
-			return CommandResult.FAILURE;
+    @Override
+    public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
+        if (!(sender instanceof Player))
+            return CommandResult.FAILURE;
 
-		sender.sendMessage(ChatColor.YELLOW + "----------------------------------------------------");
-		for (Booster booster : MMOCore.plugin.boosterManager.getActive())
-			if (!booster.isTimedOut())
-				MythicLib.plugin.getVersion().getWrapper().sendJson((Player) sender, "{\"text\":\"" + ChatColor.YELLOW + "- " + ChatColor.GOLD
-						+ MythicLib.plugin.getMMOConfig().decimal.format((1 + booster.getExtra())) + "x" + ChatColor.YELLOW + " Booster - "
-						+ ChatColor.GOLD + (!booster.hasProfession() ? "ExploreAttributesCommand" : booster.getProfession().getName())
-						+ ChatColor.YELLOW + " - " + ChatColor.GOLD
-						+ new DelayFormat().format(booster.getCreationDate() + booster.getDuration() - System.currentTimeMillis())
-						+ "\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/mmocore booster remove " + booster.getUniqueId().toString()
-						+ "\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"Click to remove.\"}}}");
-		sender.sendMessage(ChatColor.YELLOW + "----------------------------------------------------");
+        explorer.verbose("&e----------------------------------------------------");
+        for (Booster booster : MMOCore.plugin.boosterManager.getActive())
+            if (!booster.isTimedOut())
+                MythicLib.plugin.getVersion().getWrapper().sendJson((Player) sender, "{\"text\":\"" + "- "
+                        + MythicLib.plugin.getMMOConfig().decimal.format((1 + booster.getExtra())) + "x" + " Booster - "
+                        + (!booster.hasProfession() ? "ExploreAttributesCommand" : booster.getProfession().getName()) + " - "
+                        + new DelayFormat().format(booster.getCreationDate() + booster.getDuration() - System.currentTimeMillis())
+                        + "\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/mmocore booster remove " + booster.getUniqueId().toString()
+                        + "\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"Click to remove.\"}}}");
+        explorer.verbose("&e----------------------------------------------------");
 
-		return CommandResult.SUCCESS;
-	}
+        return CommandResult.SUCCESS;
+    }
 }

@@ -6,31 +6,25 @@ import io.lumine.mythic.lib.command.argument.Argument;
 import io.lumine.mythic.lib.profile.SessionUpdateReason;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Saves player data
  */
 public class SaveDataTreeNode extends CommandTreeNode {
+    private final Argument<Player> argPlayer;
+
     public SaveDataTreeNode(CommandTreeNode parent) {
         super(parent, "savedata");
 
-        addArgument(Argument.PLAYER);
+        argPlayer = addArgument(Argument.PLAYER);
     }
 
     @Override
-    public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
-        if (args.length < 3)
-            return CommandResult.THROW_USAGE;
-
-        Player player = Bukkit.getPlayer(args[2]);
-        if (player == null) {
-            sender.sendMessage(ChatColor.RED + "Could not find the player called " + args[2] + ".");
-            return CommandResult.FAILURE;
-        }
+    public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
+        final var player = explorer.parse(argPlayer);
 
         MMOCore.plugin.playerDataManager.saveData(PlayerData.get(player), SessionUpdateReason.AUTOSAVE);
 

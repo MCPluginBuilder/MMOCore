@@ -11,7 +11,6 @@ import net.Indyuce.mmocore.api.player.profess.SavedClassInformation;
 import net.Indyuce.mmocore.command.Arguments;
 import net.Indyuce.mmocore.player.Message;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -50,6 +49,6 @@ public class LegacyClassCommandTreeNode extends CommandTreeNode {
             Message.CLASS_SELECT.send(data, "class", profess.getName());
         }
 
-        return explorer.success(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " is now a " + ChatColor.GOLD + profess.getName() + ChatColor.YELLOW + ".");
+        return explorer.success("&6" + player.getName() + "&e is now a &6" + profess.getName());
     }
 }

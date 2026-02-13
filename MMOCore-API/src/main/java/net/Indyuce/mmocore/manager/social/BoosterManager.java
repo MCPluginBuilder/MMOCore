@@ -10,7 +10,11 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class BoosterManager {
-	private final List<Booster> map = new ArrayList<>();
+	private final List<Booster> active = new ArrayList<>();
+
+	public void unregister(Booster booster) {
+		active.remove(booster);
+	}
 
 	/**
 	 * If MMOCore can find a booster with the same profession and value, the two
@@ -25,25 +29,25 @@ public class BoosterManager {
 		// flushes booster list to reduce future calculations
 		flush();
 
-		for (Booster active : map)
+		for (Booster active : active)
 			if (active.canStackWith(booster)) {
 				active.addDuration(booster.getDuration());
 				return;
 			}
 
-		map.add(booster);
+		active.add(booster);
 	}
 
 	public Booster get(int index) {
 		flush();
-		return map.get(index);
+		return active.get(index);
 	}
 
 	/**
 	 * Cleans timed out boosters from the MMOCore registry
 	 */
 	private void flush() {
-		map.removeIf(Booster::isTimedOut);
+		active.removeIf(Booster::isTimedOut);
 	}
 
 	/**
@@ -52,7 +56,7 @@ public class BoosterManager {
 	public double getMultiplier(@Nullable Profession profession) {
 		double d = 1;
 
-		for (Booster booster : map)
+		for (Booster booster : active)
 			if (Objects.equals(profession, booster.getProfession()) && !booster.isTimedOut())
 				d += booster.getExtra();
 
@@ -64,6 +68,6 @@ public class BoosterManager {
 	 *         expired but are not unregistered yet!
 	 */
 	public List<Booster> getActive() {
-		return map.stream().filter((b) -> !b.isTimedOut()).collect(Collectors.toList());
+		return active.stream().filter((b) -> !b.isTimedOut()).collect(Collectors.toList());
 	}
 }

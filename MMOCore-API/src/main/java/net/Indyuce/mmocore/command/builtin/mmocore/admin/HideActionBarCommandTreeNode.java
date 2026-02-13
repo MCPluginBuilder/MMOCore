@@ -5,37 +5,25 @@ import io.lumine.mythic.lib.command.CommandTreeNode;
 import io.lumine.mythic.lib.command.argument.Argument;
 import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class HideActionBarCommandTreeNode extends CommandTreeNode {
+    private final Argument<Player> argPlayer;
+    private final Argument<Long> argDuration;
+
     public HideActionBarCommandTreeNode(CommandTreeNode parent) {
         super(parent, "hideab");
 
-        addArgument(Argument.PLAYER);
-        addArgument(Argument.DURATION_TICKS);
+        argPlayer = addArgument(Argument.PLAYER);
+        argDuration = addArgument(Argument.DURATION_TICKS);
     }
 
     @Override
-    public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
-        if (args.length < 4)
-            return CommandResult.THROW_USAGE;
-
-        Player player = Bukkit.getPlayer(args[2]);
-        if (player == null) {
-            sender.sendMessage(ChatColor.RED + "Could not find the player called " + args[2] + ".");
-            return CommandResult.FAILURE;
-        }
-
-        int amount;
-        try {
-            amount = Integer.parseInt(args[3]);
-        } catch (Exception e) {
-            sender.sendMessage(ChatColor.RED + args[3] + " is not a valid number.");
-            return CommandResult.FAILURE;
-        }
+    public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
+        final var player = explorer.parse(argPlayer);
+        final var amount = explorer.parse(argDuration);
 
         PlayerData.get(player).getMMOPlayerData().getActionBar().hide(ActionBarPriority.LOW, amount);
         return CommandResult.SUCCESS;

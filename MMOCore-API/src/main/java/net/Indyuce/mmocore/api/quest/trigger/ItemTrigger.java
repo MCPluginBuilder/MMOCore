@@ -1,11 +1,10 @@
 package net.Indyuce.mmocore.api.quest.trigger;
 
 import io.lumine.mythic.lib.api.MMOLineConfig;
-import io.lumine.mythic.lib.api.util.SmartGive;
+import io.lumine.mythic.lib.util.SmartGive;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
-
 
 public class ItemTrigger extends Trigger {
 	private final Material material;

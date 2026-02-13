@@ -2,43 +2,26 @@ package net.Indyuce.mmocore.command.builtin.mmocore.booster;
 
 import io.lumine.mythic.lib.command.CommandTreeExplorer;
 import io.lumine.mythic.lib.command.CommandTreeNode;
+import io.lumine.mythic.lib.command.argument.Argument;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.command.Arguments;
 import net.Indyuce.mmocore.experience.Booster;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
-
-import java.util.Iterator;
-import java.util.UUID;
+import org.jetbrains.annotations.NotNull;
 
 public class RemoveCommandTreeNode extends CommandTreeNode {
-	public RemoveCommandTreeNode(CommandTreeNode parent) {
-		super(parent, "remove");
+    private final Argument<Booster> argBooster;
 
-		addArgument(Arguments.BOOSTER);
-	}
+    public RemoveCommandTreeNode(CommandTreeNode parent) {
+        super(parent, "remove");
 
-	@Override
-	public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
-		if (args.length < 3)
-			return CommandResult.THROW_USAGE;
+        argBooster = addArgument(Arguments.BOOSTER);
+    }
 
-		UUID uuid;
-		try {
-			uuid = UUID.fromString(args[2]);
-		} catch (IllegalArgumentException exception) {
-			sender.sendMessage(ChatColor.RED + "Couldn't load ID " + args[2] + ".");
-			return CommandResult.FAILURE;
-		}
-
-		for (Iterator<Booster> iterator = MMOCore.plugin.boosterManager.getActive().iterator(); iterator.hasNext();) {
-			Booster booster = iterator.next();
-			if (booster.getUniqueId().equals(uuid)) {
-				iterator.remove();
-				sender.sendMessage(ChatColor.YELLOW + "Successfully unregistered this booster.");
-				break;
-			}
-		}
-		return CommandResult.SUCCESS;
-	}
+    @Override
+    public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
+        final var booster = explorer.parse(argBooster);
+        MMOCore.plugin.boosterManager.unregister(booster);
+        return explorer.success("Successfully unregistered this booster.");
+    }
 }

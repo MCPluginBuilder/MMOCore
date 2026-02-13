@@ -28,12 +28,6 @@ public class DepositCommand extends CommandTreeRoot {
 
         if (MMOCoreUtils.callLegacyCommandEvent(PlayerData.get(player), this)) return CommandResult.FAILURE;
 
-        // if (sender instanceof Player)
-        // if (!isNearEnderchest(((Player) sender).getLocation())) {
-        // sender.sendMessage(ConfigMessage.fromKey("stand-near-enderchest"));
-        // return true;
-        // }
-
         new DepositMenu(player).open();
         return CommandResult.SUCCESS;
     }

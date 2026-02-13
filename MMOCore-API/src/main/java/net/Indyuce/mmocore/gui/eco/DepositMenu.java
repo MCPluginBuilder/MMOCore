@@ -1,8 +1,8 @@
 package net.Indyuce.mmocore.gui.eco;
 
 import io.lumine.mythic.lib.api.item.NBTItem;
-import io.lumine.mythic.lib.api.util.SmartGive;
 import io.lumine.mythic.lib.gui.PluginInventory;
+import io.lumine.mythic.lib.util.SmartGive;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import net.Indyuce.mmocore.player.Message;
@@ -72,7 +72,7 @@ public class DepositMenu extends PluginInventory {
             updateRunnable.cancel();
 
         // Give all items back
-        SmartGive smart = new SmartGive(player);
+        var smart = new SmartGive(player);
         for (int j = 0; j < 26; j++) {
             ItemStack item = lastBukkitInventory.getItem(j);
             if (item != null)

@@ -348,6 +348,7 @@ public class MMOCoreUtils {
         return entity.getBoundingBox().getCenter().toLocation(entity.getWorld());
     }
 
+    @Deprecated
     public static void debug(String message) {
         message = ChatColor.YELLOW + "Debug> " + ChatColor.WHITE + message;
         for (Player player : Bukkit.getOnlinePlayers())

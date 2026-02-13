@@ -3,48 +3,39 @@ package net.Indyuce.mmocore.command.builtin.mmocore.slot;
 import io.lumine.mythic.lib.command.CommandTreeExplorer;
 import io.lumine.mythic.lib.command.CommandTreeNode;
 import io.lumine.mythic.lib.command.argument.Argument;
+import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.command.Arguments;
 import net.Indyuce.mmocore.skill.ClassSkill;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class BindSlotCommandTreeNode extends CommandTreeNode {
+    private final Argument<Player> argPlayer;
+    private final Argument<Integer> argSlot;
+    private final Argument<SkillHandler<?>> argSkill;
 
     public BindSlotCommandTreeNode(CommandTreeNode parent) {
         super(parent, "bind");
 
-        addArgument(Argument.PLAYER);
-        addArgument(Arguments.INDEX);
-        addArgument(Argument.SKILL_HANDLER);
+        argPlayer = addArgument(Argument.PLAYER);
+        argSlot = addArgument(Arguments.INDEX);
+        argSkill = addArgument(Argument.SKILL_HANDLER);
     }
 
     @Override
-    public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
-        if (args.length < 6)
-            return CommandResult.THROW_USAGE;
-        Player player = Bukkit.getPlayer(args[3]);
-        if (player == null) {
-            sender.sendMessage(ChatColor.RED + "Could not find the player called " + args[3] + ".");
-            return CommandResult.FAILURE;
-        }
+    public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
+        Player player = explorer.parse(argPlayer);
         PlayerData playerData = PlayerData.get(player);
-        int slot;
-        try {
-            slot = Integer.parseInt(args[4]);
-        } catch (NumberFormatException e) {
-            sender.sendMessage(ChatColor.RED + args[4] + " is not a valid number.");
-            return CommandResult.FAILURE;
-        }
-        ClassSkill skill = playerData.getProfess().getSkill(args[5]);
-        if (skill == null) {
-            sender.sendMessage(ChatColor.RED + "The player's class doesn't have a skill called  " + args[5] + ".");
-            return CommandResult.FAILURE;
-        }
-        playerData.bindSkill(slot, skill);
+        int slot = explorer.parse(argSlot);
+        var skill = explorer.parse(argSkill);
 
-        return explorer.success("Skill &6" + skill.getSkill().getId() + "&e now bound to slot &6" + slot);
+        ClassSkill classSkill = playerData.getProfess().getSkill(skill);
+        if (classSkill == null)
+            return explorer.fail("The player's class doesn't have a skill called  " + args[5] + ".");
+        playerData.bindSkill(slot, classSkill);
+
+        return explorer.success("Skill &6" + classSkill.getSkill().getId() + "&e now bound to slot &6" + slot);
     }
 }

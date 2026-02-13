@@ -6,7 +6,6 @@ import io.lumine.mythic.lib.command.argument.Argument;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.command.Arguments;
 import net.Indyuce.mmocore.skill.binding.SkillSlot;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -36,14 +35,11 @@ public class LockSlotCommandTreeNode extends CommandTreeNode {
             return explorer.fail("Skill slot with index " + slot + " was not found for player " + player.getName() + " with class " + playerData.getProfess().getId());
         }
 
-        if (skillSlot.isUnlockedByDefault()) {
-            sender.sendMessage(ChatColor.RED + "This skill slot is unlocked by default.");
-            return CommandResult.FAILURE;
-        }
+        if (skillSlot.isUnlockedByDefault()) return explorer.fail("This skill slot is unlocked by default.");
 
-        if (!playerData.hasUnlocked(skillSlot)) {
+        if (!playerData.hasUnlocked(skillSlot))
             return explorer.fail("Skill slot " + skillSlot.getName() + " is already locked for " + player.getName());
-        }
+
 
         playerData.lock(skillSlot);
         return explorer.success("Skill slot &6" + skillSlot.getName() + "&e is now locked for &6" + player.getName());

@@ -4,64 +4,51 @@ import io.lumine.mythic.lib.command.CommandTreeExplorer;
 import io.lumine.mythic.lib.command.CommandTreeNode;
 import io.lumine.mythic.lib.command.argument.Argument;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class PointsCommandTreeNode extends CommandTreeNode {
-	private final String type;
-	private final Function<PlayerData, Integer> get;
+    private final String type;
+    private final Function<PlayerData, Integer> get;
 
-	public PointsCommandTreeNode(String type, CommandTreeNode parent, BiConsumer<PlayerData, Integer> set, BiConsumer<PlayerData, Integer> give,
-			Function<PlayerData, Integer> get) {
-		super(parent, type + "-points");
+    public PointsCommandTreeNode(String type, CommandTreeNode parent, BiConsumer<PlayerData, Integer> set, BiConsumer<PlayerData, Integer> give,
+                                 Function<PlayerData, Integer> get) {
+        super(parent, type + "-points");
 
-		this.type = type;
-		this.get = get;
+        this.type = type;
+        this.get = get;
 
-		addChild(new ActionCommandTreeNode(this, "set", set));
-		addChild(new ActionCommandTreeNode(this, "give", give));
-	}
+        addChild(new ActionCommandTreeNode(this, "set", set));
+        addChild(new ActionCommandTreeNode(this, "give", give));
+    }
 
-	public class ActionCommandTreeNode extends CommandTreeNode {
-		private final BiConsumer<PlayerData, Integer> action;
+    public class ActionCommandTreeNode extends CommandTreeNode {
+        private final BiConsumer<PlayerData, Integer> action;
 
-		public ActionCommandTreeNode(CommandTreeNode parent, String type, BiConsumer<PlayerData, Integer> action) {
-			super(parent, type);
+        private final Argument<Player> argPlayer;
+        private final Argument<Integer> argAmount;
 
-			this.action = action;
+        public ActionCommandTreeNode(CommandTreeNode parent, String type, BiConsumer<PlayerData, Integer> action) {
+            super(parent, type);
 
-			addArgument(Argument.PLAYER);
-			addArgument(Argument.AMOUNT_INT);
-		}
+            this.action = action;
 
-		@Override
-		public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
-			if (args.length < 5)
-				return CommandResult.THROW_USAGE;
+            argPlayer = addArgument(Argument.PLAYER);
+            argAmount = addArgument(Argument.AMOUNT_INT);
+        }
 
-			Player player = Bukkit.getPlayer(args[3]);
-			if (player == null) {
-				sender.sendMessage(ChatColor.RED + "Could not find the player called " + args[3] + ".");
-				return CommandResult.FAILURE;
-			}
+        @Override
+        public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
+            final var player = explorer.parse(argPlayer);
+            final var amount = explorer.parse(argAmount);
 
-			int amount;
-			try {
-				amount = Integer.parseInt(args[4]);
-			} catch (Exception e) {
-				sender.sendMessage(ChatColor.RED + args[4] + " is not a valid number.");
-				return CommandResult.FAILURE;
-			}
-
-			PlayerData data = PlayerData.get(player);
-			action.accept(data, amount);
-			return explorer.success(ChatColor.GOLD + player.getName()
-					+ ChatColor.YELLOW + " now has " + ChatColor.GOLD + get.apply(data) + ChatColor.YELLOW + " " + type + " points.");
-		}
-	}
+            PlayerData data = PlayerData.get(player);
+            action.accept(data, amount);
+            return explorer.success("&6" + player.getName() + "&e now has &6" + get.apply(data) + "&e " + type + " points.");
+        }
+    }
 }

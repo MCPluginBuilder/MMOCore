@@ -6,46 +6,36 @@ import io.lumine.mythic.lib.command.CommandTreeNode;
 import io.lumine.mythic.lib.command.argument.Argument;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import net.Indyuce.mmocore.experience.Profession;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class InfoCommandTreeNode extends CommandTreeNode {
-	public InfoCommandTreeNode(CommandTreeNode parent) {
-		super(parent, "info");
+    private final Argument<Player> argPlayer;
 
-		addArgument(Argument.PLAYER);
-	}
+    public InfoCommandTreeNode(CommandTreeNode parent) {
+        super(parent, "info");
 
-	@Override
-	public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
-		if (args.length < 3)
-			return CommandResult.THROW_USAGE;
+        argPlayer = addArgument(Argument.PLAYER);
+    }
 
-		Player player = Bukkit.getPlayer(args[2]);
-		if (player == null) {
-			sender.sendMessage(ChatColor.RED + "Could not find the player called " + args[2] + ".");
-			return CommandResult.FAILURE;
-		}
+    @Override
+    public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
+        final var player = explorer.parse(argPlayer);
 
-		PlayerData playerData = PlayerData.get(player);
-		sender.sendMessage(ChatColor.YELLOW + "----------------------------------------------------");
-		sender.sendMessage(ChatColor.YELLOW + "Class: " + ChatColor.GOLD + playerData.getProfess().getName());
-		sender.sendMessage(ChatColor.YELLOW + "Level: " + ChatColor.GOLD + playerData.getLevel());
-		sender.sendMessage(ChatColor.YELLOW + "Experience: " + ChatColor.GOLD + MythicLib.plugin.getMMOConfig().decimal.format(playerData.getExperience()) + ChatColor.YELLOW + " / " + ChatColor.GOLD
-				+ playerData.getLevelUpExperience());
-		sender.sendMessage(ChatColor.YELLOW + "Class Points: " + ChatColor.GOLD + playerData.getClassPoints());
-		sender.sendMessage(ChatColor.YELLOW + "Quests: " + ChatColor.GOLD + playerData.getQuestData().getFinishedQuests().size() + ChatColor.YELLOW
-				+ " / " + ChatColor.GOLD + MMOCore.plugin.questManager.getAll().size());
-		sender.sendMessage(ChatColor.YELLOW + "----------------------------------------------------");
-		for (Profession profession : MMOCore.plugin.professionManager.getAll())
-			sender.sendMessage(
-					ChatColor.YELLOW + profession.getName() + ": Lvl " + ChatColor.GOLD + playerData.getCollectionSkills().getLevel(profession)
-							+ ChatColor.YELLOW + " - " + ChatColor.GOLD + MythicLib.plugin.getMMOConfig().decimal.format(playerData.getCollectionSkills().getExperience(profession))
-							+ ChatColor.YELLOW + " / " + ChatColor.GOLD + playerData.getCollectionSkills().getLevelUpExperience(profession));
-		sender.sendMessage(ChatColor.YELLOW + "----------------------------------------------------");
-		return CommandResult.SUCCESS;
-	}
+        PlayerData playerData = PlayerData.get(player);
+        explorer.verbose("&e----------------------------------------------------");
+        explorer.verbose("&eClass: &6" + playerData.getProfess().getName());
+        explorer.verbose("&eLevel: &6" + playerData.getLevel());
+        explorer.verbose("&eExperience: &6" + MythicLib.plugin.getMMOConfig().decimal.format(playerData.getExperience()) + "&e / &6" + playerData.getLevelUpExperience());
+        explorer.verbose("&eClass Points: &6" + playerData.getClassPoints());
+        explorer.verbose("&eQuests: &6" + playerData.getQuestData().getFinishedQuests().size() + "&e / &6" + MMOCore.plugin.questManager.getAll().size());
+        explorer.verbose("&e----------------------------------------------------");
+        for (var profession : MMOCore.plugin.professionManager.getAll())
+            explorer.verbose("&e" + profession.getName() + ": Lvl &6" + playerData.getCollectionSkills().getLevel(profession)
+                    + "&e - &6" + MythicLib.plugin.getMMOConfig().decimal.format(playerData.getCollectionSkills().getExperience(profession))
+                    + "&e / &6" + playerData.getCollectionSkills().getLevelUpExperience(profession));
+        explorer.verbose("&e----------------------------------------------------");
+        return CommandResult.SUCCESS;
+    }
 }

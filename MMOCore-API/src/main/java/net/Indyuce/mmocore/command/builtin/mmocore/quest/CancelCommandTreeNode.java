@@ -5,39 +5,27 @@ import io.lumine.mythic.lib.command.CommandTreeNode;
 import io.lumine.mythic.lib.command.argument.Argument;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.quest.PlayerQuests;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class CancelCommandTreeNode extends CommandTreeNode {
-	public CancelCommandTreeNode(CommandTreeNode parent) {
-		super(parent, "cancel");
+    private final Argument<Player> argPlayer;
 
-		addArgument(Argument.PLAYER);
-	}
+    public CancelCommandTreeNode(CommandTreeNode parent) {
+        super(parent, "cancel");
 
-	@Override
-	public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
-		if (args.length < 3)
-			return CommandResult.THROW_USAGE;
+        argPlayer = addArgument(Argument.PLAYER);
+    }
 
-		Player player = Bukkit.getPlayer(args[2]);
-		if (player == null) {
-			sender.sendMessage(ChatColor.RED + "Could not find player called " + args[2] + ".");
-			return CommandResult.FAILURE;
-		}
+    @Override
+    public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
+        Player player = explorer.parse(argPlayer);
 
-		PlayerQuests quests = PlayerData.get(player).getQuestData();
-		if (!quests.hasCurrent()) {
-			if (sender instanceof Player)
-				sender.sendMessage(ChatColor.RED + player.getName() + " has no ongoing quest.");
-			return CommandResult.SUCCESS;
-		}
+        PlayerQuests quests = PlayerData.get(player).getQuestData();
+        if (!quests.hasCurrent()) return explorer.success(player.getName() + " has no ongoing quest.");
 
-		quests.start(null);
-		if (sender instanceof Player)
-			sender.sendMessage(ChatColor.YELLOW + player.getName() + " no longer has any ongoing quest.");
-		return CommandResult.SUCCESS;
-	}
+        quests.start(null);
+        return explorer.success(player.getName() + "'s ongoing quest has been cancelled.");
+    }
 }

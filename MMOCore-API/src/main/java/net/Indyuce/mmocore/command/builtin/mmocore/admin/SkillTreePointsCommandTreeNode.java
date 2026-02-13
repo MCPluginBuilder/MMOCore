@@ -7,7 +7,6 @@ import io.lumine.mythic.lib.util.TriConsumer;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.command.Arguments;
 import net.Indyuce.mmocore.skilltree.tree.SkillTree;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -55,9 +54,7 @@ public class SkillTreePointsCommandTreeNode extends CommandTreeNode {
             final var skillTreeName = skillTree == null ? "global" : skillTree.getId();
             final var data = PlayerData.get(player);
             action.accept(data, amount, skillTree);
-            return explorer.success(ChatColor.GOLD + player.getName()
-                    + ChatColor.YELLOW + " now has " + ChatColor.GOLD + get.apply(data, skillTree) + ChatColor.YELLOW + " " + skillTreeName + " skill tree points.");
+            return explorer.success("&6" + player.getName() + "&e now has &6" + get.apply(data, skillTree) + "&e " + skillTreeName + " skill tree points.");
         }
     }
-
 }

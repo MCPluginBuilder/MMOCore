@@ -4,31 +4,25 @@ import io.lumine.mythic.lib.command.CommandTreeExplorer;
 import io.lumine.mythic.lib.command.CommandTreeNode;
 import io.lumine.mythic.lib.command.argument.Argument;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class NoCooldownCommandTreeNode extends CommandTreeNode {
-	public NoCooldownCommandTreeNode(CommandTreeNode parent) {
-		super(parent, "nocd");
+    private final Argument<Player> argPlayer;
 
-		addArgument(Argument.PLAYER);
-	}
+    public NoCooldownCommandTreeNode(CommandTreeNode parent) {
+        super(parent, "nocd");
 
-	@Override
-	public CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
-		if (args.length < 3)
-			return CommandResult.THROW_USAGE;
+        argPlayer = addArgument(Argument.PLAYER);
+    }
 
-		Player player = Bukkit.getPlayer(args[2]);
-		if (player == null) {
-			sender.sendMessage(ChatColor.RED + "Could not find the player called " + args[2] + ".");
-			return CommandResult.FAILURE;
-		}
+    @Override
+    public @NotNull CommandResult execute(CommandTreeExplorer explorer, CommandSender sender, String[] args) {
+        final var player = explorer.parse(argPlayer);
 
-		PlayerData data = PlayerData.get(player);
-		data.noCooldown = !data.noCooldown;
-		return explorer.success(ChatColor.YELLOW + "NoCD " + (data.noCooldown ? "enabled" : "disabled") + " for " + player.getName());
-	}
+        PlayerData data = PlayerData.get(player);
+        data.noCooldown = !data.noCooldown;
+        return explorer.success("NoCD " + (data.noCooldown ? "enabled" : "disabled") + " for " + player.getName());
+    }
 }
