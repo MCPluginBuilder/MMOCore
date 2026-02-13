@@ -113,11 +113,14 @@ public class SQLDatabaseImpl extends SQLDatabase<PlayerData, OfflinePlayerData> 
         playerData.setSkillTreeReallocationPoints(result.getInt("skill_tree_reallocation_points"));
         playerData.setAttributePoints(result.getInt("attribute_points"));
         playerData.setAttributeReallocationPoints(result.getInt("attribute_realloc_points"));
-        playerData.setLevel(result.getInt("level"), PlayerLevelChangeEvent.Reason.CHOOSE_PROFILE);
-        playerData.setExperience(result.getDouble("experience"));
 
+        // Set class before setting level and exp
+        // Class determines max level, so default class may apply the wrong level threshold
+        // Fixes https://gitlab.com/phoenix-dvpmt/mmocore/-/issues/1192
         if (!isEmpty(result.getString("class")))
             playerData.setClass(MMOCore.plugin.classManager.get(result.getString("class")));
+        playerData.setLevel(result.getInt("level"), PlayerLevelChangeEvent.Reason.CHOOSE_PROFILE);
+        playerData.setExperience(result.getDouble("experience"));
 
         if (!isEmpty(result.getString("times_claimed"))) {
             JsonObject json = MythicLib.plugin.getGson().fromJson(result.getString("times_claimed"), JsonObject.class);

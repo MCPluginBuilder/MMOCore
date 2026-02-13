@@ -54,9 +54,12 @@ public class YAMLDatabaseImpl extends YAMLFlatDatabase<PlayerData, OfflinePlayer
         data.setSkillTreeReallocationPoints(config.getInt("skill-tree-reallocation-points"));
         data.setAttributePoints(config.getInt("attribute-points"));
         data.setAttributeReallocationPoints(config.getInt("attribute-realloc-points"));
+        // Set class before setting level and exp
+        // Class determines max level, so default class may apply the wrong level threshold
+        // Fixes https://gitlab.com/phoenix-dvpmt/mmocore/-/issues/1192
+        if (config.contains("class")) data.setClass(MMOCore.plugin.classManager.get(config.getString("class")));
         data.setLevel(config.getInt("level"), PlayerLevelChangeEvent.Reason.CHOOSE_PROFILE);
         data.setExperience(config.getDouble("experience"));
-        if (config.contains("class")) data.setClass(MMOCore.plugin.classManager.get(config.getString("class")));
 
         if (config.contains("guild")) {
             final Guild guild = MMOCore.plugin.nativeGuildManager.getGuild(config.getString("guild"));
