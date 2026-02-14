@@ -26,15 +26,15 @@ import java.util.List;
 import java.util.logging.Level;
 
 public class ConfigManager {
-    public boolean overrideVanillaExp, canCreativeCast, passiveSkillsNeedBinding, cobbleGeneratorXP, saveDefaultClassInfo,
+    public final boolean overrideVanillaExp, canCreativeCast, passiveSkillsNeedBinding, cobbleGeneratorXP, saveDefaultClassInfo,
             splitMainExp, splitProfessionExp, disableQuestBossBar, pvpModeEnabled, pvpModeInvulnerabilityCanDamage, forceClassSelection,
             enableGlobalSkillTreeGUI, enableSpecificSkillTreeGUI, waypointAutoPathCalculation, waypointLinkReciprocity,
             shareExp, shareSkillPts, shareAttributePts, shareSkillReallocPts, shareAttributeReallocPts;
-    public ChatColor staminaFull, staminaHalf, staminaEmpty;
-    public long combatLogTimer, lootChestExpireTime, lootChestPlayerCooldown, globalSkillCooldown;
-    public double lootChestsChanceWeight, dropItemsChanceWeight, fishingDropsChanceWeight, partyMaxExpSplitRange, pvpModeToggleOnCooldown, pvpModeToggleOffCooldown, pvpModeCombatCooldown,
+    public final ChatColor staminaFull, staminaHalf, staminaEmpty;
+    public final long combatLogTimer, lootChestExpireTime, lootChestPlayerCooldown, globalSkillCooldown;
+    public final double lootChestsChanceWeight, dropItemsChanceWeight, fishingDropsChanceWeight, partyMaxExpSplitRange, pvpModeToggleOnCooldown, pvpModeToggleOffCooldown, pvpModeCombatCooldown,
             pvpModeCombatTimeout, pvpModeInvulnerabilityTimeRegionChange, pvpModeInvulnerabilityTimeCommand, pvpModeRegionEnterCooldown, pvpModeRegionLeaveCooldown;
-    public int maxPartyLevelDifference, maxPartyPlayers, minCombatLevel, maxCombatLevelDifference, skillTreeScrollStepX, skillTreeScrollStepY, waypointWarpTime;
+    public final int maxPartyLevelDifference, maxPartyPlayers, minCombatLevel, maxCombatLevelDifference, skillTreeScrollStepX, skillTreeScrollStepY, waypointWarpTime;
     public final List<EntityDamageEvent.DamageCause> combatLogDamageCauses = new ArrayList<>();
 
     private static final List<Runnable> CONFIG_UPDATES = ConfigVersioner.nops(9, ConfigManager::fixMMOCoreCommand);
@@ -120,79 +120,89 @@ public class ConfigManager {
         // Reload messages
         Message.loadMessagesFromConfig();
 
-        final ConfigurationSection config = MMOCore.plugin.getConfig();
+        ////////////////
+        // Without default values
+        ////////////////
+        {
+            final var config = new YamlFile(MMOCore.plugin, "config").getContent();
 
-        // Skill casting
-        if (config.contains("skill-casting")) try {
-            final var castingMode = SkillCastingMode.valueOf(UtilityMethods.enumName(config.getString("skill-casting.mode")));
-            castingMode.setCurrent(config.getConfigurationSection("skill-casting"));
-        } catch (RuntimeException exception) {
-            MMOCore.log(Level.WARNING, "Could not load skill casting: " + exception.getMessage());
+            // Skill casting
+            if (config.contains("skill-casting")) try {
+                final var castingMode = SkillCastingMode.valueOf(UtilityMethods.enumName(config.getString("skill-casting.mode")));
+                castingMode.setCurrent(config.getConfigurationSection("skill-casting"));
+            } catch (RuntimeException exception) {
+                MMOCore.log(Level.WARNING, "Could not load skill casting: " + exception.getMessage());
+            }
+            else SkillCastingMode.NONE.setCurrent(new YamlConfiguration());
         }
 
-        // No skill casting
-        else SkillCastingMode.NONE.setCurrent(new YamlConfiguration());
+        ////////////////
+        // With default values
+        ////////////////
+        {
+            final var config = MMOCore.plugin.getConfig();
 
-        maxPartyPlayers = Math.max(2, MMOCore.plugin.getConfig().getInt("party.max-players", 8));
-        // Combat log
-        combatLogTimer = MMOCore.plugin.getConfig().getInt("combat-log.timer") * 20L;
-        combatLogDamageCauses.clear();
-        for (String key : MMOCore.plugin.getConfig().getStringList("combat-log.causes"))
-            try {
-                combatLogDamageCauses.add(EntityDamageEvent.DamageCause.valueOf(UtilityMethods.enumName(key)));
-            } catch (Exception exception) {
-                MMOCore.log(Level.WARNING, "Could not find damage cause called '" + key + "'");
-            }
-        enableGlobalSkillTreeGUI = MMOCore.plugin.getConfig().getBoolean("enable-global-skill-tree-gui");
-        enableSpecificSkillTreeGUI = MMOCore.plugin.getConfig().getBoolean("enable-specific-skill-tree-gui");
-        lootChestExpireTime = Math.max(MMOCore.plugin.getConfig().getInt("loot-chests.chest-expire-time"), 1) * 20;
-        lootChestPlayerCooldown = (long) MMOCore.plugin.getConfig().getDouble("player-cooldown") * 1000L;
-        globalSkillCooldown = MMOCore.plugin.getConfig().getLong("global-skill-cooldown") * 50;
-        lootChestsChanceWeight = MMOCore.plugin.getConfig().getDouble("chance-stat-weight.loot-chests");
-        dropItemsChanceWeight = MMOCore.plugin.getConfig().getDouble("chance-stat-weight.drop-items");
-        fishingDropsChanceWeight = MMOCore.plugin.getConfig().getDouble("chance-stat-weight.fishing-drops");
-        maxPartyLevelDifference = MMOCore.plugin.getConfig().getInt("party.max-level-difference");
-        partyMaxExpSplitRange = MMOCore.plugin.getConfig().getDouble("party.max-exp-split-range");
-        splitMainExp = MMOCore.plugin.getConfig().getBoolean("party.main-exp-split");
-        splitProfessionExp = MMOCore.plugin.getConfig().getBoolean("party.profession-exp-split");
-        disableQuestBossBar = MMOCore.plugin.getConfig().getBoolean("mmocore-quests.disable-boss-bar");
-        forceClassSelection = MMOCore.plugin.getConfig().getBoolean("force-class-selection");
-        waypointWarpTime = MMOCore.plugin.getConfig().getInt("waypoints.default-warp-time");
-        waypointAutoPathCalculation = MMOCore.plugin.getConfig().getBoolean("waypoints.auto_path_calculation");
-        waypointLinkReciprocity = MMOCore.plugin.getConfig().getBoolean("waypoints.link_reciprocity");
+            // Combat log
+            combatLogTimer = config.getInt("combat-log.timer") * 20L;
+            combatLogDamageCauses.clear();
+            for (var key : config.getStringList("combat-log.causes"))
+                try {
+                    combatLogDamageCauses.add(EntityDamageEvent.DamageCause.valueOf(UtilityMethods.enumName(key)));
+                } catch (Exception exception) {
+                    MMOCore.log(Level.WARNING, "Could not find damage cause called '" + key + "'");
+                }
+            enableGlobalSkillTreeGUI = config.getBoolean("enable-global-skill-tree-gui");
+            enableSpecificSkillTreeGUI = config.getBoolean("enable-specific-skill-tree-gui");
+            lootChestExpireTime = Math.max(config.getInt("loot-chests.chest-expire-time"), 1) * 20;
+            lootChestPlayerCooldown = (long) config.getDouble("player-cooldown") * 1000L;
+            globalSkillCooldown = config.getLong("global-skill-cooldown") * 50;
+            lootChestsChanceWeight = config.getDouble("chance-stat-weight.loot-chests");
+            dropItemsChanceWeight = config.getDouble("chance-stat-weight.drop-items");
+            fishingDropsChanceWeight = config.getDouble("chance-stat-weight.fishing-drops");
+            maxPartyLevelDifference = config.getInt("party.max-level-difference");
+            partyMaxExpSplitRange = config.getDouble("party.max-exp-split-range");
+            splitMainExp = config.getBoolean("party.main-exp-split");
+            splitProfessionExp = config.getBoolean("party.profession-exp-split");
+            disableQuestBossBar = config.getBoolean("mmocore-quests.disable-boss-bar");
+            forceClassSelection = config.getBoolean("force-class-selection");
+            waypointWarpTime = config.getInt("waypoints.default-warp-time");
+            waypointAutoPathCalculation = config.getBoolean("waypoints.auto_path_calculation");
+            waypointLinkReciprocity = config.getBoolean("waypoints.link_reciprocity");
+            maxPartyPlayers = Math.max(2, config.getInt("party.max-players", 8));
 
-        // Combat
-        pvpModeEnabled = config.getBoolean("pvp_mode.enabled");
-        pvpModeToggleOnCooldown = config.getDouble("pvp_mode.cooldown.toggle_on");
-        pvpModeToggleOffCooldown = config.getDouble("pvp_mode.cooldown.toggle_off");
-        pvpModeCombatCooldown = config.getDouble("pvp_mode.cooldown.combat");
-        pvpModeRegionEnterCooldown = config.getDouble("pvp_mode.cooldown.region_enter");
-        pvpModeRegionLeaveCooldown = config.getDouble("pvp_mode.cooldown.region_leave");
-        pvpModeCombatTimeout = config.getDouble("pvp_mode.combat_timeout");
-        pvpModeInvulnerabilityTimeCommand = config.getDouble("pvp_mode.invulnerability.time.command");
-        pvpModeInvulnerabilityTimeRegionChange = config.getDouble("pvp_mode.invulnerability.time.region_change");
-        pvpModeInvulnerabilityCanDamage = config.getBoolean("pvp_mode.invulnerability.can_damage");
-        minCombatLevel = config.getInt("pvp_mode.min_level");
-        maxCombatLevelDifference = config.getInt("pvp_mode.max_level_difference");
-        skillTreeScrollStepX = config.getInt("skill-tree-scroll-step-x", 1);
-        skillTreeScrollStepY = config.getInt("skill-tree-scroll-step-y", 1);
-        // Resources
-        staminaFull = getColorOrDefault("stamina-whole", ChatColor.GREEN);
-        staminaHalf = getColorOrDefault("stamina-half", ChatColor.DARK_GRAY);
-        staminaEmpty = getColorOrDefault("stamina-empty", ChatColor.WHITE);
+            // Combat
+            pvpModeEnabled = config.getBoolean("pvp_mode.enabled");
+            pvpModeToggleOnCooldown = config.getDouble("pvp_mode.cooldown.toggle_on");
+            pvpModeToggleOffCooldown = config.getDouble("pvp_mode.cooldown.toggle_off");
+            pvpModeCombatCooldown = config.getDouble("pvp_mode.cooldown.combat");
+            pvpModeRegionEnterCooldown = config.getDouble("pvp_mode.cooldown.region_enter");
+            pvpModeRegionLeaveCooldown = config.getDouble("pvp_mode.cooldown.region_leave");
+            pvpModeCombatTimeout = config.getDouble("pvp_mode.combat_timeout");
+            pvpModeInvulnerabilityTimeCommand = config.getDouble("pvp_mode.invulnerability.time.command");
+            pvpModeInvulnerabilityTimeRegionChange = config.getDouble("pvp_mode.invulnerability.time.region_change");
+            pvpModeInvulnerabilityCanDamage = config.getBoolean("pvp_mode.invulnerability.can_damage");
+            minCombatLevel = config.getInt("pvp_mode.min_level");
+            maxCombatLevelDifference = config.getInt("pvp_mode.max_level_difference");
+            skillTreeScrollStepX = config.getInt("skill-tree-scroll-step-x", 1);
+            skillTreeScrollStepY = config.getInt("skill-tree-scroll-step-y", 1);
+            // Resources
+            staminaFull = getColorOrDefault(config, "stamina-whole", ChatColor.GREEN);
+            staminaHalf = getColorOrDefault(config, "stamina-half", ChatColor.DARK_GRAY);
+            staminaEmpty = getColorOrDefault(config, "stamina-empty", ChatColor.WHITE);
 
-        passiveSkillsNeedBinding = MMOCore.plugin.getConfig().getBoolean("passive-skill-need-bound");
-        canCreativeCast = MMOCore.plugin.getConfig().getBoolean("can-creative-cast");
-        cobbleGeneratorXP = MMOCore.plugin.getConfig().getBoolean("should-cobblestone-generators-give-exp");
-        saveDefaultClassInfo = MMOCore.plugin.getConfig().getBoolean("save-default-class-info");
-        overrideVanillaExp = MMOCore.plugin.getConfig().getBoolean("override-vanilla-exp");
+            passiveSkillsNeedBinding = config.getBoolean("passive-skill-need-bound");
+            canCreativeCast = config.getBoolean("can-creative-cast");
+            cobbleGeneratorXP = config.getBoolean("should-cobblestone-generators-give-exp");
+            saveDefaultClassInfo = config.getBoolean("save-default-class-info");
+            overrideVanillaExp = config.getBoolean("override-vanilla-exp");
 
-        // Data share across classes
-        shareExp = MMOCore.plugin.getConfig().getBoolean("share_across_classes.experience");
-        shareSkillPts = MMOCore.plugin.getConfig().getBoolean("share_across_classes.skill_points");
-        shareAttributePts = MMOCore.plugin.getConfig().getBoolean("share_across_classes.attribute_points");
-        shareSkillReallocPts = MMOCore.plugin.getConfig().getBoolean("share_across_classes.skill_reallocation_points");
-        shareAttributeReallocPts = MMOCore.plugin.getConfig().getBoolean("share_across_classes.attribute_reallocation_points");
+            // Data share across classes
+            shareExp = config.getBoolean("share_across_classes.experience");
+            shareSkillPts = config.getBoolean("share_across_classes.skill_points");
+            shareAttributePts = config.getBoolean("share_across_classes.attribute_points");
+            shareSkillReallocPts = config.getBoolean("share_across_classes.skill_reallocation_points");
+            shareAttributeReallocPts = config.getBoolean("share_across_classes.attribute_reallocation_points");
+        }
     }
 
     @BackwardsCompatibility(version = "1.13.1-SNAPSHOT")
@@ -203,10 +213,10 @@ public class ConfigManager {
     }
 
     @NotNull
-    private ChatColor getColorOrDefault(String key, ChatColor defaultColor) {
+    private ChatColor getColorOrDefault(ConfigurationSection config, String key, ChatColor defaultColor) {
         try {
-            return ChatColor.valueOf(MMOCore.plugin.getConfig().getString("resource-bar-colors." + key).toUpperCase());
-        } catch (IllegalArgumentException exception) {
+            return ChatColor.valueOf(config.getString("resource-bar-colors." + key, "").toUpperCase());
+        } catch (Exception exception) {
             MMOCore.log(Level.WARNING, "Could not read resource bar color from '" + key + "': using default.");
             return defaultColor;
         }
