@@ -14,12 +14,19 @@ public enum Language {
     GOLD_POUCH_UI_NAME,
     FISH_OUT_WATER,
     FISH_OUT_WATER_CRIT,
+    PARTY_CHAT_PREFIX("party.chat-prefix"),
     NO_SKILL_PLACEHOLDER;
 
     private final String path;
 
     @NotNull
-    private String translation = "";
+    private String translation = TRANSLATION_NOT_FOUND;
+
+    private static final String TRANSLATION_NOT_FOUND = "<translation_entry_not_found>";
+
+    Language(String path) {
+        this.path = path;
+    }
 
     Language() {
         this.path = UtilityMethods.kebabCase(name());
@@ -39,8 +46,7 @@ public enum Language {
                 element.translation = objectFound;
             } catch (Exception exception) {
                 MMOCore.plugin.getLogger().log(Level.WARNING, "Could not load language entry '" + element.path + "': " + exception.getMessage());
-                element.translation = "<translation_entry_not_found>";
+                element.translation = TRANSLATION_NOT_FOUND;
             }
-
     }
 }

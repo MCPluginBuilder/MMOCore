@@ -14,7 +14,7 @@ import net.Indyuce.mmocore.player.Message;
 import net.Indyuce.mmocore.skill.cast.SkillCastingMode;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.util.Consumer;
@@ -30,7 +30,6 @@ public class ConfigManager {
             splitMainExp, splitProfessionExp, disableQuestBossBar, pvpModeEnabled, pvpModeInvulnerabilityCanDamage, forceClassSelection,
             enableGlobalSkillTreeGUI, enableSpecificSkillTreeGUI, waypointAutoPathCalculation, waypointLinkReciprocity,
             shareExp, shareSkillPts, shareAttributePts, shareSkillReallocPts, shareAttributeReallocPts;
-    public String partyChatPrefix, noSkillBoundPlaceholder;
     public ChatColor staminaFull, staminaHalf, staminaEmpty;
     public long combatLogTimer, lootChestExpireTime, lootChestPlayerCooldown, globalSkillCooldown;
     public double lootChestsChanceWeight, dropItemsChanceWeight, fishingDropsChanceWeight, partyMaxExpSplitRange, pvpModeToggleOnCooldown, pvpModeToggleOffCooldown, pvpModeCombatCooldown,
@@ -124,15 +123,16 @@ public class ConfigManager {
         final ConfigurationSection config = MMOCore.plugin.getConfig();
 
         // Skill casting
-        try {
+        if (config.contains("skill-casting")) try {
             final var castingMode = SkillCastingMode.valueOf(UtilityMethods.enumName(config.getString("skill-casting.mode")));
             castingMode.setCurrent(config.getConfigurationSection("skill-casting"));
         } catch (RuntimeException exception) {
             MMOCore.log(Level.WARNING, "Could not load skill casting: " + exception.getMessage());
         }
 
-        messages = new YamlFile(MMOCore.plugin, "messages").getContent(); // Backwards compatibility.
-        partyChatPrefix = MMOCore.plugin.getConfig().getString("party.chat-prefix");
+        // No skill casting
+        else SkillCastingMode.NONE.setCurrent(new YamlConfiguration());
+
         maxPartyPlayers = Math.max(2, MMOCore.plugin.getConfig().getInt("party.max-players", 8));
         // Combat log
         combatLogTimer = MMOCore.plugin.getConfig().getInt("combat-log.timer") * 20L;
@@ -148,7 +148,6 @@ public class ConfigManager {
         lootChestExpireTime = Math.max(MMOCore.plugin.getConfig().getInt("loot-chests.chest-expire-time"), 1) * 20;
         lootChestPlayerCooldown = (long) MMOCore.plugin.getConfig().getDouble("player-cooldown") * 1000L;
         globalSkillCooldown = MMOCore.plugin.getConfig().getLong("global-skill-cooldown") * 50;
-        noSkillBoundPlaceholder = String.valueOf(messages.get("no-skill-placeholder"));
         lootChestsChanceWeight = MMOCore.plugin.getConfig().getDouble("chance-stat-weight.loot-chests");
         dropItemsChanceWeight = MMOCore.plugin.getConfig().getDouble("chance-stat-weight.drop-items");
         fishingDropsChanceWeight = MMOCore.plugin.getConfig().getDouble("chance-stat-weight.fishing-drops");
@@ -219,8 +218,6 @@ public class ConfigManager {
 
     //region Deprecated
 
-    private final FileConfiguration messages;
-
     @Deprecated
     public PlayerInput newPlayerInput(Player player, InputType type, Consumer<String> output) {
         return new ChatInput(player, type, null, output);
@@ -243,6 +240,7 @@ public class ConfigManager {
      */
     @Deprecated
     public List<String> getMessage(String key) {
+        final var messages = new YamlFile(MMOCore.plugin, "messages").getContent();
         return messages.getStringList(key);
     }
 
@@ -254,6 +252,7 @@ public class ConfigManager {
     @Nullable
     @Deprecated
     public Object getMessageObject(String key) {
+        final var messages = new YamlFile(MMOCore.plugin, "messages").getContent();
         return messages.get(key);
     }
 

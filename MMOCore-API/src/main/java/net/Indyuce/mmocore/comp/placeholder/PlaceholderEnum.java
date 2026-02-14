@@ -13,6 +13,7 @@ import net.Indyuce.mmocore.experience.PlayerProfessions;
 import net.Indyuce.mmocore.experience.Profession;
 import net.Indyuce.mmocore.party.AbstractParty;
 import net.Indyuce.mmocore.skill.ClassSkill;
+import net.Indyuce.mmocore.util.Language;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -234,7 +235,7 @@ public enum PlaceholderEnum {
     bound_(metadata -> {
         final int slot = Math.max(1, Integer.parseInt(metadata.params()));
         final ClassSkill skill = metadata.playerData.getBoundSkill(slot);
-        if (skill == null) return MMOCore.plugin.configManager.noSkillBoundPlaceholder;
+        if (skill == null) return Language.NO_SKILL_PLACEHOLDER.getFormat();
         return (metadata.playerData.getCooldownMap().isOnCooldown(skill) ? ChatColor.RED : ChatColor.GREEN) + skill.getSkill().getName();
     }),
 
@@ -245,7 +246,7 @@ public enum PlaceholderEnum {
         int slot = Math.max(0, Integer.parseInt(metadata.params()));
         if (metadata.playerData.hasSkillBound(slot))
             return Double.toString(metadata.playerData.getCooldownMap().getCooldown(metadata.playerData.getBoundSkill(slot)));
-        else return MMOCore.plugin.configManager.noSkillBoundPlaceholder;
+        else return Language.NO_SKILL_PLACEHOLDER.getFormat();
     }),
 
     /**

@@ -7,6 +7,7 @@ import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.party.AbstractParty;
 import net.Indyuce.mmocore.party.PartyModule;
 import net.Indyuce.mmocore.player.Message;
+import net.Indyuce.mmocore.util.Language;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -60,7 +61,8 @@ public class MMOCorePartyModule implements PartyModule, Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void partyChat(AsyncPlayerChatEvent event) {
-        if (!event.getMessage().startsWith(MMOCore.plugin.configManager.partyChatPrefix)) return;
+        final var prefix = Language.PARTY_CHAT_PREFIX.getFormat();
+        if (!event.getMessage().startsWith(prefix)) return;
 
         PlayerData data = PlayerData.get(event.getPlayer());
         Party party = this.getParty(data);
@@ -70,7 +72,7 @@ public class MMOCorePartyModule implements PartyModule, Listener {
 
         // Run it on main server thread
         Bukkit.getScheduler().runTask(MMOCore.plugin, () -> {
-            final var rawMessage = event.getMessage().substring(MMOCore.plugin.configManager.partyChatPrefix.length());
+            final var rawMessage = event.getMessage().substring(prefix.length());
             final var called = new PartyChatEvent(party, data, rawMessage);
             Bukkit.getPluginManager().callEvent(called);
             if (called.isCancelled() || called.getMessage() == null) return;
