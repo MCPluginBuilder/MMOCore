@@ -2,7 +2,7 @@ package net.Indyuce.mmocore.manager.data.sql;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
-import io.lumine.mythic.lib.data.DataLoadResult;
+import io.lumine.mythic.lib.data.queue.DataLoadResult;
 import io.lumine.mythic.lib.data.sql.SQLDatabase;
 import io.lumine.mythic.lib.gson.JsonArray;
 import io.lumine.mythic.lib.gson.JsonElement;
@@ -194,14 +194,11 @@ public class SQLDatabaseImpl extends SQLDatabase<PlayerData, OfflinePlayerData> 
         playerData.loadResources(result.getDouble("health"), result.getDouble("mana"), result.getDouble("stamina"), result.getDouble("stellium"));
 
         UtilityMethods.debug(MMOCore.plugin, "SQL", String.format("{ class: %s, level: %d }", playerData.getProfess().getId(), playerData.getLevel()));
-        return new DataLoadResult(DataLoadResult.Type.SUCCESS, false, force);
+        return new DataLoadResult(false, force);
     }
 
     @Override
     public void saveData(PlayerData data, @NotNull SessionUpdateReason saveReason) {
-        final UUID effectiveId = data.getEffectiveId();
-        UtilityMethods.debug(MMOCore.plugin, "SQL", "Saving data for: '" + effectiveId + "'...");
-
         final PlayerDataTableUpdater updater = new PlayerDataTableUpdater(this, data);
         updater.addData("class_points", data.getClassPoints());
         updater.addData("skill_points", data.getSkillPoints());
@@ -234,7 +231,6 @@ public class SQLDatabaseImpl extends SQLDatabase<PlayerData, OfflinePlayerData> 
 
         updater.executeRequest(saveReason);
 
-        UtilityMethods.debug(MMOCore.plugin, "SQL", "Saved data for: " + effectiveId);
         UtilityMethods.debug(MMOCore.plugin, "SQL", String.format("{ class: %s, level: %d }", data.getProfess().getId(), data.getLevel()));
     }
 

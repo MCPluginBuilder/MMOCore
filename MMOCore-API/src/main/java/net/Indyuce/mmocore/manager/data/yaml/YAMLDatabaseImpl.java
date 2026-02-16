@@ -1,6 +1,6 @@
 package net.Indyuce.mmocore.manager.data.yaml;
 
-import io.lumine.mythic.lib.data.DataLoadResult;
+import io.lumine.mythic.lib.data.queue.DataLoadResult;
 import io.lumine.mythic.lib.data.yaml.YAMLFlatDatabase;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
@@ -45,7 +45,7 @@ public class YAMLDatabaseImpl extends YAMLFlatDatabase<PlayerData, OfflinePlayer
         // Load default data
         if (!config.contains("class-points")) {
             MMOCore.plugin.playerDataManager.getDefaultData().apply(data, PlayerLevelChangeEvent.Reason.CHOOSE_PROFILE);
-            return new DataLoadResult(DataLoadResult.Type.SUCCESS, true, isSaved);
+            return new DataLoadResult( true, isSaved);
         }
 
         data.setClassPoints(config.getInt("class-points"));
@@ -131,7 +131,7 @@ public class YAMLDatabaseImpl extends YAMLFlatDatabase<PlayerData, OfflinePlayer
         var fixedStellium = config.getDouble("stellium", data.getStats().getStat("MAX_STELLIUM"));
         data.loadResources(fixedHealth, fixedMana, fixedStamina, fixedStellium);
 
-        return new DataLoadResult(DataLoadResult.Type.SUCCESS, false, isSaved);
+        return new DataLoadResult( false, isSaved);
     }
 
     @Override
