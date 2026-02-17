@@ -5,7 +5,7 @@ author: Indyuce
 description: ${project.description}
 loadbefore: [ MMOItems,MythicDungeons ]
 depend: [ MythicLib ]
-softdepend: [ Vault,MythicMobs,MMOProfiles,PlaceholderAPI,Residence,Citizens,ProtocolLib,OBTeam ]
+softdepend: [ Vault,MythicMobs,MMOProfiles,PlaceholderAPI,Residence,Citizens,ProtocolLib,OBTeam,FactionsBridge ]
 api-version: 1.14
 website: www.phoenixdevt.fr
 commands:

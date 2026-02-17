@@ -1,8 +1,9 @@
 package net.Indyuce.mmocore.guild;
 
+import net.Indyuce.mmocore.guild.compat.FactionsBridgeGuildModule;
 import net.Indyuce.mmocore.guild.compat.GuildsGuildModule;
 import net.Indyuce.mmocore.guild.compat.KingdomsXGuildModule;
-import net.Indyuce.mmocore.guild.compat.UltimateClansGuildModule;
+import net.Indyuce.mmocore.guild.compat.UClansGuildModule;
 import net.Indyuce.mmocore.guild.provided.MMOCoreGuildModule;
 import net.Indyuce.mmocore.guild.provided.NoneGuildModule;
 import org.bukkit.Bukkit;
@@ -10,13 +11,14 @@ import org.bukkit.Bukkit;
 import javax.inject.Provider;
 
 public enum GuildModuleType {
-    // Useless since MythicLib already supports FactionBridge
-    // FACTIONS("Factions", FactionsGuildModule::new),
+    FACTIONSBRIDGE("FactionsBridge", FactionsBridgeGuildModule::new),
     MMOCORE("MMOCore", MMOCoreGuildModule::new),
     NONE("MMOCore", NoneGuildModule::new),
     GUILDS("Guilds", GuildsGuildModule::new),
+    // TODO https://gitlab.com/phoenix-dvpmt/mmocore/-/issues/1120
+    @Deprecated
     KINGDOMSX("Kingdoms", KingdomsXGuildModule::new),
-    ULTIMATE_CLANS("UltimateClans", UltimateClansGuildModule::new),
+    ULTIMATE_CLANS("UltimateClans", UClansGuildModule::new),
     ;
 
     private final String pluginName;

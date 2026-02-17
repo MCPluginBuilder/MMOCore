@@ -12,6 +12,10 @@ import org.kingdoms.constants.player.KingdomPlayer;
 
 import java.util.Objects;
 
+/**
+ * @deprecated KingdomsX is now handled by FactionsBridge, keeping this for backwards compatibility
+ */
+@Deprecated
 public class KingdomsXGuildModule implements GuildModule {
 
     @Override
@@ -25,7 +29,7 @@ public class KingdomsXGuildModule implements GuildModule {
     }
 
     @Override
-    public Relationship getRelationship(Player player, Player target) {
+    public @NotNull Relationship getRelationship(Player player, Player target) {
 
         final KingdomPlayer player1 = KingdomPlayer.getKingdomPlayer(player);
         if (player1 == null)
@@ -62,7 +66,7 @@ public class KingdomsXGuildModule implements GuildModule {
         }
     }
 
-    class CustomGuild implements AbstractGuild {
+    static class CustomGuild implements AbstractGuild {
 
         @NotNull
         private final Kingdom kingdom;

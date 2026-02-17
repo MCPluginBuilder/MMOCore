@@ -15,17 +15,22 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-public class UltimateClansGuildModule implements GuildModule {
-    private static final UClans API = (UClans) Bukkit.getPluginManager().getPlugin("UltimateCLans");
+public class UClansGuildModule implements GuildModule {
+    @NotNull
+    private final UClans API;
 
-    @Override
-    public AbstractGuild getGuild(PlayerData playerData) {
-        final Optional<ClanData> clan_ = API.getPlayerAPI().getPlayerClan(playerData.getUniqueId());
-        return clan_.isEmpty() ? null : new CustomGuild(clan_.get());
+    public UClansGuildModule() {
+        API = (UClans) Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("UltimateClans"), "UltimateClans plugin not found");
     }
 
     @Override
-    public Relationship getRelationship(Player player, Player target) {
+    public AbstractGuild getGuild(PlayerData playerData) {
+        final var opt = API.getPlayerAPI().getPlayerClan(playerData.getUniqueId());
+        return opt.map(CustomGuild::new).orElse(null);
+    }
+
+    @Override
+    public @NotNull Relationship getRelationship(Player player, Player target) {
         final Optional<ClanData> _clan1 = API.getPlayerAPI().getPlayerClan(player.getUniqueId());
         if (_clan1.isEmpty()) return Relationship.GUILD_NEUTRAL;
 
@@ -37,7 +42,7 @@ public class UltimateClansGuildModule implements GuildModule {
         return allies1.getAlly().contains(uuid2) ? Relationship.GUILD_ALLY : allies1.getRival().contains(uuid2) ? Relationship.GUILD_ENEMY : Relationship.GUILD_NEUTRAL;
     }
 
-    class CustomGuild implements AbstractGuild {
+    static class CustomGuild implements AbstractGuild {
 
         @NotNull
         private final ClanData clan;

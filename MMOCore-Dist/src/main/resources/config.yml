@@ -83,11 +83,11 @@ party-plugin: mmocore
 
 # Edit the plugin handling guilds here.
 # Supported values (just copy and paste):
-# - mmocore (Default built-in guild system
-# - none (Used to fully disable guilds)
-# - guilds
-# - kingdomsx
-# - ultimate_clans
+# - FACTIONSBRIDGE (and any supported Factions/Guild plugin)
+# - MMOCORE (Default built-in guild system)
+# - NONE (Used to fully disable guilds)
+# - GUILDS (by Glare)
+# - ULTIMATE_CLANS
 guild-plugin: mmocore
 
 # MythicLib introduces a CHANCE stat that is used in
