@@ -3,6 +3,8 @@ package net.Indyuce.mmocore.comp.placeholder;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.util.AltChar;
+import io.lumine.mythic.lib.comp.placeholder.api.PlaceholderEntry;
+import io.lumine.mythic.lib.comp.placeholder.api.PlaceholderMetadata;
 import io.lumine.mythic.lib.manager.StatManager;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.version.Attributes;
@@ -21,14 +23,11 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 
-// TODO move to MythicLib
-public enum PlaceholderEnum {
+public enum PlaceholderEnum implements PlaceholderEntry<PlayerData> {
 
     //region Placeholders
 
@@ -486,83 +485,43 @@ public enum PlaceholderEnum {
 
     ;
 
-
     private final String prefix, fallback;
-    private final Function<PlaceholderInput, String> parser;
+    private final Function<PlaceholderMetadata<PlayerData>, String> parser;
 
     private static final String DEFAULT_FALLBACK = "";
-    private static final String PLACEHOLDER_NOT_FOUND = "NoMatch";
-
-    // TODO bake further to reduce map lookups?
-    // TODO precompute "terminal" placeholders that require no further placeholder tree exploration
-    private static final Map<String, PlaceholderEnum> BY_ID = new HashMap<>();
-
-    static {
-        for (var placeholder : values()) BY_ID.put(placeholder.prefix, placeholder);
-    }
 
     PlaceholderEnum(PlaceholderEnum delegate) {
         this(delegate.fallback, delegate.parser);
     }
 
-    PlaceholderEnum(Function<PlaceholderInput, String> parser) {
+    PlaceholderEnum(Function<PlaceholderMetadata<PlayerData>, String> parser) {
         this(DEFAULT_FALLBACK, parser);
     }
 
-    PlaceholderEnum(Object fallback, Function<PlaceholderInput, String> parser) {
+    PlaceholderEnum(Object fallback, Function<PlaceholderMetadata<PlayerData>, String> parser) {
         this.prefix = name();
         this.parser = parser;
         this.fallback = String.valueOf(Objects.requireNonNull(fallback, "Default value cannot be null"));
     }
 
-    PlaceholderEnum(String prefix, Object fallback, Function<PlaceholderInput, String> parser) {
+    PlaceholderEnum(String prefix, Object fallback, Function<PlaceholderMetadata<PlayerData>, String> parser) {
         this.prefix = prefix;
         this.parser = parser;
         this.fallback = String.valueOf(Objects.requireNonNull(fallback, "Default value cannot be null"));
     }
 
-    @NotNull
-    public static String parse(@NotNull PlayerData playerData, @NotNull String raw) {
-        PlaceholderEnum found = null;
-        int endIndex = -1;
-
-        // Find the longest matching placeholder
-        for (int i = 0; i < raw.length(); i++)
-            if (raw.charAt(i) == '_' || i == raw.length() - 1) {
-                final var prefix = raw.substring(0, i + 1);
-                final var mapping = BY_ID.get(prefix);
-                if (mapping != null) {
-                    found = mapping;
-                    endIndex = i + 1;
-                }
-            }
-
-        // No placeholder matches
-        if (found == null) return PLACEHOLDER_NOT_FOUND;
-
-        try {
-            // Try to parse placeholder
-            final var meta = new PlaceholderInput(playerData, raw, endIndex);
-            return found.parser.apply(meta);
-        } catch (Throwable throwable) {
-            // Fallback value
-            return found.fallback;
-        }
+    @Override
+    public String getPrefix() {
+        return prefix;
     }
 
-    final static class PlaceholderInput {
-        final PlayerData playerData;
-        final int argIndex;
-        final String placeholderInput;
+    @Override
+    public String getFallback() {
+        return fallback;
+    }
 
-        PlaceholderInput(PlayerData playerData, String placeholderInput, int argIndex) {
-            this.playerData = playerData;
-            this.argIndex = argIndex;
-            this.placeholderInput = placeholderInput;
-        }
-
-        public String params() {
-            return placeholderInput.substring(this.argIndex);
-        }
+    @Override
+    public @NotNull String parse(@NotNull PlaceholderMetadata<PlayerData> placeholderMetadata) {
+        return this.parser.apply(placeholderMetadata);
     }
 }

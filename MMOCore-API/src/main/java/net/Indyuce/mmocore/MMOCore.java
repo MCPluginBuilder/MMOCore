@@ -163,7 +163,7 @@ public class MMOCore extends MMOPlugin {
         if (Bukkit.getPluginManager().getPlugin("Vault") != null) economy = new VaultEconomy();
 
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            new MMOCorePlaceholderExpansion().register();
+            new MMOCorePlaceholderExpansion(this).register();
             getLogger().log(Level.INFO, "Hooked onto PlaceholderAPI");
         }
 

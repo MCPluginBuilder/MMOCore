@@ -1,47 +1,27 @@
 package net.Indyuce.mmocore.comp.placeholder;
 
-import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import io.lumine.mythic.lib.comp.placeholder.api.PlaceholderEntry;
+import io.lumine.mythic.lib.comp.placeholder.api.PluginPlaceholderExpansion;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import org.bukkit.OfflinePlayer;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Arrays;
 
 
-public class MMOCorePlaceholderExpansion extends PlaceholderExpansion {
-
-    @Override
-    public boolean persist() {
-        return true;
+public class MMOCorePlaceholderExpansion extends PluginPlaceholderExpansion<PlayerData> {
+    public MMOCorePlaceholderExpansion(MMOCore plugin) {
+        super(plugin);
     }
 
     @Override
-    public boolean canRegister() {
-        return true;
+    public @NotNull Iterable<PlaceholderEntry<PlayerData>> getPlaceholderRegistry() {
+        return Arrays.asList(PlaceholderEnum.values());
     }
 
     @Override
-    public String getAuthor() {
-        return "Indyuce";
-    }
-
-    @Override
-    public String getIdentifier() {
-        return "mmocore";
-    }
-
-    @Override
-    public String getVersion() {
-        return MMOCore.plugin.getDescription().getVersion();
-    }
-
-    private static final String NO_PLAYER_PLACEHOLDER = "OfflinePlayer";
-
-    @Override
-    public String onRequest(OfflinePlayer player, String identifier) {
-        try {
-            final var playerData = PlayerData.get(player);
-            return PlaceholderEnum.parse(playerData, identifier);
-        } catch (Exception exception) {
-            return NO_PLAYER_PLACEHOLDER;
-        }
+    public @NotNull PlayerData getPlayerData(OfflinePlayer player) {
+        return PlayerData.get(player);
     }
 }
