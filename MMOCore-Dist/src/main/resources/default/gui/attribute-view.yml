@@ -1,6 +1,14 @@
+
+#####################################
+# Attribute menu UI config
+#####################################
+
+# This file only defines the layout and visuals of the attribute menu, which players
+# can open using /attributes. You cannot edit the existing attributes, or buffs given
+# by attributes here. Please use attributes/default_attributes.yml to edit those.
+
 # GUI display name
 name: Player Attributes
-
 
 # Number of slots in your inventory. Must be
 # between 9 and 54 and must be a multiple of 9.
