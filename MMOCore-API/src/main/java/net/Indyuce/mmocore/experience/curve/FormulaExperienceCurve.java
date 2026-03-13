@@ -1,11 +1,16 @@
 package net.Indyuce.mmocore.experience.curve;
 
 import io.lumine.mythic.lib.MythicLib;
+import io.lumine.mythic.lib.player.PlayerMetadata;
 import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.script.util.expression.placeholder.ExpressionPlaceholder;
+import io.lumine.mythic.lib.script.variable.VariableList;
+import io.lumine.mythic.lib.script.variable.VariableScope;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.api.player.PlayerData;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
 
 public class FormulaExperienceCurve implements ExperienceCurve {
@@ -24,8 +29,7 @@ public class FormulaExperienceCurve implements ExperienceCurve {
 
         @Override
         public Double parse(@NotNull SkillMetadata skillMetadata) {
-            var player = PlayerData.get(skillMetadata.getCaster().getData().getUniqueId());
-            return (double) player.getLevel();
+            return (double) ((DummySkillMetadata) skillMetadata).playerData.getLevel();
         }
     }
 
@@ -33,13 +37,49 @@ public class FormulaExperienceCurve implements ExperienceCurve {
     public long getExperience(@NotNull PlayerData player, int level) {
         try {
             Validate.isTrue(level > 0, "Level must be stricly positive, got " + level);
-            final int value = (int) this.formula.evaluate(SkillMetadata.of(player.getMMOPlayerData()));
+            var value = (int) this.formula.evaluate(new DummySkillMetadata(player));
             Validate.isTrue(value > 0, "Exp curve must return a positive value, got " + value);
             return value;
 
-        } catch (Exception e) {
-            MythicLib.plugin.getLogger().warning("Error parsing exp formula '" + this.formula + "' for player " + player.getPlayer().getName() + ", using 100: " + e.getMessage());
+        } catch (Exception exception) {
+            MythicLib.plugin.getLogger().warning("Error parsing exp formula '" + this.formula + "' for player " + player.getMMOPlayerData().getPlayerName() + ", using 100: " + exception.getMessage());
             return 100;
+        }
+    }
+
+    @Deprecated
+    static class DummySkillMetadata extends SkillMetadata {
+
+        /*
+        public SkillMetadata(@Nullable Skill cast,
+                             @NotNull PlayerMetadata caster,
+                             @NotNull VariableList vars,
+                             @NotNull Location source,
+                             @Nullable Location targetLocation,
+                             @Nullable Entity targetEntity,
+                             @Nullable SkillOrientation orientation,
+                             @Nullable AttackMetadata attackSource,
+                             @Nullable Event sourceEvent) {
+            */
+
+        final PlayerData playerData;
+
+        @Deprecated
+        public DummySkillMetadata(@NotNull PlayerData lookup) {
+            super(null,
+                    new PlayerMetadata(lookup.getMMOPlayerData()),
+                    new VariableList(VariableScope.SKILL),
+                    __getDummyLocation(),
+                    null, null, null, null, null);
+
+            this.playerData = lookup;
+        }
+
+        @Deprecated
+        private static Location __getDummyLocation() {
+            for (var world : Bukkit.getWorlds())
+                return world.getSpawnLocation();
+            throw new RuntimeException("No world?");
         }
     }
 }

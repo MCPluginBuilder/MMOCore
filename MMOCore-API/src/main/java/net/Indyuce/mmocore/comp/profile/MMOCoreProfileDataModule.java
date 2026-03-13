@@ -8,8 +8,6 @@ import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.profile.DefaultProfileDataModule;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import net.Indyuce.mmocore.api.player.attribute.PlayerAttribute;
-import net.Indyuce.mmocore.experience.Profession;
 import net.Indyuce.mmocore.manager.data.PlayerDataManager;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,21 +28,31 @@ public class MMOCoreProfileDataModule extends DefaultProfileDataModule implement
 
     @Override
     public void processPlaceholderRequest(PlaceholderRequest placeholderRequest) {
-        final PlayerData fictiveData = new PlayerData(new MMOPlayerData(placeholderRequest.getProfile().getUniqueId()));
-        MMOCore.plugin.playerDataManager.loadData(fictiveData).thenRun(() -> {
-            placeholderRequest.addPlaceholder("class", fictiveData.getProfess().getName());
-            placeholderRequest.addPlaceholder("level", fictiveData.getLevel());
+        var lookupData = new PlayerData(new MMOPlayerData(true, placeholderRequest.getProfile().getUniqueId()));
+        MMOCore.plugin.playerDataManager.loadData(lookupData).thenRun(() -> {
 
-            for (PlayerAttribute attribute : MMOCore.plugin.attributeManager.getAll())
-                placeholderRequest.addPlaceholder("attribute_" + attribute.getId().replace("-", "_"), fictiveData.getAttributes().getInstance(attribute).getBase());
+            // Very likely to be in an async thread
+            // Catch errors and print to console
+            try {
+                placeholderRequest.addPlaceholder("class", lookupData.getProfess().getName());
+                placeholderRequest.addPlaceholder("level", lookupData.getLevel());
 
-            for (Profession profession : MMOCore.plugin.professionManager.getAll())
-                placeholderRequest.addPlaceholder("profession_" + profession.getId().replace("-", "_"), fictiveData.getCollectionSkills().getLevel(profession));
+                for (var attribute : MMOCore.plugin.attributeManager.getAll())
+                    placeholderRequest.addPlaceholder("attribute_" + attribute.getId().replace("-", "_"), lookupData.getAttributes().getInstance(attribute).getBase());
 
-            placeholderRequest.addPlaceholder("exp", MythicLib.plugin.getMMOConfig().decimal.format(fictiveData.getExperience()));
-            placeholderRequest.addPlaceholder("exp_next_level", fictiveData.getLevelUpExperience());
+                for (var profession : MMOCore.plugin.professionManager.getAll())
+                    placeholderRequest.addPlaceholder("profession_" + profession.getId().replace("-", "_"), lookupData.getCollectionSkills().getLevel(profession));
 
-            placeholderRequest.validate();
+                placeholderRequest.addPlaceholder("exp", MythicLib.plugin.getMMOConfig().decimal.format(lookupData.getExperience()));
+                placeholderRequest.addPlaceholder("exp_next_level", lookupData.getLevelUpExperience());
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
+
+            // Validate placeholders anyways
+            finally {
+                placeholderRequest.validate();
+            }
         });
     }
 }
