@@ -1,13 +1,9 @@
 package net.Indyuce.mmocore.skill.cast.handler;
 
 import io.lumine.mythic.lib.api.event.skill.PlayerCastSkillEvent;
-import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import io.lumine.mythic.lib.message.SoundReader;
 import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
-import io.lumine.mythic.lib.player.PlayerMetadata;
-import io.lumine.mythic.lib.skill.SkillMetadata;
-import io.lumine.mythic.lib.skill.result.SkillResult;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerKeyPressEvent;
@@ -154,8 +150,7 @@ public class KeyCombos extends SkillCastingHandler {
             final ClassSkill boundSkill;
             if (playerData.hasSkillBound(spellSlot) &&
                     !(boundSkill = playerData.getBoundSkill(spellSlot)).getTrigger().isPassive()) {
-                final PlayerMetadata caster = playerData.getMMOPlayerData().getStatMap().cache(EquipmentSlot.MAIN_HAND);
-                final SkillResult result = boundSkill.toCastable(playerData).cast(SkillMetadata.of(caster));
+                final var result = boundSkill.toCastable(playerData).cast(playerData.getMMOPlayerData());
                 if (!result.isSuccessful()) if (failSkillSound != null) failSkillSound.play(player);
             } else if (stayIn) {
                 if (failComboSound != null) failComboSound.play(player);

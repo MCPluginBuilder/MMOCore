@@ -1,9 +1,6 @@
 package net.Indyuce.mmocore.api;
 
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.api.player.EquipmentSlot;
-import io.lumine.mythic.lib.player.PlayerMetadata;
-import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.skill.result.SkillResult;
 import io.lumine.mythic.lib.util.lang3.Validate;
@@ -21,8 +18,6 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Objects;
 
 public class MMOCoreAPI {
     private final JavaPlugin plugin;
@@ -70,14 +65,12 @@ public class MMOCoreAPI {
      * @return Skill result (if it's canceled)
      */
     public SkillResult cast(PlayerData playerData, ClassSkill skill) {
-        PlayerMetadata casterMeta = playerData.getMMOPlayerData().getStatMap().cache(EquipmentSlot.MAIN_HAND);
-        return new CastableSkill(skill, playerData).cast(SkillMetadata.of(casterMeta));
+        return new CastableSkill(skill, playerData).cast(playerData.getMMOPlayerData());
     }
 
     @Deprecated
     public SkillResult cast(PlayerData playerData, RegisteredSkill skill, int level) {
-        PlayerMetadata casterMeta = playerData.getMMOPlayerData().getStatMap().cache(EquipmentSlot.MAIN_HAND);
-        return new CastableSkill(new ClassSkill(skill.getHandler(), 0, 0), level, playerData).cast(SkillMetadata.of(casterMeta));
+        return new CastableSkill(new ClassSkill(skill.getHandler(), 0, 0), level, playerData).cast(playerData.getMMOPlayerData());
     }
 
     /**
@@ -96,8 +89,7 @@ public class MMOCoreAPI {
      * @return Skill result (if it's canceled)
      */
     public SkillResult cast(PlayerData playerData, SkillHandler<?> skill, int level) {
-        PlayerMetadata casterMeta = playerData.getMMOPlayerData().getStatMap().cache(EquipmentSlot.MAIN_HAND);
-        return new CastableSkill(new ClassSkill(skill, 0, 0), level, playerData).cast(SkillMetadata.of(casterMeta));
+        return new CastableSkill(new ClassSkill(skill, 0, 0), level, playerData).cast(playerData.getMMOPlayerData());
     }
 
     public void setPartyModule(@NotNull PartyModule module) {

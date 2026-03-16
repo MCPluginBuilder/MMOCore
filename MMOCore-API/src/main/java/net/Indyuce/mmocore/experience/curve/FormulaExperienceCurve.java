@@ -49,19 +49,6 @@ public class FormulaExperienceCurve implements ExperienceCurve {
 
     @Deprecated
     static class DummySkillMetadata extends SkillMetadata {
-
-        /*
-        public SkillMetadata(@Nullable Skill cast,
-                             @NotNull PlayerMetadata caster,
-                             @NotNull VariableList vars,
-                             @NotNull Location source,
-                             @Nullable Location targetLocation,
-                             @Nullable Entity targetEntity,
-                             @Nullable SkillOrientation orientation,
-                             @Nullable AttackMetadata attackSource,
-                             @Nullable Event sourceEvent) {
-            */
-
         final PlayerData playerData;
 
         @Deprecated
