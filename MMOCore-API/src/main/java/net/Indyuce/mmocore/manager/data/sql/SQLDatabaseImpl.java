@@ -4,10 +4,10 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.data.queue.DataLoadResult;
 import io.lumine.mythic.lib.data.sql.SQLDatabase;
+import io.lumine.mythic.lib.data.sql.UpdateRequestBuilder;
 import io.lumine.mythic.lib.gson.JsonArray;
 import io.lumine.mythic.lib.gson.JsonElement;
 import io.lumine.mythic.lib.gson.JsonObject;
-import io.lumine.mythic.lib.profile.SessionUpdateReason;
 import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerLevelChangeEvent;
@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 public class SQLDatabaseImpl extends SQLDatabase<PlayerData, OfflinePlayerData> {
     public static final String UUID_FIELD_NAME = "uuid";
@@ -198,40 +197,36 @@ public class SQLDatabaseImpl extends SQLDatabase<PlayerData, OfflinePlayerData> 
     }
 
     @Override
-    public void saveData(PlayerData data, @NotNull SessionUpdateReason saveReason) {
-        final PlayerDataTableUpdater updater = new PlayerDataTableUpdater(this, data);
-        updater.addData("class_points", data.getClassPoints());
-        updater.addData("skill_points", data.getSkillPoints());
-        updater.addData("skill_reallocation_points", data.getSkillReallocationPoints());
-        updater.addData("attribute_points", data.getAttributePoints());
-        updater.addData("attribute_realloc_points", data.getAttributeReallocationPoints());
-        updater.addData("skill_tree_reallocation_points", data.getSkillTreeReallocationPoints());
-        updater.addData("health", data.getLastHealth());
-        updater.addData("mana", data.getMana());
-        updater.addData("stellium", data.getStellium());
-        updater.addData("stamina", data.getStamina());
-        updater.addData("level", data.getLevel());
-        updater.addData("experience", data.getExperience());
-        updater.addData("class", data.getProfess().getId());
-        updater.addData("last_login", data.getLastLogin());
-        updater.addData("guild", data.hasGuild() ? data.getGuild().getId() : null);
-        updater.addJSONArray("waypoints", data.getWaypoints());
-        updater.addJSONArray("friends", data.getFriends().stream().map(UUID::toString).collect(Collectors.toList()));
-        updater.addJSONObject("bound_skills", data.mapBoundSkills().entrySet());
-        updater.addJSONObject("skills", data.mapSkillLevels().entrySet());
-        updater.addJSONObject("times_claimed", data.getItemClaims().entrySet());
-        updater.addJSONObject("skill_tree_points", data.mapSkillTreePoints().entrySet());
-        updater.addJSONObject("skill_tree_levels", data.getNodeLevelsEntrySet());
-        updater.addData("attributes", data.getAttributes().toJson().toString());
-        updater.addData("professions", data.getCollectionSkills().toJsonString());
-        updater.addData("quests", data.getQuestData().toJsonString());
-        updater.addData("class_info", createClassInfoData(data).toString());
-        updater.addJSONArray("unlocked_items", data.getUnlockedItems());
-        if (saveReason != SessionUpdateReason.AUTOSAVE) updater.addData("is_saved", 1);
+    protected void setupSaveRequest(@NotNull PlayerData playerData, @NotNull UpdateRequestBuilder<PlayerData> builder) {
+        builder.appendInt("class_points", playerData.getClassPoints());
+        builder.appendInt("skill_points", playerData.getSkillPoints());
+        builder.appendInt("skill_reallocation_points", playerData.getSkillReallocationPoints());
+        builder.appendInt("attribute_points", playerData.getAttributePoints());
+        builder.appendInt("attribute_realloc_points", playerData.getAttributeReallocationPoints());
+        builder.appendInt("skill_tree_reallocation_points", playerData.getSkillTreeReallocationPoints());
+        builder.appendDouble("health", playerData.getLastHealth());
+        builder.appendDouble("mana", playerData.getMana());
+        builder.appendDouble("stellium", playerData.getStellium());
+        builder.appendDouble("stamina", playerData.getStamina());
+        builder.appendInt("level", playerData.getLevel());
+        builder.appendDouble("experience", playerData.getExperience());
+        builder.appendString("class", playerData.getProfess().getId());
+        builder.appendLong("last_login", playerData.getLastLogin());
+        builder.appendString("guild", playerData.hasGuild() ? playerData.getGuild().getId() : null);
+        builder.appendCollection("waypoints", playerData.getWaypoints());
+        builder.appendCollection("friends", playerData.getFriends());
+        builder.appendObject("bound_skills", playerData.mapBoundSkills());
+        builder.appendObject("skills", playerData.mapSkillLevels());
+        builder.appendObject("times_claimed", playerData.getItemClaims());
+        builder.appendObject("skill_tree_points", playerData.mapSkillTreePoints());
+        builder.appendObject("skill_tree_levels", playerData.getNodeLevels());
+        builder.appendString("attributes", playerData.getAttributes().toJson().toString());
+        builder.appendString("professions", playerData.getCollectionSkills().toJsonString());
+        builder.appendString("quests", playerData.getQuestData().toJsonString());
+        builder.appendString("class_info", createClassInfoData(playerData).toString());
+        builder.appendCollection("unlocked_items", playerData.getUnlockedItems());
 
-        updater.executeRequest(saveReason);
-
-        UtilityMethods.debug(MMOCore.plugin, "SQL", String.format("{ class: %s, level: %d }", data.getProfess().getId(), data.getLevel()));
+        UtilityMethods.debug(MMOCore.plugin, "SQL", String.format("{ class: %s, level: %d }", playerData.getProfess().getId(), playerData.getLevel()));
     }
 
     private JsonObject createClassInfoData(PlayerData playerData) {

@@ -369,16 +369,9 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         return new HashMap<>(skillTreePoints);
     }
 
-    public Set<Map.Entry<String, Integer>> getNodeLevelsEntrySet() {
-        HashMap<String, Integer> nodeLevelsString = new HashMap<>();
-        for (SkillTreeNode node : nodeLevels.keySet())
-            nodeLevelsString.put(node.getFullId(), nodeLevels.get(node));
-        return nodeLevelsString.entrySet();
-    }
-
     @Override
     public Map<String, Integer> getNodeLevels() {
-        final Map<String, Integer> mapped = new HashMap<>();
+        var mapped = new HashMap<String, Integer>();
         this.nodeLevels.forEach((node, level) -> mapped.put(node.getFullId(), level));
         return mapped;
     }
@@ -1574,6 +1567,14 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     @Deprecated
     public void resetTimesClaimed() {
         tableItemClaims.clear();
+    }
+
+    @Deprecated
+    public Set<Map.Entry<String, Integer>> getNodeLevelsEntrySet() {
+        HashMap<String, Integer> nodeLevelsString = new HashMap<>();
+        for (SkillTreeNode node : nodeLevels.keySet())
+            nodeLevelsString.put(node.getFullId(), nodeLevels.get(node));
+        return nodeLevelsString.entrySet();
     }
 
     @Deprecated
