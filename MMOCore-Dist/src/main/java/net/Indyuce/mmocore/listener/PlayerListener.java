@@ -2,6 +2,9 @@ package net.Indyuce.mmocore.listener;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.event.PlayerAttackEvent;
+import io.lumine.mythic.lib.api.event.session.SessionUpdateEvent;
+import io.lumine.mythic.lib.profile.ProfileSessionState;
+import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerLevelChangeEvent;
 import net.Indyuce.mmocore.api.event.PlayerLevelUpEvent;
@@ -59,9 +62,21 @@ public class PlayerListener implements Listener {
     }
 
     @SuppressWarnings("deprecation")
+    @BackwardsCompatibility(version = "unspecified")
     @EventHandler
     public void backwardsCompatibilityEvent(PlayerLevelChangeEvent event) {
         if (event.getReason() == PlayerLevelChangeEvent.Reason.LEVEL_UP)
             Bukkit.getPluginManager().callEvent(new PlayerLevelUpEvent(event.getData(), event.getProfession(), event.getOldLevel(), event.getNewLevel()));
+    }
+
+    /**
+     * Runs on priority HIGH to make sure it executes after
+     * MMOItems inventory, items and stats are resolved
+     */
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onSessionUpdate(SessionUpdateEvent event) {
+        // On session open, set resources again after all stats are properly loaded.
+        if (event.getNewState() == ProfileSessionState.OPEN)
+            PlayerData.get(event.getPlayerData().getPlayer()).onSessionOpen();
     }
 }

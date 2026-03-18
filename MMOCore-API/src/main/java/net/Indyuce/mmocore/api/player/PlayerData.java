@@ -230,8 +230,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
         PartyUtils.resolvePartyBonuses(this); // In case buffs not removed on logoff
 
         tryForceClassSelection(); // Force class selection
-
-        getMMOPlayerData().getProfileSession().addOpenCallback(session -> this.onProfileSessionReady());
     }
 
     //region Force class selection
@@ -260,7 +258,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     //endregion
 
-    private void castOnLoginScripts() {
+    private void callLoginScripts() {
 
         // Class Skills
         for (var skill : getProfess().getSkills())
@@ -272,8 +270,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
             if (script.getTrigger() == TriggerType.LOGIN) script.getTriggeredSkill().cast(getMMOPlayerData());
     }
 
-    private void onProfileSessionReady() {
-        this.castOnLoginScripts();
+    public void onSessionOpen() {
+        this.callLoginScripts();
 
         // Set health again
         UtilityMethods.setHealth(getPlayer(), lastHealth);
