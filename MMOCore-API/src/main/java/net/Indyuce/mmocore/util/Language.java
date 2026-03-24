@@ -14,7 +14,6 @@ public enum Language {
     GOLD_POUCH_UI_NAME,
     FISH_OUT_WATER,
     FISH_OUT_WATER_CRIT,
-    PARTY_CHAT_PREFIX("party.chat-prefix"),
     NO_SKILL_PLACEHOLDER;
 
     private final String path;

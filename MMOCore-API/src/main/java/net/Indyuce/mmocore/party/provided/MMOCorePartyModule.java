@@ -61,7 +61,7 @@ public class MMOCorePartyModule implements PartyModule, Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void partyChat(AsyncPlayerChatEvent event) {
-        final var prefix = Language.PARTY_CHAT_PREFIX.getFormat();
+        final var prefix = MMOCore.plugin.configManager.partyChatPrefix;
         if (!event.getMessage().startsWith(prefix)) return;
 
         PlayerData data = PlayerData.get(event.getPlayer());

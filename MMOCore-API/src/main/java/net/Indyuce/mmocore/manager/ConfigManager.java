@@ -36,6 +36,7 @@ public class ConfigManager {
             pvpModeCombatTimeout, pvpModeInvulnerabilityTimeRegionChange, pvpModeInvulnerabilityTimeCommand, pvpModeRegionEnterCooldown, pvpModeRegionLeaveCooldown;
     public final int maxPartyLevelDifference, maxPartyPlayers, minCombatLevel, maxCombatLevelDifference, skillTreeScrollStepX, skillTreeScrollStepY, waypointWarpTime;
     public final List<EntityDamageEvent.DamageCause> combatLogDamageCauses = new ArrayList<>();
+    public final String partyChatPrefix;
 
     private static final List<Runnable> CONFIG_UPDATES = ConfigVersioner.nops(9, ConfigManager::fixMMOCoreCommand);
 
@@ -169,6 +170,7 @@ public class ConfigManager {
             waypointAutoPathCalculation = config.getBoolean("waypoints.auto_path_calculation");
             waypointLinkReciprocity = config.getBoolean("waypoints.link_reciprocity");
             maxPartyPlayers = Math.max(2, config.getInt("party.max-players", 8));
+            partyChatPrefix = config.getString("party.chat-prefix");
 
             // Combat
             pvpModeEnabled = config.getBoolean("pvp_mode.enabled");
