@@ -18,9 +18,7 @@ nodes:
 #### A
   a1:
     name: 'Mana Regen I'
-    coordinates:
-      x: -3
-      y: -2
+    coordinates: -3,-2
 
     experience-table:
       first_table_item:
@@ -33,9 +31,7 @@ nodes:
         - "Mana regen in pts/sec +1"
   a2:
     name: 'Mana Regen II'
-    coordinates:
-      x: -2
-      y: -2
+    coordinates: -2,-2
 
     parents: 
       strong: 
@@ -52,9 +48,7 @@ nodes:
         - "Mana regen in pts/sec +2"
   a3:
     name: 'Mana Regen III'
-    coordinates:
-      x: -1
-      y: -1
+    coordinates: -1,-1
       
     parents: 
       strong: 
@@ -73,9 +67,7 @@ nodes:
 #### B
   b1:
     name: 'Health Regen I'
-    coordinates:
-      x: -3
-      y: -0
+    coordinates: -3,0
 
     experience-table:
       first_table_item:
@@ -89,9 +81,7 @@ nodes:
 
   b2:
     name: 'Health Regen II'
-    coordinates:
-      x: -2
-      y: -0
+    coordinates: -2,0
 
     parents: 
       strong: 
@@ -109,9 +99,7 @@ nodes:
 
   b3:
     name: 'Health Regen III'
-    coordinates:
-      x: -1
-      y: -0
+    coordinates: -1,0
       
     parents: 
       strong: 
@@ -130,9 +118,7 @@ nodes:
 #### C
   c1:
     name: 'Cooldown Reduction I'
-    coordinates:
-      x: -3
-      y: 2
+    coordinates: -3,2
 
     experience-table:
       first_table_item:
@@ -146,9 +132,7 @@ nodes:
 
   c2:
     name: 'Cooldown Reduction II'
-    coordinates:
-      x: -2
-      y: 2
+    coordinates: -2,2
 
     parents: 
       strong: 
@@ -166,9 +150,7 @@ nodes:
 
   c3:
     name: 'Cooldown Reduction III'
-    coordinates:
-      x: -1
-      y: 1
+    coordinates: -1,1
 
     parents: 
       strong: 
@@ -187,9 +169,7 @@ nodes:
 #### D
   d1:
     name: 'Crit Chance I'
-    coordinates:
-      x: 0
-      y: 0
+    coordinates: 0,0
 
     parents: 
       soft: 
@@ -209,9 +189,7 @@ nodes:
 
   d2:
     name: 'Crit Chance II'
-    coordinates:
-      x: 1
-      y: 0
+    coordinates: 1,0
 
     parents: 
       strong: 
@@ -229,9 +207,7 @@ nodes:
 
   d3:
     name: 'Crit Chance III'
-    coordinates:
-      x: 2
-      y: 0
+    coordinates: 2,0
       
     parents:
       strong:
@@ -251,9 +227,7 @@ nodes:
 #### E
   e1:
     name: 'Damage Reduction I'
-    coordinates:
-      x: 2
-      y: 1
+    coordinates: 2,1
 
     parents:
       strong:
@@ -271,9 +245,7 @@ nodes:
 
   e2:
     name: 'Damage Reduction II'
-    coordinates:
-      x: 2
-      y: 2
+    coordinates: 2,2
 
     parents:
       strong:
@@ -291,9 +263,7 @@ nodes:
 
   e3:
     name: 'Damage Reduction III'
-    coordinates:
-      x: 3
-      y: 2
+    coordinates: 3,2
 
     parents:
       strong:
@@ -312,9 +282,7 @@ nodes:
 #### F
   f1:
     name: 'Force I'
-    coordinates:
-      x: 2
-      y: -1
+    coordinates: 2,-1
 
     parents:
       strong:
@@ -332,9 +300,7 @@ nodes:
 
   f2:
     name: 'Force II'
-    coordinates:
-      x: 2
-      y: -2
+    coordinates: 2,-2
 
     parents:
       strong:
@@ -352,9 +318,7 @@ nodes:
 
   f3:
     name: 'Force III'
-    coordinates:
-      x: 3
-      y: -2
+    coordinates: 3,-2
       
     parents:
       strong:
@@ -374,9 +338,7 @@ nodes:
 ##last line
   g1:
     name: 'Life Steal'
-    coordinates:
-      x: 4
-      y: -1
+    coordinates: 4,-1
       
     parents:
       strong:
@@ -394,9 +356,7 @@ nodes:
 
   j1:
     name: 'Max Health'
-    coordinates:
-      x: 4
-      y: 0
+    coordinates: 4,0
       
     parents: 
       soft: 
@@ -415,9 +375,7 @@ nodes:
 
   h1:
     name: 'Magic Damage'
-    coordinates:
-      x: 4
-      y: 1
+    coordinates: 4,1
       
     parents:
       strong:

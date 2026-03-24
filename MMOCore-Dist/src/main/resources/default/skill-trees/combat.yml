@@ -16,10 +16,7 @@ icon:
 nodes:
   a1:
     name: 'Cooldown Reduction I'
-    coordinates:
-      x: -3
-      y: -2
-
+    coordinates: -3,-2
     root: true
     experience-table:
       first_table_item:
@@ -33,13 +30,11 @@ nodes:
 
   a2:
     name: 'Cooldown Reduction II'
+    coordinates: -2,-2
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="COOLDOWN_REDUCTION";amount=10;type="FLAT"}'
-    coordinates:
-      x: -2
-      y: -2
     lores:
       0:
         - "&eReduces item/class skill cooldowns (10%)"
@@ -48,13 +43,11 @@ nodes:
 
   a3:
     name: 'Cooldown Reduction III'
+    coordinates: -1,-2
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="COOLDOWN_REDUCTION";amount=15;type="FLAT"}'
-    coordinates:
-      x: -1
-      y: -2
     lores:
       0:
         - "&eReduces item/class skill cooldowns (15%)"
@@ -65,13 +58,11 @@ nodes:
 
   b1:
     name: 'Crit Chance I'
+    coordinates: 0,-2
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="CRITICAL_STRIKE_CHANCE";amount=1;type="FLAT"}'
-    coordinates:
-      x: 0
-      y: -2
     lores:
       0:
         - "&eCritical Strikes deal more damage in % chance"
@@ -80,13 +71,11 @@ nodes:
 
   b2:
     name: 'Crit Chance II'
+    coordinates: 0,-1
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="CRITICAL_STRIKE_CHANCE";amount=2;type="FLAT"}'
-    coordinates:
-      x: 0
-      y: -1
     lores:
       0:
         - "&eCritical Strikes deal more damage in % chance"
@@ -95,13 +84,11 @@ nodes:
 
   b3:
     name: 'Crit Chance III'
+    coordinates: 0,0
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="CRITICAL_STRIKE_CHANCE";amount=3;type="FLAT"}'
-    coordinates:
-      x: 0
-      y: 0
     lores:
       0:
         - "&eCritical Strikes deal more damage in % chance"
@@ -112,13 +99,11 @@ nodes:
 
   c1:
     name: 'Life Steal I'
+    coordinates: -1,0
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="LIFESTEAL";amount=1;type="FLAT"}'
-    coordinates:
-      x: -1
-      y: 0
     lores:
       0:
         - "&ePercentage of damage you gain back as health when inflicting weapon damage +%1"
@@ -127,13 +112,11 @@ nodes:
 
   c2:
     name: 'Life Steal II'
+    coordinates: -2,0
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="LIFESTEAL";amount=2;type="FLAT"}'
-    coordinates:
-      x: -2
-      y: 0
     lores:
       0:
         - "&ePercentage of damage you gain back as health when inflicting weapon damage +%2"
@@ -142,13 +125,11 @@ nodes:
 
   c3:
     name: 'Life Steal III'
+    coordinates: -3,0
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="LIFESTEAL";amount=3;type="FLAT"}'
-    coordinates:
-      x: -3
-      y: 0
     lores:
       0:
         - "&ePercentage of damage you gain back as health when inflicting weapon damage +%3"
@@ -159,13 +140,11 @@ nodes:
 
   d1:
     name: 'Resistance I'
+    coordinates: 0,1
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="DAMAGE_REDUCTION";amount=1;type="FLAT"}'
-    coordinates:
-      x: 0
-      y: 1
     lores:
       0:
         - "&eReduces damage from any source in +%1"
@@ -174,14 +153,12 @@ nodes:
 
   d2:
     name: 'Resistance II'
+    coordinates: 0,2
     max-children: 2
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="DAMAGE_REDUCTION";amount=2;type="FLAT"}'
-    coordinates:
-      x: 0
-      y: 2
     lores:
       0:
         - "&eReduces damage from any source in +%2"
@@ -190,13 +167,11 @@ nodes:
 
   d3:
     name: 'Resistance III'
+    coordinates: -1,2
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="DAMAGE_REDUCTION";amount=2;type="FLAT"}'
-    coordinates:
-      x: -1
-      y: 2
     lores:
       0:
         - "&eReduces damage from any source in +%2"
@@ -207,13 +182,11 @@ nodes:
 
   e1:
     name: 'Health Regen I'
+    coordinates: -2,2
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="HEALTH_REGENERATION";amount=1;type="FLAT"}'
-    coordinates:
-      x: -2
-      y: 2
     lores:
       0:
         - "&eHealth regen in pts/sec +1"
@@ -222,13 +195,11 @@ nodes:
 
   e2:
     name: 'Health Regen II'
+    coordinates: -3,2
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="HEALTH_REGENERATION";amount=2;type="FLAT"}'
-    coordinates:
-      x: -3
-      y: 2
     lores:
       0:
         - "&eHealth regen in pts/sec +2"
@@ -237,13 +208,11 @@ nodes:
 
   e3:
     name: 'Health Regen III'
+    coordinates: -3,1
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="HEALTH_REGENERATION";amount=2;type="FLAT"}'
-    coordinates:
-      x: -3
-      y: 1
     lores:
       0:
         - "&eHealth regen in pts/sec +2"
@@ -254,13 +223,11 @@ nodes:
 
   f1:
     name: 'Mana Regen I'
+    coordinates: 1,2
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="MANA_REGENERATION";amount=1;type="FLAT"}'
-    coordinates:
-      x: 1
-      y: 2
     lores:
       0:
         - "&eMana regen in pts/sec +1"
@@ -269,13 +236,11 @@ nodes:
 
   f2:
     name: 'Mana Regen II'
+    coordinates: 2,2
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="MANA_REGENERATION";amount=2;type="FLAT"}'
-    coordinates:
-      x: 2
-      y: 2
     lores:
       0:
         - "&eMana regen in pts/sec +2"
@@ -284,13 +249,11 @@ nodes:
 
   f3:
     name: 'Mana Regen III'
+    coordinates: 3,2
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="MANA_REGENERATION";amount=2;type="FLAT"}'
-    coordinates:
-      x: 3
-      y: 2
     lores:
       0:
         - "&eMana regen in pts/sec +2"
@@ -301,13 +264,11 @@ nodes:
 
   g1:
     name: 'Magic Damage I'
+    coordinates: 3,1
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="MAGIC_DAMAGE";amount=1;type="FLAT"}'
-    coordinates:
-      x: 3
-      y: 1
     lores:
       0:
         - "&eAdditional magic skill damage in +%1"
@@ -316,13 +277,11 @@ nodes:
 
   g2:
     name: 'Magic Damage II'
+    coordinates: 4,1
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="MAGIC_DAMAGE";amount=2;type="FLAT"}'
-    coordinates:
-      x: 4
-      y: 1
     lores:
       0:
         - "&eAdditional magic skill damage in +%2"
@@ -331,13 +290,11 @@ nodes:
 
   g3:
     name: 'Magic Damage III'
+    coordinates: 4,0
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="MAGIC_DAMAGE";amount=2;type="FLAT"}'
-    coordinates:
-      x: 4
-      y: 0
     lores:
       0:
         - "&eAdditional magic skill damage in +%2"
@@ -348,13 +305,11 @@ nodes:
 
   h1:
     name: 'Max Health I'
+    coordinates: 4,-1
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="MAX_HEALTH";amount=2;type="RELATIVE"}'
-    coordinates:
-      x: 4
-      y: -1
     lores:
       0:
         - "&eAdditional amount of health in +%2"
@@ -363,13 +318,11 @@ nodes:
 
   h2:
     name: 'Max Health II'
+    coordinates: 4,-2
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="MAX_HEALTH";amount=4;type="RELATIVE"}'
-    coordinates:
-      x: 4
-      y: -2
     lores:
       0:
         - "&eAdditional amount of health in +%4"
@@ -378,13 +331,11 @@ nodes:
 
   h3:
     name: 'Max Health III'
+    coordinates: 3,-2
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="MAX_HEALTH";amount=4;type="RELATIVE"}'
-    coordinates:
-      x: 3
-      y: -2
     lores:
       0:
         - "&eAdditional amount of health in +%4"
@@ -395,13 +346,11 @@ nodes:
 
   j1:
     name: 'Weapon Damage I'
+    coordinates: 2,-2
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="WEAPON_DAMAGE";amount=2;type="FLAT"}'
-    coordinates:
-      x: 2
-      y: -2
     lores:
       0:
         - "&eAdditional on-hit weapon damage in +%2."
@@ -410,13 +359,11 @@ nodes:
 
   j2:
     name: 'Weapon Damage II'
+    coordinates: 2,-1
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="WEAPON_DAMAGE";amount=4;type="FLAT"}'
-    coordinates:
-      x: 2
-      y: -1
     lores:
       0:
         - "&eAdditional on-hit weapon damage in +%4"
@@ -425,13 +372,11 @@ nodes:
 
   j3:
     name: 'Weapon Damage III'
+    coordinates: 2,0
     experience-table:
       first_table_item:
         triggers:
           - 'stat{stat="WEAPON_DAMAGE";amount=4;type="FLAT"}'
-    coordinates:
-      x: 2
-      y: 0
     lores:
       0:
         - "&eAdditional on-hit weapon damage in +%4"
