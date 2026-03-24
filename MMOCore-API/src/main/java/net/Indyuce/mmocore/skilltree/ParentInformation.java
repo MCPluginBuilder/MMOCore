@@ -1,7 +1,7 @@
 package net.Indyuce.mmocore.skilltree;
 
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.skilltree.display.PathShape;
-import org.apache.commons.lang3.Validate;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
