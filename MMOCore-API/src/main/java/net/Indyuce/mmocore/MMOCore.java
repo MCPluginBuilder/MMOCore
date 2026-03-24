@@ -47,6 +47,9 @@ import net.Indyuce.mmocore.party.PartyRelationHandler;
 import net.Indyuce.mmocore.party.provided.MMOCorePartyModule;
 import net.Indyuce.mmocore.player.MaxResourceStatUpdateListener;
 import net.Indyuce.mmocore.player.ResourceRegenRunnable;
+import net.Indyuce.mmocore.quest.QuestModule;
+import net.Indyuce.mmocore.quest.QuestModuleType;
+import net.Indyuce.mmocore.quest.provided.MMOCoreQuestModule;
 import net.Indyuce.mmocore.script.mechanic.*;
 import net.Indyuce.mmocore.skill.list.Ambers;
 import net.Indyuce.mmocore.skill.list.Neptune_Gift;
@@ -101,7 +104,10 @@ public class MMOCore extends MMOPlugin {
     // Modules
     @NotNull
     public PartyModule partyModule;
+    @NotNull
     public GuildModule guildModule;
+    @NotNull
+    public QuestModule questModule;
 
     public MMOCore() {
         plugin = this;
@@ -200,8 +206,7 @@ public class MMOCore extends MMOPlugin {
 
         // Load party module
         try {
-            String partyPluginName = UtilityMethods.enumName(getConfig().getString("party-plugin"));
-            PartyModuleType moduleType = PartyModuleType.valueOf(partyPluginName);
+            var moduleType = UtilityMethods.prettyValueOf(PartyModuleType::valueOf, getConfig().getString("party-plugin"), "No party module named '%s'");
             Validate.isTrue(moduleType.isValid(), "Plugin " + moduleType.getPluginName() + " is not installed");
             partyModule = moduleType.provideModule();
             getLogger().log(Level.INFO, "Hooked parties onto " + moduleType.getPluginName());
@@ -210,10 +215,21 @@ public class MMOCore extends MMOPlugin {
             partyModule = new MMOCorePartyModule();
         }
 
+        // Load quest module
+        try {
+            var moduleType = UtilityMethods.prettyValueOf(QuestModuleType::valueOf, getConfig().getString("quest-plugin"), "No quest module named '%s'");
+            Validate.isTrue(moduleType.isValid(), "Plugin " + moduleType.getPluginName() + " is not installed");
+            questModule = moduleType.provideModule();
+            getLogger().log(Level.INFO, "Hooked quests onto " + moduleType.getPluginName());
+        } catch (Throwable exception) {
+            exception.printStackTrace();
+            getLogger().log(Level.WARNING, "Could not initialize quest module: " + exception.getMessage());
+            questModule = new MMOCoreQuestModule();
+        }
+
         // Load guild module
         try {
-            String pluginName = UtilityMethods.enumName(getConfig().getString("guild-plugin"));
-            GuildModuleType moduleType = GuildModuleType.valueOf(pluginName);
+            GuildModuleType moduleType = UtilityMethods.prettyValueOf(GuildModuleType::valueOf, getConfig().getString("guild-plugin"), "No guild module named '%s'");
             Validate.isTrue(moduleType.isValid(), "Plugin '" + moduleType.name() + "' is not installed");
             guildModule = moduleType.provideModule();
             getLogger().log(Level.INFO, "Hooked guilds onto " + moduleType.getPluginName());

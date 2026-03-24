@@ -1,12 +1,15 @@
 package net.Indyuce.mmocore.command.builtin;
 
+import io.lumine.mythic.lib.command.CommandDisabledException;
 import io.lumine.mythic.lib.command.CommandTreeExplorer;
 import io.lumine.mythic.lib.command.CommandTreeRoot;
 import io.lumine.mythic.lib.command.argument.Argument;
+import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import net.Indyuce.mmocore.command.Arguments;
 import net.Indyuce.mmocore.manager.InventoryManager;
+import net.Indyuce.mmocore.quest.provided.MMOCoreQuestModule;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -19,6 +22,8 @@ public class QuestsCommand extends CommandTreeRoot {
         super(config);
 
         argPlayer = addArgument(Arguments.PLAYER_IF_OP);
+
+        if (!(MMOCore.plugin.questModule instanceof MMOCoreQuestModule)) throw new CommandDisabledException();
     }
 
     @Override

@@ -1,5 +1,6 @@
 package net.Indyuce.mmocore.command.builtin;
 
+import io.lumine.mythic.lib.command.CommandDisabledException;
 import io.lumine.mythic.lib.command.CommandTreeExplorer;
 import io.lumine.mythic.lib.command.CommandTreeRoot;
 import io.lumine.mythic.lib.command.argument.Argument;
@@ -10,6 +11,7 @@ import net.Indyuce.mmocore.api.player.social.Request;
 import net.Indyuce.mmocore.api.util.MMOCoreUtils;
 import net.Indyuce.mmocore.command.Arguments;
 import net.Indyuce.mmocore.guild.provided.GuildInvite;
+import net.Indyuce.mmocore.guild.provided.MMOCoreGuildModule;
 import net.Indyuce.mmocore.manager.InventoryManager;
 import net.Indyuce.mmocore.player.Message;
 import org.bukkit.command.CommandSender;
@@ -27,7 +29,8 @@ public class GuildCommand extends CommandTreeRoot {
         super(config);
 
         argAction = addArgument(Arguments.ACCEPT_OR_DENY_OPTIONAL);
-        setOnlyForPlayers();
+
+        if (!(MMOCore.plugin.guildModule instanceof MMOCoreGuildModule)) throw new CommandDisabledException();
     }
 
     @Override

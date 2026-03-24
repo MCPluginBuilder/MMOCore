@@ -68,18 +68,18 @@ custom-mining:
 
 # Choose the plugin handling parties here.
 # Supported values (just copy and paste):
-# - mmocore (Default built-in party system)
-# - none (Used to fully disable parties)
-# - dungeonsxl
-# - heroes
-# - mcmmo
-# - mythicdungeons (Make sure `PartyPlugin` is set to `Default` in MythicDungeons)
-# - mythicdungeons_inject (Make sure `PartyPlugin` is set to `MMOCore` in MythicDungeons)
-# - obteam (Addon for DungeonMMO)
-# - party_and_friends (When using Party and Friends (Extended) for Spigot)
-# - party_and_friends_bungeecord_velocity (When using Party and Friends (Extended) Edition for BungeeCord/Velocity. Requires https://www.spigotmc.org/resources/spigot-party-api-for-party-and-friends.39751/ to be installed)
-# - parties
-party-plugin: mmocore
+# - MMOCORE (Default built-in party system)
+# - NONE (Used to fully disable parties)
+# - DUNGEONSXL
+# - HEROES
+# - MCMMO
+# - MYTHICDUNGEONS (Make sure `PartyPlugin` is set to `Default` in MythicDungeons)
+# - MYTHICDUNGEONS_INJECT (Make sure `PartyPlugin` is set to `MMOCore` in MythicDungeons)
+# - OBTEAM (Addon for DungeonMMO)
+# - PARTY_AND_FRIENDS (When using Party and Friends (Extended) for Spigot)
+# - PARTY_AND_FRIENDS_BUNGEECORD_VELOCITY (When using Party and Friends (Extended) Edition for BungeeCord/Velocity. Requires https://www.spigotmc.org/resources/spigot-party-api-for-party-and-friends.39751/ to be installed)
+# - PARTIES
+party-plugin: MMOCORE
 
 # Edit the plugin handling guilds here.
 # Supported values (just copy and paste):
@@ -88,7 +88,16 @@ party-plugin: mmocore
 # - NONE (Used to fully disable guilds)
 # - GUILDS (by Glare)
 # - ULTIMATE_CLANS
-guild-plugin: mmocore
+guild-plugin: MMOCORE
+
+# Edit the plugin handling quests here.
+# Supported values (just copy and paste):
+# - MMOCORE (Default, built-in quest system)
+# - NONE (Used to fully disable quests)
+# - BEAUTYQUESTS
+# - QUESTCREATOR (https://www.spigotmc.org/resources/questcreator.38734/)
+# - QUESTS (https://www.spigotmc.org/resources/quests.3711/)
+quest-plugin: MMOCORE
 
 # MythicLib introduces a CHANCE stat that is used in
 # several different systems in MMOCore. By changing these
@@ -216,7 +225,7 @@ party:
   # When enabled, being in a party splits profession exp
   profession-exp-split: false
 
-# Not relevant when not using MMOCore as quest plugin
+# When using builtin MMOCore quest system
 mmocore-quests:
 
   # Disable boss bar indicating the current objective

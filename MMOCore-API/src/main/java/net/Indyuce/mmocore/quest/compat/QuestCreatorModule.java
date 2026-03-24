@@ -5,43 +5,45 @@ import com.guillaumevdn.questcreator.data.user.QuestHistoryElement;
 import com.guillaumevdn.questcreator.data.user.UserQC;
 import com.guillaumevdn.questcreator.lib.model.ElementModel;
 import com.guillaumevdn.questcreator.lib.quest.QuestEndType;
+import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import net.Indyuce.mmocore.quest.AbstractQuest;
-import org.bukkit.entity.Player;
+import net.Indyuce.mmocore.quest.QuestModule;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class QuestCreatorModule implements QuestModule<QuestCreatorModule.QuestCreatorQuest>{
+public class QuestCreatorModule implements QuestModule {
 
     @Override
-    public QuestCreatorQuest getQuestOrThrow(String id) {
-        return new QuestCreatorQuest(id);
+    public QuestImpl getQuestOrThrow(String id) {
+        return new QuestImpl(id);
     }
 
     @Override
-    public boolean hasCompletedQuest(String questId, Player player) {
-        UserQC playerData=UserQC.cachedOrNull(player);
-        if(playerData==null)
-            return false;
+    public boolean hasCompletedQuest(@NotNull MMOPlayerData playerData, @NotNull String questId) {
+        UserQC qcData = UserQC.cachedOrNull(playerData.getUniqueId());
+        if (qcData == null) return false;
+
         //Gets all the quests the player has  succeeded at
-        List<QuestHistoryElement> elements=playerData.getQuestHistory().getElements(questId, Arrays.asList(QuestEndType.SUCCESS),0);
-        for(QuestHistoryElement el:elements) {
-            if(el.getModelId().equals(questId))
+        // Linear scan
+        List<QuestHistoryElement> elements = qcData.getQuestHistory().getElements(questId, Arrays.asList(QuestEndType.SUCCESS), 0);
+        for (QuestHistoryElement el : elements)
+            if (el.getModelId().equals(questId))
                 return true;
-        }
+
         return false;
     }
-
 
     /**
      * QC ElementModel corresponds to our quest and their
      * quests correspond to our Quest progress class
      */
 
-    public class QuestCreatorQuest implements AbstractQuest {
-        ElementModel questModel;
+    public static class QuestImpl implements AbstractQuest {
+        final ElementModel questModel;
 
-        public QuestCreatorQuest(String modelId) {
+        public QuestImpl(String modelId) {
             questModel = ConfigQC.models.getElement(modelId).orNull();
         }
 

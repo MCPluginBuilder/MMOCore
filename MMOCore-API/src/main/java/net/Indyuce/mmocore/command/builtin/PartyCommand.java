@@ -1,5 +1,6 @@
 package net.Indyuce.mmocore.command.builtin;
 
+import io.lumine.mythic.lib.command.CommandDisabledException;
 import io.lumine.mythic.lib.command.CommandTreeExplorer;
 import io.lumine.mythic.lib.command.CommandTreeRoot;
 import io.lumine.mythic.lib.command.argument.Argument;
@@ -28,7 +29,9 @@ public class PartyCommand extends CommandTreeRoot {
         super(config);
 
         argAction = addArgument(Arguments.ACCEPT_OR_DENY_OPTIONAL);
-        setOnlyForPlayers();
+
+        // Only enable if MMOCore party module is on.
+        if (!(MMOCore.plugin.partyModule instanceof MMOCorePartyModule)) throw new CommandDisabledException();
     }
 
     @Override
