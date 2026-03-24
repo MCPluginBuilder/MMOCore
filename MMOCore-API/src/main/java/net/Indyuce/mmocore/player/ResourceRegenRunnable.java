@@ -1,9 +1,9 @@
 package net.Indyuce.mmocore.player;
 
+import io.lumine.mythic.lib.util.lang3.Validate;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.profess.resource.PlayerResource;
-import org.apache.commons.lang3.Validate;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
