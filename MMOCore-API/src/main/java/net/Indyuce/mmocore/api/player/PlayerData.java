@@ -132,7 +132,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     // NON-FINAL player data stuff made public to facilitate field change
     public boolean noCooldown;
-    public long lastDropEvent;
     public int permSkillScrollIndex;
 
     public PlayerData(MMOPlayerData mmoData) {
