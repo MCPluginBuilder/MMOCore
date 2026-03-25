@@ -1,6 +1,7 @@
 package net.Indyuce.mmocore.skill.cast;
 
 import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import io.lumine.mythic.lib.util.Lazy;
 import io.lumine.mythic.lib.util.TemporaryHandler;
 import net.Indyuce.mmocore.MMOCore;
@@ -19,6 +20,8 @@ public abstract class SkillCastingInstance extends TemporaryHandler {
     private final Lazy<List<BoundSkillInfo>> activeSkills;
 
     protected int counter = -1, sinceLastActivity;
+
+    protected static final int ACTION_BAR_PRIORITY = ActionBarPriority.LOW;
 
     public SkillCastingInstance(@NotNull SkillCastingHandler handler, @NotNull PlayerData caster) {
         this.handler = handler;

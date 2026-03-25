@@ -4,7 +4,6 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.message.SoundReader;
-import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerKeyPressEvent;
@@ -124,14 +123,19 @@ public class SkillScroller extends SkillCastingHandler {
             super(SkillScroller.this, caster);
         }
 
+        private String computeActionBarFormat() {
+            var skillName = getSelected().getSkill().getName();
+            return MythicLib.plugin.getPlaceholderParser().parse(getCaster().getPlayer(), SkillScroller.this.actionBarFormat.replace("{selected}", skillName));
+        }
+
         @Override
         public void onTick() {
-            final String skillName = getSelected().getSkill().getName();
-            final String actionBarFormat = MythicLib.plugin.getPlaceholderParser().parse(getCaster().getPlayer(), SkillScroller.this.actionBarFormat.replace("{selected}", skillName));
+            caster.getMMOPlayerData().getActionBar().show(ACTION_BAR_PRIORITY, this::computeActionBarFormat);
+        }
 
-            var handler = caster.getMMOPlayerData().getActionBar();
-            if (!handler.canShow(ActionBarPriority.NORMAL)) return;
-            handler.show(ActionBarPriority.NORMAL, actionBarFormat);
+        @Override
+        protected void onClose() {
+            caster.getMMOPlayerData().getActionBar().reset(ACTION_BAR_PRIORITY);
         }
 
         public ClassSkill getSelected() {

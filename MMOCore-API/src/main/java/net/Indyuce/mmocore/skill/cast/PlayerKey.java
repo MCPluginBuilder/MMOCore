@@ -34,8 +34,8 @@ public enum PlayerKey {
     }
 
     /**
-     * @return Whether or not the event causing the key press event
-     *         should be cancelled when this key is actually being registered
+     * @return Whether the event causing the key press event should
+     *         be canceled when this key is actually being registered
      *         as a key combo action.
      */
     public boolean shouldCancelEvent() {

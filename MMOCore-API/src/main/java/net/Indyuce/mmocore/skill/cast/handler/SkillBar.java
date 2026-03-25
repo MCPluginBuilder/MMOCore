@@ -2,7 +2,6 @@ package net.Indyuce.mmocore.skill.cast.handler;
 
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.message.PlayerMessage;
-import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerKeyPressEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
@@ -71,7 +70,7 @@ public class SkillBar extends SkillCastingHandler {
                 if (!bound.isPassive()) bound.skillBarCastSlot = slot++;
         }
 
-        // Otherwise, direct correspondance
+        // Otherwise, direct correspondence
         else player.getBoundSkills().forEach((slot, bound) -> bound.skillBarCastSlot = slot);
     }
 
@@ -164,12 +163,15 @@ public class SkillBar extends SkillCastingHandler {
 
         @Override
         public void onTick() {
-            if (actionBarOptions == null) return;
-            if ((counter & 0b1111) == 0) {
-                var handler = caster.getMMOPlayerData().getActionBar();
-                if (!handler.canShow(ActionBarPriority.NORMAL)) return;
-                handler.show(ActionBarPriority.NORMAL, actionBarOptions.format(this));
-            }
+            if (actionBarOptions == null) return; // No action bar to display
+            if ((counter & 0b1111) != 0) return; // Don't display it too often, useless
+
+            caster.getMMOPlayerData().getActionBar().show(ACTION_BAR_PRIORITY, () -> actionBarOptions.format(this));
+        }
+
+        @Override
+        protected void onClose() {
+            caster.getMMOPlayerData().getActionBar().reset(ACTION_BAR_PRIORITY);
         }
     }
 

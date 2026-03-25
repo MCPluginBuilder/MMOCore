@@ -4,7 +4,6 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.data.SynchronizedDataHolder;
-import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import io.lumine.mythic.lib.player.cooldown.CooldownMap;
 import io.lumine.mythic.lib.profile.SessionUpdateReason;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
@@ -1205,7 +1204,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     /**
      * @param skipEvent Skip firing the exit event
      * @return If player successfully left skill casting i.e the Bukkit
-     *         event has not been cancelled
+     *         event has not been canceled
      */
     public boolean leaveSkillCasting(boolean skipEvent) {
         Validate.isTrue(isCasting(), "Player not in casting mode");
@@ -1218,7 +1217,6 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
         skillCasting.close();
         this.skillCasting = null;
-        getMMOPlayerData().getActionBar().reset(ActionBarPriority.NORMAL);
         return true;
     }
 
@@ -1664,7 +1662,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     @Deprecated
     public void displayActionBar(@NotNull String message) {
-        getMMOPlayerData().getActionBar().show(ActionBarPriority.NORMAL, message);
+        getMMOPlayerData().getActionBar().show(message);
     }
 
     @Deprecated
@@ -1675,13 +1673,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
         // TODO move raw/not raw decision to MythicLib
         var handler = getMMOPlayerData().getActionBar();
-        if (!raw) {
-            handler.show(ActionBarPriority.NORMAL, message);
-        } else {
-            if (!handler.canShow(ActionBarPriority.NORMAL)) return;
-            handler.show(ActionBarPriority.NORMAL, "");
-            MythicLib.plugin.getVersion().getWrapper().sendActionBarRaw(getPlayer(), message);
-        }
+        if (!raw) handler.show(message);
+        else if (handler.show(null)) MythicLib.plugin.getVersion().getWrapper().sendActionBarRaw(getPlayer(), message);
     }
 
     /**

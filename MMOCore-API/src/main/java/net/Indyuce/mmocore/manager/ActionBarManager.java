@@ -16,6 +16,8 @@ public class ActionBarManager extends BukkitRunnable {
     private String barFormat;
     private boolean enabled, scheduled;
 
+    public static final int PRIORITY = ActionBarPriority.LOWEST;
+
     public void reload(ConfigurationSection config) {
         enabled = config.getBoolean("enabled", false);
         updateTicks = config.getInt("ticks-to-update", 5);
@@ -37,14 +39,11 @@ public class ActionBarManager extends BukkitRunnable {
             // Basic checks
             if (!player.isOnline() || player.getPlayer().isDead() || !player.getMMOPlayerData().isPlaying()) continue;
 
-            // Check if action bar resource is free (small perf optimisation)
-            var handler = player.getMMOPlayerData().getActionBar();
-            if (!handler.canShow(ActionBarPriority.LOW)) continue;
-
-            // Send
-            var placeholders = getActionBarPlaceholders(player);
-            var rawMessage = player.getProfess().hasActionBar() ? player.getProfess().getActionBar() : barFormat;
-            handler.show(ActionBarPriority.LOW, placeholders.apply(player.getPlayer(), rawMessage));
+            player.getMMOPlayerData().getActionBar().show(PRIORITY, () -> {
+                var placeholders = getActionBarPlaceholders(player);
+                var rawMessage = player.getProfess().hasActionBar() ? player.getProfess().getActionBar() : barFormat;
+                return placeholders.apply(player.getPlayer(), rawMessage);
+            });
         }
     }
 

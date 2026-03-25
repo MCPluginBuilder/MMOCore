@@ -3,7 +3,6 @@ package net.Indyuce.mmocore.skill.cast.handler;
 import io.lumine.mythic.lib.api.event.skill.PlayerCastSkillEvent;
 import io.lumine.mythic.lib.gui.editable.placeholder.Placeholders;
 import io.lumine.mythic.lib.message.SoundReader;
-import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerKeyPressEvent;
@@ -192,11 +191,12 @@ public class KeyCombos extends SkillCastingHandler {
         public void onTick() {
             if (actionBarOptions != null) if (actionBarOptions.isSubtitle)
                 getCaster().getPlayer().sendTitle(" ", actionBarOptions.format(this), 0, 20, 0);
-            else {
-                var handler = caster.getMMOPlayerData().getActionBar();
-                if (!handler.canShow(ActionBarPriority.NORMAL)) return;
-                handler.show(ActionBarPriority.NORMAL, actionBarOptions.format(this));
-            }
+            else caster.getMMOPlayerData().getActionBar().show(ACTION_BAR_PRIORITY, () -> actionBarOptions.format(this));
+        }
+
+        @Override
+        protected void onClose() {
+            caster.getMMOPlayerData().getActionBar().reset(ACTION_BAR_PRIORITY);
         }
 
         /**

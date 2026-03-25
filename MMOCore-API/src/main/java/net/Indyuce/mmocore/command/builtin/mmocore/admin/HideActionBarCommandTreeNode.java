@@ -3,8 +3,8 @@ package net.Indyuce.mmocore.command.builtin.mmocore.admin;
 import io.lumine.mythic.lib.command.CommandTreeExplorer;
 import io.lumine.mythic.lib.command.CommandTreeNode;
 import io.lumine.mythic.lib.command.argument.Argument;
-import io.lumine.mythic.lib.message.actionbar.ActionBarPriority;
 import net.Indyuce.mmocore.api.player.PlayerData;
+import net.Indyuce.mmocore.manager.ActionBarManager;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +25,7 @@ public class HideActionBarCommandTreeNode extends CommandTreeNode {
         final var player = explorer.parse(argPlayer);
         final var amount = explorer.parse(argDuration);
 
-        PlayerData.get(player).getMMOPlayerData().getActionBar().hide(ActionBarPriority.LOW, amount);
+        PlayerData.get(player).getMMOPlayerData().getActionBar().hide(ActionBarManager.PRIORITY, amount);
         return CommandResult.SUCCESS;
     }
 }
