@@ -2,7 +2,6 @@ package net.Indyuce.mmocore.guild;
 
 import net.Indyuce.mmocore.guild.compat.FactionsBridgeGuildModule;
 import net.Indyuce.mmocore.guild.compat.GuildsGuildModule;
-import net.Indyuce.mmocore.guild.compat.KingdomsXGuildModule;
 import net.Indyuce.mmocore.guild.compat.UClansGuildModule;
 import net.Indyuce.mmocore.guild.provided.MMOCoreGuildModule;
 import net.Indyuce.mmocore.guild.provided.NoneGuildModule;
@@ -15,9 +14,8 @@ public enum GuildModuleType {
     MMOCORE("MMOCore", MMOCoreGuildModule::new),
     NONE("MMOCore", NoneGuildModule::new),
     GUILDS("Guilds", GuildsGuildModule::new),
-    // TODO https://gitlab.com/phoenix-dvpmt/mmocore/-/issues/1120
     @Deprecated
-    KINGDOMSX("Kingdoms", KingdomsXGuildModule::new),
+    KINGDOMSX("FactionsBridge", FactionsBridgeGuildModule::new),
     ULTIMATE_CLANS("UltimateClans", UClansGuildModule::new),
     ;
 

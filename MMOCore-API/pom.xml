@@ -386,14 +386,6 @@
             <optional>true</optional>
         </dependency>
 
-        <dependency>
-            <groupId>org.kingdoms.main</groupId>
-            <artifactId>Kingdoms</artifactId>
-            <version>1.15.5</version>
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-
     </dependencies>
 
 </project>
