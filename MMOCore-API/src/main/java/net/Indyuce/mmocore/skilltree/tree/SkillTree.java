@@ -443,7 +443,7 @@ public abstract class SkillTree implements RegisteredObject {
                 // Warn max 3 times
                 MMOCore.log("You are using deprecated syntax for skill tree node '" + id + "' of skill tree '"
                         + this.getId() + "'. You may update your config to use the 'parents' section instead of the 'paths' section. " +
-                        "Please visit 'https://gitlab.com/phoenix-dvpmt/mmocore/-/wikis/Skill%20Trees' to read about this new syntax");
+                        "Please visit 'https://docs.phoenixdevt.fr/mmocore/features/skill-trees.html#paths' to read about this new syntax");
             }
             node.loadLegacyPathSection(section);
         }

@@ -4,7 +4,7 @@ Official repository for MMOCore
 
 - Purchase the plugin here: https://www.spigotmc.org/resources/mmocore.70575/
 - Development builds: https://phoenixdevt.fr/devbuilds
-- Official documentation: https://gitlab.com/phoenix-dvpmt/mmocore/-/wikis/home
+- Official documentation: https://docs.phoenixdevt.fr/mmocore/
 - Discord Support: https://phoenixdevt.fr/discord
 - Other plugins: https://www.spigotmc.org/resources/authors/indyuce.253965/
 
