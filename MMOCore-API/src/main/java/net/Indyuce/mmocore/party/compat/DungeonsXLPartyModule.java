@@ -1,6 +1,6 @@
 package net.Indyuce.mmocore.party.compat;
 
-import de.erethon.dungeonsxl.DungeonsXL;
+import de.erethon.dungeonsxl.api.DungeonsAPI;
 import de.erethon.dungeonsxl.api.event.group.GroupDisbandEvent;
 import de.erethon.dungeonsxl.api.event.group.GroupPlayerJoinEvent;
 import de.erethon.dungeonsxl.api.event.group.GroupPlayerLeaveEvent;
@@ -17,17 +17,20 @@ import org.bukkit.event.Listener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public class DungeonsXLPartyModule implements PartyModule, Listener {
+    private final DungeonsAPI api;
 
     public DungeonsXLPartyModule() {
+        api = (DungeonsAPI) Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("DungeonsXL"));
         Bukkit.getPluginManager().registerEvents(this, MMOCore.plugin);
     }
 
     @Override
     public AbstractParty getParty(PlayerData playerData) {
-        PlayerGroup group = DungeonsXL.getInstance().getPlayerGroup(playerData.getPlayer());
+        var group = api.getPlayerGroup(playerData.getPlayer());
         return group == null ? null : new CustomParty(group);
     }
 

@@ -84,6 +84,7 @@
             <url>https://mvn.lumine.io/repository/maven/</url>
         </repository>
 
+        <!-- Jitpack. Access to Github releases -->
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
@@ -119,6 +120,12 @@
             <id>herocraft</id>
             <url>https://nexus.hc.to/content/repositories/pub_releases</url>
         </repository> -->
+
+        <!-- DungeonsXL -->
+        <repository>
+            <id>dre-repo</id>
+            <url>https://erethon.de/repo</url>
+        </repository>
 
     </repositories>
 
@@ -293,9 +300,9 @@
         </dependency>
 
         <dependency>
-            <groupId>de.erethon</groupId>
-            <artifactId>DungeonsXL</artifactId>
-            <version>0.18-SNAPSHOT-1149</version>
+            <groupId>de.erethon.dungeonsxl</groupId>
+            <artifactId>dungeonsxl-api</artifactId>
+            <version>0.18-PRE-02</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -304,14 +311,6 @@
             <groupId>com.herocraftonline</groupId>
             <artifactId>Heroes</artifactId>
             <version>1.9.22</version>
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>de.erethon</groupId>
-            <artifactId>Bedrock</artifactId>
-            <version>1.2.5</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
