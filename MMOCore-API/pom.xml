@@ -107,6 +107,13 @@
             <url>https://repo.codemc.io/repository/maven-public/</url>
         </repository>
 
+        <!-- Citizens -->
+        <repository>
+            <id>citizens-repo</id>
+            <name>Citizens Repository</name>
+            <url>https://maven.citizensnpcs.co/repo</url>
+        </repository>
+
         <!-- Heroes Repository
         <repository>
             <id>herocraft</id>
@@ -230,8 +237,8 @@
 
         <dependency>
             <groupId>net.citizensnpcs</groupId>
-            <artifactId>Citizens</artifactId>
-            <version>2.0.30</version>
+            <artifactId>citizensapi</artifactId>
+            <version>2.0.41-SNAPSHOT</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
