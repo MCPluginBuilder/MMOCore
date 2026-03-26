@@ -309,14 +309,6 @@
             <optional>true</optional>
         </dependency>
 
-        <dependency>
-            <groupId>org.denizen</groupId>
-            <artifactId>Dungeons</artifactId>
-            <version>1.0</version>
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-
         <!-- Quest Plugins -->
         <dependency>
             <groupId>me.pikamug.quests</groupId>
