@@ -30,7 +30,7 @@ public class Neptune_Gift extends SkillHandler<SimpleSkillResult> implements Lis
 
     @EventHandler(ignoreCancelled = true)
     public void a(PlayerResourceUpdateEvent event) {
-        if (event.getReason().isRegeneration()) return;
+        if (event.getUpdateReason().isRegeneration()) return;
         if (event.getPlayer().getLocation().getBlock().getType() != Material.WATER) return;
 
         final var skill = event.getData().getMMOPlayerData().getPassiveSkillMap().getSkill(this);

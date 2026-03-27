@@ -3,10 +3,10 @@ package net.Indyuce.mmocore.skill;
 import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.comp.flags.CustomFlag;
 import io.lumine.mythic.lib.player.cooldown.CooldownInfo;
+import io.lumine.mythic.lib.player.resource.ResourceUpdateReason;
 import io.lumine.mythic.lib.skill.Skill;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
-import net.Indyuce.mmocore.api.event.PlayerResourceUpdateEvent;
 import net.Indyuce.mmocore.api.player.PlayerActivity;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.player.Message;
@@ -131,8 +131,8 @@ public class CastableSkill extends Skill {
             CooldownInfo cooldownHandler = skillMeta.getCaster().getData().getCooldownMap().applyCooldown(this, skillMeta.getParameter("cooldown"));
             cooldownHandler.reduceInitialCooldown(flatCooldownReduction);
 
-            casterData.giveMana(-skillMeta.getParameter("mana"), PlayerResourceUpdateEvent.UpdateReason.SKILL_COST);
-            casterData.giveStamina(-skillMeta.getParameter("stamina"), PlayerResourceUpdateEvent.UpdateReason.SKILL_COST);
+            casterData.giveMana(-skillMeta.getParameter("mana"), ResourceUpdateReason.SKILL);
+            casterData.giveStamina(-skillMeta.getParameter("stamina"), ResourceUpdateReason.SKILL);
         }
 
         if (!getTrigger().isPassive()) casterData.setLastActivity(PlayerActivity.CAST_SKILL);

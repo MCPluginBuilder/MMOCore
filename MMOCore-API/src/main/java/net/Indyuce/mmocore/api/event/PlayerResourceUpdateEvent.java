@@ -1,17 +1,14 @@
 package net.Indyuce.mmocore.api.event;
 
+import io.lumine.mythic.lib.player.resource.AbstractHealthUpdateEvent;
+import io.lumine.mythic.lib.player.resource.ResourceUpdateReason;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.profess.resource.PlayerResource;
-import net.Indyuce.mmocore.api.quest.trigger.ManaTrigger;
-import net.Indyuce.mmocore.api.quest.trigger.StaminaTrigger;
-import net.Indyuce.mmocore.api.quest.trigger.StelliumTrigger;
-import net.Indyuce.mmocore.command.builtin.mmocore.admin.ResourceCommandTreeNode;
 import net.Indyuce.mmocore.skill.list.Neptune_Gift;
-import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-public class PlayerResourceUpdateEvent extends PlayerDataEvent implements Cancellable {
+public class PlayerResourceUpdateEvent extends PlayerDataEvent implements AbstractHealthUpdateEvent {
     private static final HandlerList HANDLERS = new HandlerList();
 
     /**
@@ -19,7 +16,7 @@ public class PlayerResourceUpdateEvent extends PlayerDataEvent implements Cancel
      * this event handles all four resources.
      */
     private final PlayerResource resource;
-    private final UpdateReason reason;
+    private final ResourceUpdateReason reason;
     private final double oldAmount, originalNewAmount;
 
     /**
@@ -43,7 +40,7 @@ public class PlayerResourceUpdateEvent extends PlayerDataEvent implements Cancel
      * @param newAmount  The new amount of resource after this event was called. Modifiable.
      * @param reason     The reason why this event was called
      */
-    public PlayerResourceUpdateEvent(@NotNull PlayerData playerData, @NotNull PlayerResource resource, double oldAmount, double newAmount, @NotNull UpdateReason reason) {
+    public PlayerResourceUpdateEvent(@NotNull PlayerData playerData, @NotNull PlayerResource resource, double oldAmount, double newAmount, @NotNull ResourceUpdateReason reason) {
         super(playerData);
 
         this.resource = resource;
@@ -67,6 +64,7 @@ public class PlayerResourceUpdateEvent extends PlayerDataEvent implements Cancel
         return newAmount - oldAmount;
     }
 
+    @Override
     public double getNewAmount() {
         return newAmount;
     }
@@ -75,13 +73,25 @@ public class PlayerResourceUpdateEvent extends PlayerDataEvent implements Cancel
         return originalNewAmount;
     }
 
+    @Override
     public double getOldAmount() {
         return oldAmount;
     }
 
     @NotNull
-    public UpdateReason getReason() {
+    @Override
+    public ResourceUpdateReason getUpdateReason() {
         return reason;
+    }
+
+    /**
+     * @see ResourceUpdateReason
+     * @see #getUpdateReason()
+     * @deprecated
+     */
+    @Deprecated
+    public UpdateReason getReason() {
+        return UpdateReason.adapt(this.reason);
     }
 
     /**
@@ -122,71 +132,79 @@ public class PlayerResourceUpdateEvent extends PlayerDataEvent implements Cancel
         return HANDLERS;
     }
 
+    @Deprecated
     public enum UpdateReason {
-
-        /**
-         * When resource is being regenerated
-         */
         REGENERATION,
-
-        /**
-         * When some resource is gained, or consumed by some skills
-         */
         SKILL_REGENERATION,
-
-        /**
-         * When some resource is gained, or consumed by some skills
-         */
         SKILL_COST,
-
-        /**
-         * When consuming stellium to use a waypoint
-         */
         USE_WAYPOINT,
-
-        /**
-         * When the player chooses a class and mana from their previous
-         * game session is restored
-         */
         CHOOSE_CLASS,
-
-        /**
-         * Used by quests triggers
-         * - {@link ManaTrigger}
-         * - {@link StaminaTrigger}
-         * - {@link StelliumTrigger}
-         */
         TRIGGER,
-
-        /**
-         * When a player's "Max Resource" stat decreases so that the player's
-         * current resource value needs to be brought down to avoid exceeding the
-         * new max resource value, the player's current resource value gets updated
-         * using this reason.
-         */
         CLAMPING,
-
-        /**
-         * When using the resource command {@link ResourceCommandTreeNode}
-         */
         COMMAND,
-
-        /**
-         * Reason not provided by user
-         */
         UNKNOWN,
-
-        /**
-         * Anything else
-         */
         OTHER;
 
+        @Deprecated
         public boolean isRegeneration() {
             return this == REGENERATION || this == SKILL_REGENERATION;
         }
 
+        @Deprecated
         public boolean isSkill() {
             return this == SKILL_COST || this == SKILL_REGENERATION;
+        }
+
+        @Deprecated
+        public ResourceUpdateReason adapt() {
+            switch (this) {
+                case REGENERATION:
+                    return ResourceUpdateReason.REGENERATION;
+                case COMMAND:
+                    return ResourceUpdateReason.COMMAND;
+                case TRIGGER:
+                    return ResourceUpdateReason.MECHANIC;
+                case OTHER:
+                case UNKNOWN:
+                    return ResourceUpdateReason.OTHER;
+                case CHOOSE_CLASS:
+                    return ResourceUpdateReason.CHOOSE_CLASS;
+                case CLAMPING:
+                    return ResourceUpdateReason.CLAMPING;
+                case SKILL_COST:
+                case SKILL_REGENERATION:
+                    return ResourceUpdateReason.SKILL;
+                case USE_WAYPOINT:
+                    return ResourceUpdateReason.WAYPOINT;
+            }
+
+            // Fallback
+            return ResourceUpdateReason.OTHER;
+        }
+
+        @Deprecated
+        public static UpdateReason adapt(ResourceUpdateReason reason) {
+            switch (reason) {
+                case OTHER:
+                    return OTHER;
+                case REGENERATION:
+                    return REGENERATION;
+                case COMMAND:
+                    return COMMAND;
+                case CHOOSE_CLASS:
+                    return CHOOSE_CLASS;
+                case MECHANIC:
+                    return TRIGGER;
+                case CLAMPING:
+                    return CLAMPING;
+                case WAYPOINT:
+                    return USE_WAYPOINT;
+                case SKILL:
+                    return SKILL_REGENERATION;
+            }
+
+            // Fallback
+            return OTHER;
         }
     }
 }

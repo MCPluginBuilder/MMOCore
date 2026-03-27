@@ -1,5 +1,6 @@
 package net.Indyuce.mmocore.api.player.profess.resource;
 
+import io.lumine.mythic.lib.player.resource.ResourceUpdateReason;
 import io.lumine.mythic.lib.util.TriConsumer;
 import io.lumine.mythic.lib.version.Attributes;
 import net.Indyuce.mmocore.api.event.PlayerResourceUpdateEvent;
@@ -38,12 +39,12 @@ public enum PlayerResource {
     private final Function<PlayerData, Double> current, max;
 
     // Used for MMOCore commands
-    private final TriConsumer<PlayerData, Double, PlayerResourceUpdateEvent.UpdateReason> set, take, give;
+    private final TriConsumer<PlayerData, Double, ResourceUpdateReason> set, take, give;
 
     PlayerResource(@NotNull Function<PlayerData, Double> current,
                    @NotNull Function<PlayerData, Double> max,
-                   @NotNull TriConsumer<PlayerData, Double, PlayerResourceUpdateEvent.UpdateReason> give,
-                   @NotNull TriConsumer<PlayerData, Double, PlayerResourceUpdateEvent.UpdateReason> set) {
+                   @NotNull TriConsumer<PlayerData, Double, ResourceUpdateReason> give,
+                   @NotNull TriConsumer<PlayerData, Double, ResourceUpdateReason> set) {
         this.regenStat = name() + "_REGENERATION";
         this.maxRegenStat = "MAX_" + name() + "_REGENERATION";
         this.maxStat = "MAX_" + name();
@@ -105,7 +106,16 @@ public enum PlayerResource {
      * @param amount Amount to regen
      */
     public void regen(@NotNull PlayerData player, double amount) {
-        this.give.accept(player, amount, PlayerResourceUpdateEvent.UpdateReason.REGENERATION);
+        this.give.accept(player, amount, ResourceUpdateReason.REGENERATION);
+    }
+
+    /**
+     * @see #setCurrent(PlayerData, double, ResourceUpdateReason)
+     * @deprecated
+     */
+    @Deprecated
+    public void setCurrent(@NotNull PlayerData player, double amount, @NotNull PlayerResourceUpdateEvent.UpdateReason reason) {
+        this.setCurrent(player, amount, reason.adapt());
     }
 
     /**
@@ -115,14 +125,15 @@ public enum PlayerResource {
      * @param amount Amount to set
      * @param reason Reason for the update
      */
-    public void setCurrent(@NotNull PlayerData player, double amount, @NotNull PlayerResourceUpdateEvent.UpdateReason reason) {
+    public void setCurrent(@NotNull PlayerData player, double amount, @NotNull ResourceUpdateReason reason) {
         this.set.accept(player, amount, reason);
     }
 
     /**
      * Used by MMOCore admin commands here: {@link ResourceCommandTreeNode}
      */
-    public TriConsumer<PlayerData, Double, PlayerResourceUpdateEvent.UpdateReason> getConsumer(ManaTrigger.Operation operation) {
+    @NotNull
+    public TriConsumer<PlayerData, Double, ResourceUpdateReason> getConsumer(ManaTrigger.Operation operation) {
         switch (operation) {
             case SET:
                 return set;

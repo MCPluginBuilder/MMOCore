@@ -7,10 +7,11 @@ import io.lumine.mythic.lib.command.CommandTreeRoot;
 import io.lumine.mythic.lib.gson.JsonArray;
 import io.lumine.mythic.lib.gson.JsonObject;
 import io.lumine.mythic.lib.hologram.Hologram;
+import io.lumine.mythic.lib.player.resource.ResourceUpdateReason;
+import io.lumine.mythic.lib.player.resource.Resources;
 import io.lumine.mythic.lib.script.util.expression.bool.BooleanExpression;
 import io.lumine.mythic.lib.skill.handler.SkillHandler;
 import io.lumine.mythic.lib.util.lang3.Validate;
-import io.lumine.mythic.lib.version.Attributes;
 import io.lumine.mythic.lib.version.VEnchantment;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.MMOCommandEvent;
@@ -20,8 +21,6 @@ import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityRegainHealthEvent;
-import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemFlag;
@@ -80,9 +79,9 @@ public class MMOCoreUtils {
      * @param current Current value of resource
      * @param maxStat Maximum value of resource
      * @return Clamped resource value. If the provided current value is 0,
-     * this function will return the maximum resource value.
-     * @deprecated Not used anymore
+     *         this function will return the maximum resource value.
      * @see UtilityMethods#setHealth(LivingEntity, double)
+     * @deprecated Not used anymore
      */
     @Deprecated
     public static double fixResource(double current, double maxStat) {
@@ -273,15 +272,13 @@ public class MMOCoreUtils {
         return entities;
     }
 
+    /**
+     * @see io.lumine.mythic.lib.player.resource.Resources#heal(LivingEntity, double, ResourceUpdateReason)
+     * @deprecated
+     */
     @Deprecated
     public static void heal(LivingEntity target, double value) {
-        double max = target.getAttribute(Attributes.MAX_HEALTH).getValue();
-        double gain = Math.min(max, target.getHealth() + value) - target.getHealth();
-
-        EntityRegainHealthEvent event = new EntityRegainHealthEvent(target, gain, RegainReason.CUSTOM);
-        Bukkit.getPluginManager().callEvent(event);
-        if (!event.isCancelled())
-            target.setHealth(target.getHealth() + gain);
+        Resources.heal(target, value);
     }
 
     private static final Random RANDOM = new Random();

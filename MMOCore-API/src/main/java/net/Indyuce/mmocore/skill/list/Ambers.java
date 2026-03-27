@@ -4,6 +4,7 @@ import io.lumine.mythic.lib.MythicLib;
 import io.lumine.mythic.lib.api.event.PlayerAttackEvent;
 import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.damage.DamageType;
+import io.lumine.mythic.lib.player.resource.ResourceUpdateReason;
 import io.lumine.mythic.lib.player.skill.PassiveSkill;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.skill.handler.BuiltinSkillHandler;
@@ -13,7 +14,6 @@ import io.lumine.mythic.lib.util.EntityLocationType;
 import io.lumine.mythic.lib.util.ParabolicProjectile;
 import io.lumine.mythic.lib.util.annotation.BackwardsCompatibility;
 import io.lumine.mythic.lib.version.VParticle;
-import net.Indyuce.mmocore.api.event.PlayerResourceUpdateEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -96,7 +96,7 @@ public class Ambers extends SkillHandler<SimpleSkillResult> implements Listener 
                 // Give mana back
                 PlayerData playerData = PlayerData.get(data);
                 double missingMana = data.getStatMap().getStat("MAX_MANA") - playerData.getMana();
-                playerData.giveMana(missingMana * percent, PlayerResourceUpdateEvent.UpdateReason.SKILL_REGENERATION);
+                playerData.giveMana(missingMana * percent, ResourceUpdateReason.SKILL);
 
                 cancel();
                 return;

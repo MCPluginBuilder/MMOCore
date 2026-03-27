@@ -1,7 +1,7 @@
 package net.Indyuce.mmocore.api.quest.trigger;
 
 import io.lumine.mythic.lib.api.MMOLineConfig;
-import net.Indyuce.mmocore.api.event.PlayerResourceUpdateEvent;
+import io.lumine.mythic.lib.player.resource.ResourceUpdateReason;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.quest.trigger.ManaTrigger.Operation;
 import net.Indyuce.mmocore.api.util.math.formula.RandomAmount;
@@ -23,13 +23,13 @@ public class StelliumTrigger extends Trigger {
 
         // Give stellium
         if (operation == Operation.GIVE)
-            player.giveStellium(amount.calculate(), PlayerResourceUpdateEvent.UpdateReason.TRIGGER);
+            player.giveStellium(amount.calculate(), ResourceUpdateReason.MECHANIC);
 
             // Set stellium
         else if (operation == Operation.SET)
-            player.setStellium(amount.calculate(), PlayerResourceUpdateEvent.UpdateReason.TRIGGER);
+            player.setStellium(amount.calculate(), ResourceUpdateReason.MECHANIC);
 
             // Take stellium
-        else player.giveStellium(-amount.calculate(), PlayerResourceUpdateEvent.UpdateReason.TRIGGER);
+        else player.giveStellium(-amount.calculate(), ResourceUpdateReason.MECHANIC);
     }
 }

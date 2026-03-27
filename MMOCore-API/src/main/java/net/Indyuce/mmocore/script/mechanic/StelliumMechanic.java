@@ -1,12 +1,12 @@
 package net.Indyuce.mmocore.script.mechanic;
 
-import io.lumine.mythic.lib.UtilityMethods;
+import io.lumine.mythic.lib.player.resource.ResourceUpdateReason;
 import io.lumine.mythic.lib.script.mechanic.type.TargetMechanic;
+import io.lumine.mythic.lib.script.util.Parsers;
 import io.lumine.mythic.lib.script.util.expression.numeric.NumericExpression;
 import io.lumine.mythic.lib.skill.SkillMetadata;
 import io.lumine.mythic.lib.util.configobject.ConfigObject;
 import io.lumine.mythic.lib.util.lang3.Validate;
-import net.Indyuce.mmocore.api.event.PlayerResourceUpdateEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -14,13 +14,13 @@ import org.bukkit.entity.Player;
 public class StelliumMechanic extends TargetMechanic {
     private final NumericExpression amount;
     private final Operation operation;
-    private final PlayerResourceUpdateEvent.UpdateReason reason;
+    private final ResourceUpdateReason reason;
 
     public StelliumMechanic(ConfigObject config) {
         super(config);
 
         amount = config.numericExpr("amount");
-        reason = PlayerResourceUpdateEvent.UpdateReason.valueOf(UtilityMethods.enumName(config.getString("reason", "CUSTOM")));
+        reason = config.parse(ResourceUpdateReason.MECHANIC, Parsers.RESOURCE_UPDATE_REASON, "reason");
         operation = config.contains("operation") ? Operation.valueOf(config.getString("operation").toUpperCase()) : Operation.GIVE;
     }
 
