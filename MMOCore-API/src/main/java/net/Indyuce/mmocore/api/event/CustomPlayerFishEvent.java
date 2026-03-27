@@ -5,19 +5,18 @@ import org.bukkit.entity.Item;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 public class CustomPlayerFishEvent extends PlayerDataEvent implements Cancellable {
 	private static final HandlerList handlers = new HandlerList();
 
-	private ItemStack caught;
 	private final Item droppedItem;
 
 	private boolean cancelled = false;
 
-	public CustomPlayerFishEvent(PlayerData player, ItemStack caught, Item droppedItem) {
+	public CustomPlayerFishEvent(PlayerData player, Item droppedItem) {
 		super(player);
 
-		this.caught = caught;
 		this.droppedItem = droppedItem;
 	}
 
@@ -26,11 +25,11 @@ public class CustomPlayerFishEvent extends PlayerDataEvent implements Cancellabl
 	}
 
 	public ItemStack getCaught() {
-		return caught;
+		return droppedItem.getItemStack();
 	}
 
-	public void setCaught(ItemStack caught) {
-		this.caught = caught;
+	public void setCaught(@NotNull ItemStack caught) {
+		droppedItem.setItemStack(caught);
 	}
 
 	@Override

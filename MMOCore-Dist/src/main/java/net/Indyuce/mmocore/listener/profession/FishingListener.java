@@ -178,7 +178,7 @@ public class FishingListener implements Listener {
             Item item = hook.getWorld().dropItemNaturally(hook.getLocation(), collect);
 
             // Call Bukkit event
-            CustomPlayerFishEvent called = new CustomPlayerFishEvent(playerData, collect, item);
+            var called = new CustomPlayerFishEvent(playerData, item);
             Bukkit.getPluginManager().callEvent(called);
             if (called.isCancelled()) {
                 item.remove();
