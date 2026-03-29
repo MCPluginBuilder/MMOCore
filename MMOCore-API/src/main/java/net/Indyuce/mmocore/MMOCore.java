@@ -239,12 +239,7 @@ public class MMOCore extends MMOPlugin {
         }
 
         // Load MMOCore-Bukkit module
-        try {
-            Class.forName("net.Indyuce.mmocore.MMOCoreBukkit").getConstructor(MMOCore.class).newInstance(this);
-        } catch (Throwable exception) {
-            exception.printStackTrace();
-            throw new RuntimeException("Cannot run an API build on Spigot!");
-        }
+        UtilityMethods.bukkitBootstrap(this, "net.Indyuce.mmocore.MMOCoreBukkit");
 
         /*
          * Initialize player data from all online players. This is very important to do

@@ -46,4 +46,8 @@ public class MMOCoreBukkit {
         Bukkit.getPluginManager().registerEvents(new MMOCoreSkillTriggers(), plugin);
         // Bukkit.getPluginManager().registerEvents(new ClassTriggers(), plugin);
     }
+
+    public static MMOCoreBukkit bukkitBootstrap(MMOCore plugin) {
+        return new MMOCoreBukkit(plugin);
+    }
 }
