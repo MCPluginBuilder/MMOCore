@@ -37,6 +37,8 @@ import java.io.ByteArrayOutputStream;
 import java.util.*;
 
 public class MMOCoreUtils {
+
+    @Deprecated
     public static boolean pluginItem(ItemStack item) {
         return item != null && item.hasItemMeta() && item.getItemMeta().hasDisplayName();
     }
@@ -117,6 +119,7 @@ public class MMOCoreUtils {
         return intToRoman(value);
     }
 
+    @Deprecated
     private static String repeat(String s, int n) {
         if (s == null) {
             return null;
@@ -230,6 +233,7 @@ public class MMOCoreUtils {
         return new ArrayList<>(Arrays.asList(MythicLib.plugin.getJson().parse(json, String[].class)));
     }
 
+    @Deprecated
     public static String arrayToJsonString(Collection<String> array) {
         JsonArray object = new JsonArray();
         for (String str : array) {
@@ -238,6 +242,7 @@ public class MMOCoreUtils {
         return object.toString();
     }
 
+    @Deprecated
     public static String entrySetToJsonString(Set<Map.Entry<String, Integer>> entrySet) {
         JsonObject object = new JsonObject();
         for (Map.Entry<String, Integer> entry : entrySet) {
