@@ -16,7 +16,7 @@ public enum PlayerResource {
 
     HEALTH(data -> data.getPlayer().getHealth(),
             data -> data.getPlayer().getAttribute(Attributes.MAX_HEALTH).getValue(),
-            PlayerData::heal,
+            PlayerData::giveHealth,
             (data, amount, reason) -> data.getPlayer().setHealth(amount)),
 
     MANA(PlayerData::getMana,

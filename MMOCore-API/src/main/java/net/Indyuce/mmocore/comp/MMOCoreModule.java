@@ -9,6 +9,7 @@ import net.Indyuce.mmocore.api.player.PlayerData;
 import org.jetbrains.annotations.NotNull;
 
 // Used in MythicLib, do not change class path.
+@SuppressWarnings("unused")
 public class MMOCoreModule implements LevelModule, ClassModule, ManaModule {
 
     @Override
@@ -33,13 +34,11 @@ public class MMOCoreModule implements LevelModule, ClassModule, ManaModule {
 
     @Override
     public boolean setMana(@NotNull MMOPlayerData mmoPlayerData, double v, @NotNull ResourceUpdateReason resourceUpdateReason) {
-        PlayerData.get(mmoPlayerData.getUniqueId()).setMana(v, resourceUpdateReason);
-        return true;
+        return PlayerData.get(mmoPlayerData.getUniqueId()).setMana(v, resourceUpdateReason);
     }
 
     @Override
     public boolean setStamina(@NotNull MMOPlayerData mmoPlayerData, double v, @NotNull ResourceUpdateReason resourceUpdateReason) {
-        PlayerData.get(mmoPlayerData.getUniqueId()).setStamina(v, resourceUpdateReason);
-        return true;
+        return PlayerData.get(mmoPlayerData.getUniqueId()).setStamina(v, resourceUpdateReason);
     }
 }

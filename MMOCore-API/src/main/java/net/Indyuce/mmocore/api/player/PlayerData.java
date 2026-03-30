@@ -862,72 +862,75 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     //region Resources
 
-    public void setHealth(double amount, @NotNull ResourceUpdateReason reason) {
-        Resources.setHealth(getPlayer(), amount, reason);
+    public boolean setHealth(double amount, @NotNull ResourceUpdateReason reason) {
+        return Resources.setHealth(getPlayer(), amount, reason);
     }
 
-    public void setMana(double amount, @NotNull ResourceUpdateReason reason) {
+    public boolean setMana(double amount, @NotNull ResourceUpdateReason reason) {
 
         final var maxValue = getStats().getStat("MAX_MANA");
         var newValue = Math.max(0, Math.min(amount, maxValue));
-        if (mana == newValue) return;
+        if (mana == newValue) return false;
 
         if (reason != ResourceUpdateReason.CHOOSE_CLASS) {
             final var called = new PlayerResourceUpdateEvent(this, PlayerResource.MANA, this.mana, newValue, reason);
             Bukkit.getPluginManager().callEvent(called);
-            if (called.isCancelled()) return;
+            if (called.isCancelled()) return false;
             newValue = called.getNewAmount();
         }
 
         mana = Math.max(0, Math.min(newValue, maxValue));
+        return true;
     }
 
-    public void setStamina(double amount, @NotNull ResourceUpdateReason reason) {
+    public boolean setStamina(double amount, @NotNull ResourceUpdateReason reason) {
 
         final var maxValue = getStats().getStat("MAX_STAMINA");
         var newValue = Math.max(0, Math.min(amount, maxValue));
-        if (stamina == newValue) return;
+        if (stamina == newValue) return false;
 
         if (reason != ResourceUpdateReason.CHOOSE_CLASS) {
             final var called = new PlayerResourceUpdateEvent(this, PlayerResource.STAMINA, this.stamina, newValue, reason);
             Bukkit.getPluginManager().callEvent(called);
-            if (called.isCancelled()) return;
+            if (called.isCancelled()) return false;
             newValue = called.getNewAmount();
         }
 
         stamina = Math.max(0, Math.min(newValue, maxValue));
+        return true;
     }
 
-    public void setStellium(double amount, @NotNull ResourceUpdateReason reason) {
+    public boolean setStellium(double amount, @NotNull ResourceUpdateReason reason) {
 
         final var maxValue = getStats().getStat("MAX_STELLIUM");
         var newValue = Math.max(0, Math.min(amount, maxValue));
-        if (stellium == newValue) return;
+        if (stellium == newValue) return false;
 
         if (reason != ResourceUpdateReason.CHOOSE_CLASS) {
             final var called = new PlayerResourceUpdateEvent(this, PlayerResource.STELLIUM, this.stellium, newValue, reason);
             Bukkit.getPluginManager().callEvent(called);
-            if (called.isCancelled()) return;
+            if (called.isCancelled()) return false;
             newValue = called.getNewAmount();
         }
 
         stellium = Math.max(0, Math.min(newValue, maxValue));
+        return true;
     }
 
-    public void heal(double amount, @NotNull ResourceUpdateReason reason) {
-        Resources.heal(getPlayer(), amount, reason);
+    public boolean giveHealth(double amount, @NotNull ResourceUpdateReason reason) {
+        return Resources.heal(getPlayer(), amount, reason);
     }
 
-    public void giveMana(double amount, @NotNull ResourceUpdateReason reason) {
-        setMana(mana + amount, reason);
+    public boolean giveMana(double amount, @NotNull ResourceUpdateReason reason) {
+        return setMana(mana + amount, reason);
     }
 
-    public void giveStamina(double amount, @NotNull ResourceUpdateReason reason) {
-        setStamina(stamina + amount, reason);
+    public boolean giveStamina(double amount, @NotNull ResourceUpdateReason reason) {
+        return setStamina(stamina + amount, reason);
     }
 
-    public void giveStellium(double amount, @NotNull ResourceUpdateReason reason) {
-        setStellium(stellium + amount, reason);
+    public boolean giveStellium(double amount, @NotNull ResourceUpdateReason reason) {
+        return setStellium(stellium + amount, reason);
     }
 
     //endregion
@@ -1457,7 +1460,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
 
     @Deprecated
     public void heal(double amount, @NotNull PlayerResourceUpdateEvent.UpdateReason reason) {
-        this.heal(amount, reason.adapt());
+        this.giveHealth(amount, reason.adapt());
     }
 
     @Deprecated
@@ -1619,7 +1622,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
      */
     @Deprecated
     public void heal(double heal) {
-        this.heal(heal, ResourceUpdateReason.OTHER);
+        this.giveHealth(heal, ResourceUpdateReason.OTHER);
     }
 
     @Deprecated
