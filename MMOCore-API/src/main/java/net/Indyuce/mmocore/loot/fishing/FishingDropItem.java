@@ -17,8 +17,8 @@ public class FishingDropItem implements Weighted {
         config.validateKeys("tugs");
 
         tugs = new RandomAmount(config.getString("tugs"));
-        experience = config.contains("experience") ? new RandomAmount(config.getString("experience")) : new RandomAmount(0, 0);
-        vanillaExp = config.contains("vanilla-exp") ? new RandomAmount(config.getString("vanilla-exp")) : new RandomAmount(0, 0);
+        experience = config.contains("experience") ? new RandomAmount(config.getString("experience")) : new RandomAmount(0);
+        vanillaExp = config.contains("vanilla-exp") ? new RandomAmount(config.getString("vanilla-exp")) : new RandomAmount(0);
         dropItem = MMOCore.plugin.loadManager.loadDropItem(config);
     }
 
@@ -49,15 +49,15 @@ public class FishingDropItem implements Weighted {
     }
 
     public int rollExperience() {
-        return experience.calculateInt();
+        return experience.roll();
     }
 
     public int rollVanillaExp() {
-        return vanillaExp.calculateInt();
+        return vanillaExp.roll();
     }
 
     public int rollTugs() {
-        return tugs.calculateInt();
+        return tugs.roll();
     }
 
     public DropItem getDropItem() {

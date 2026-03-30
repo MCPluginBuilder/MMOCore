@@ -4,30 +4,28 @@ import io.lumine.mythic.lib.util.lang3.Validate;
 
 import java.util.Random;
 
-public class RandomAmount {
-    private final int min, max;
+public class RandomDecimalAmount {
+    private final double min, max;
     private final boolean hasMax;
 
-    private static final Random RANDOM = new Random();
-
-    public RandomAmount(int constant) {
+    public RandomDecimalAmount(double constant) {
         this.min = constant;
         this.max = constant;
         this.hasMax = false;
     }
 
-    public RandomAmount(int min, int max) {
+    public RandomDecimalAmount(double min, double max) {
         this.min = min;
         this.max = max;
         Validate.isTrue(max > min, "Max must be greater than min");
         this.hasMax = true;
     }
 
-    public RandomAmount(String value) {
+    public RandomDecimalAmount(String value) {
         var split = value.split("-");
-        min = Integer.parseInt(split[0]);
+        min = Double.parseDouble(split[0]);
         if (split.length > 1) {
-            max = Integer.parseInt(split[1]);
+            max = Double.parseDouble(split[1]);
             hasMax = max <= min; // Not logical, but backwards compatible
         } else {
             max = min;
@@ -35,8 +33,8 @@ public class RandomAmount {
         }
     }
 
-    public int roll() {
+    public double roll() {
         if (!hasMax) return min;
-        return min + RANDOM.nextInt(max - min + 1);
+        return min + Math.random() * (max - min);
     }
 }

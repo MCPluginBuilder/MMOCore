@@ -2,14 +2,14 @@ package net.Indyuce.mmocore.experience.source.type;
 
 import io.lumine.mythic.lib.api.MMOLineConfig;
 import net.Indyuce.mmocore.api.player.PlayerData;
-import net.Indyuce.mmocore.api.util.math.formula.RandomAmount;
+import net.Indyuce.mmocore.api.util.math.formula.RandomDecimalAmount;
 import net.Indyuce.mmocore.experience.EXPSource;
 import net.Indyuce.mmocore.experience.dispenser.ExperienceDispenser;
 import org.bukkit.Location;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class SpecificExperienceSource<T> extends ExperienceSource<T> {
-    private final RandomAmount amount;
+    private final RandomDecimalAmount amount;
 
     /**
      * Used to register experience sources with SPECIFIC experience outputs.
@@ -19,8 +19,7 @@ public abstract class SpecificExperienceSource<T> extends ExperienceSource<T> {
     public SpecificExperienceSource(ExperienceDispenser dispenser, MMOLineConfig config) {
         super(dispenser);
 
-        config.validateKeys("amount");
-        amount = new RandomAmount(config.getString("amount"));
+        amount = new RandomDecimalAmount(config.getString("amount"));
     }
 
 
@@ -32,15 +31,15 @@ public abstract class SpecificExperienceSource<T> extends ExperienceSource<T> {
     public SpecificExperienceSource(ExperienceDispenser dispenser) {
         super(dispenser);
 
-        amount = new RandomAmount(0, 0);
+        amount = new RandomDecimalAmount(0);
     }
 
-    public RandomAmount getAmount() {
+    public RandomDecimalAmount getAmount() {
         return amount;
     }
 
     public double rollAmount() {
-        return amount.calculate();
+        return amount.roll();
     }
 
     /**

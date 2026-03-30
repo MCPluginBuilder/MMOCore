@@ -4,17 +4,17 @@ import io.lumine.mythic.lib.api.MMOLineConfig;
 import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.quest.trigger.Trigger;
-import net.Indyuce.mmocore.api.util.math.formula.RandomAmount;
+import net.Indyuce.mmocore.api.util.math.formula.RandomDecimalAmount;
 
 public class MoneyTrigger extends Trigger {
-	private final RandomAmount amount;
+	private final RandomDecimalAmount amount;
 	private final Operation operation;
 
 	public MoneyTrigger(MMOLineConfig config) {
 		super(config);
 
 		config.validate("amount");
-		amount = new RandomAmount(config.getString("amount"));
+		amount = new RandomDecimalAmount(config.getString("amount"));
 		operation = config.contains("operation") ? Operation.valueOf(config.getString("operation").toUpperCase()) : Operation.GIVE;
 	}
 
@@ -30,13 +30,13 @@ public class MoneyTrigger extends Trigger {
 			return;
 
 		if (operation == Operation.GIVE)
-			MMOCore.plugin.economy.getEconomy().depositPlayer(player.getPlayer(), amount.calculate());
+			MMOCore.plugin.economy.getEconomy().depositPlayer(player.getPlayer(), amount.roll());
 
 		else if (operation == Operation.SET)
 			throw new IllegalArgumentException("Operation SET is not available for the money trigger.");
 
 		else
-			MMOCore.plugin.economy.getEconomy().withdrawPlayer(player.getPlayer(), amount.calculate());
+			MMOCore.plugin.economy.getEconomy().withdrawPlayer(player.getPlayer(), amount.roll());
 	}
 
 	public enum Operation {
