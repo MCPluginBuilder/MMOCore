@@ -340,6 +340,10 @@ public class SavedClassInformation implements ClassDataContainer {
         // Apply player data
         ///////////////////////////////////////////////
 
+        // Class needs to be set before level, otherwise
+        // max level differences may break the previous class level
+        // Fixes https://gitlab.com/phoenix-dvpmt/mmocore/-/work_items/1213
+        player.setClass(profess);
         player.setLevel(targetLevel, PlayerLevelChangeEvent.Reason.CHOOSE_CLASS);
         player.setExperience(targetExp);
         player.setSkillPoints(targetSkillPoints);
@@ -348,7 +352,6 @@ public class SavedClassInformation implements ClassDataContainer {
         player.setAttributeReallocationPoints(targetAttributeReallocationPoints);
         player.setSkillTreeReallocationPoints(skillTreeReallocationPoints);
         player.setUnlockedItems(unlockedItems);
-        player.setClass(profess);
         for (int slot : boundSkills.keySet()) {
             final var skill = profess.getSkill(boundSkills.get(slot));
             if (skill == null) {
