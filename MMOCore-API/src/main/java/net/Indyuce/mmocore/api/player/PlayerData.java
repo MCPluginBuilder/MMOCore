@@ -222,6 +222,8 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     @Override
     protected void onSessionReady() {
 
+        Bukkit.broadcastMessage("Playerdata#onSessionReady");
+
         // Update class stats and all
         this.setupSkillTrees();
         this.applyTemporaryTriggers();
@@ -954,7 +956,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     }
 
     public void log(Level level, String message) {
-        MMOCore.plugin.getLogger().log(level, "[Userdata:" + (isOnline() ? getPlayer().getName() : "Offline Player") + "] " + message);
+        MMOCore.plugin.getLogger().log(level, "[Userdata:" + getMMOPlayerData().getPlayerName() + "] " + message);
     }
 
     public void sendFriendRequest(PlayerData target) {

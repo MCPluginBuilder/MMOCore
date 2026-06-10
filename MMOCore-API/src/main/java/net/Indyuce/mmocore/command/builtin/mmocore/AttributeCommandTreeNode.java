@@ -35,7 +35,7 @@ public class AttributeCommandTreeNode extends CommandTreeNode {
             final var player = explorer.parse(argPlayer);
             final var attribute = explorer.parse(argAttribute);
 
-            PlayerAttributes.AttributeInstance instance = PlayerData.get(player).getAttributes().getInstance(attribute);
+            var instance = PlayerData.get(player).getAttributes().getInstance(attribute);
             return explorer.success("&6" + player.getName() + "&e has &6" + instance.getBase() + "&e points spent in " + attribute.getName() + " (total = &6" + instance.getTotal() + "&e).");
         }
     }
@@ -63,7 +63,7 @@ public class AttributeCommandTreeNode extends CommandTreeNode {
             final var attribute = explorer.parse(argAttribute);
             final var amount = explorer.parse(argAmount);
 
-            PlayerAttributes.AttributeInstance instance = PlayerData.get(player).getAttributes().getInstance(attribute);
+            var instance = PlayerData.get(player).getAttributes().getInstance(attribute);
             instance.setBase(Math.min(attribute.getMax(), instance.getBase() + c * amount));
             return explorer.success("&6" + player.getName() + "&e now has &6" + instance.getBase() + "&e points in " + attribute.getName() + ".");
         }

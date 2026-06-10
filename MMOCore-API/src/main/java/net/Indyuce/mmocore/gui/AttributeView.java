@@ -114,7 +114,7 @@ public class AttributeView extends EditableInventory {
                 return;
             }
 
-            PlayerAttributes.AttributeInstance ins = inv.playerData.getAttributes().getInstance(attribute);
+            var ins = inv.playerData.getAttributes().getInstance(attribute);
             if (attribute.hasMax() && ins.getBase() >= attribute.getMax()) {
                 Message.ATTRIBUTE_MAX_POINTS_HIT.send(inv.playerData);
                 return;
