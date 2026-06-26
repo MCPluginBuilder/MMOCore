@@ -29,7 +29,7 @@ public class ConfigManager {
     public final boolean overrideVanillaExp, canCreativeCast, passiveSkillsNeedBinding, cobbleGeneratorXP, saveDefaultClassInfo,
             splitMainExp, splitProfessionExp, disableQuestBossBar, pvpModeEnabled, pvpModeInvulnerabilityCanDamage, forceClassSelection,
             enableGlobalSkillTreeGUI, enableSpecificSkillTreeGUI, waypointAutoPathCalculation, waypointLinkReciprocity,
-            shareExp, shareSkillPts, shareAttributePts, shareSkillReallocPts, shareAttributeReallocPts;
+            waypointHideLocked, shareExp, shareSkillPts, shareAttributePts, shareSkillReallocPts, shareAttributeReallocPts;
     public final ChatColor staminaFull, staminaHalf, staminaEmpty;
     public final long combatLogTimer, lootChestExpireTime, lootChestPlayerCooldown, globalSkillCooldown;
     public final double lootChestsChanceWeight, dropItemsChanceWeight, fishingDropsChanceWeight, partyMaxExpSplitRange, pvpModeToggleOnCooldown, pvpModeToggleOffCooldown, pvpModeCombatCooldown,

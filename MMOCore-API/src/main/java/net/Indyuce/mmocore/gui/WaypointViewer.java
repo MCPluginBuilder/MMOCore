@@ -221,6 +221,9 @@ public class WaypointViewer extends EditableInventory {
         public WaypointViewerInventory(PlayerData playerData, Waypoint current) {
             super(new Navigator(playerData.getMMOPlayerData()), WaypointViewer.this);
 
+            if (MMOCore.plugin.configManager.waypointHideLocked) {
+                waypoints.removeIf(waypoint -> !playerData.hasWaypoint(waypoint));
+            }
             this.playerData = playerData;
             this.current = current;
             paths = new WaypointPathCalculation(playerData).run(current).getPaths();
