@@ -337,6 +337,9 @@ waypoints:
   # stelium costs. MMOCore always finds the shortest path between two waypoints.
   auto_path_calculation: true
 
+  # Do not display locked waypoints in the GUI.
+  hide_locked: false
+
 # Change this to the name of the color you want for
 # the different resource bar placeholders
 resource-bar-colors:
