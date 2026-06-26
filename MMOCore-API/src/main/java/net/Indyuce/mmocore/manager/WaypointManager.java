@@ -44,6 +44,12 @@ public class WaypointManager implements MMOCoreManager {
         waypoints.put(waypoint.getId(), waypoint);
     }
 
+    public void unregister(Waypoint waypoint) {
+        Validate.isTrue(waypoints.containsKey(Objects.requireNonNull(waypoint, "Waypoint cannot be null").getId()), "There is no a waypoint with ID '" + waypoint.getId() + "'");
+
+        waypoints.remove(waypoint.getId());
+    }
+
     @Nullable
     public Waypoint getCurrentWaypoint(Player player) {
         for (Waypoint waypoint : getAll())
