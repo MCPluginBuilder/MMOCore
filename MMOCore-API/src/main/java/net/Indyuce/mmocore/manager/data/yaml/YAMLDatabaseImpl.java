@@ -42,6 +42,9 @@ public class YAMLDatabaseImpl extends YAMLFlatDatabase<PlayerData, OfflinePlayer
         // Reset stats linked to triggers.
         data.resetTriggerStats();
 
+        // Reset stats due to attributes
+        data.resetAttributeStats();
+
         // Load default data
         if (!config.contains("class-points")) {
             MMOCore.plugin.playerDataManager.getDefaultData().apply(data, PlayerLevelChangeEvent.Reason.CHOOSE_PROFILE);
@@ -67,8 +70,6 @@ public class YAMLDatabaseImpl extends YAMLFlatDatabase<PlayerData, OfflinePlayer
         }
         if (config.contains("attribute"))
             data.getAttributes().load(config.getConfigurationSection("attribute"));
-        if (data.isOnline())
-            MMOCore.plugin.attributeManager.getAll().forEach(attribute -> data.getAttributes().getInstance(attribute).updateStats());
         if (config.contains("profession"))
             data.getCollectionSkills().load(config.getConfigurationSection("profession"));
         if (config.contains("quest"))

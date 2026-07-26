@@ -2,13 +2,14 @@ package net.Indyuce.mmocore.api.player.attribute;
 
 import io.lumine.mythic.lib.UtilityMethods;
 import io.lumine.mythic.lib.api.player.EquipmentSlot;
+import io.lumine.mythic.lib.api.player.MMOPlayerData;
 import io.lumine.mythic.lib.api.stat.StatInstance;
-import io.lumine.mythic.lib.api.stat.StatMap;
 import io.lumine.mythic.lib.api.stat.modifier.StatModifier;
 import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.modifier.ModifierType;
 import io.lumine.mythic.lib.util.Lazy;
 import net.Indyuce.mmocore.MMOCore;
+import net.Indyuce.mmocore.api.player.PlayerData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,13 +17,9 @@ import java.util.UUID;
 
 public class AttributeInstance {
 
-    /**
-     * An MMOCore attribute is basically a wrapper around
-     * a MythicLib stat and its stat dependencies.
-     */
-    private final StatInstance handle;
+    private final MMOPlayerData owner;
 
-    private final String attributeId, enumName, mythicLibstatId;
+    private final String attributeId, mythicLibstatId;
 
     /**
      * Using a lazy value allows to flush values. When MMOCore
@@ -37,14 +34,13 @@ public class AttributeInstance {
      */
     private static final UUID BASE_MODIFIER_UNIQUE_ID = UUID.randomUUID();
 
-    private static final String MODIFIER_KEY = "mmocore_attribute";
+    public static final String MODIFIER_KEY = "mmocore_attribute";
 
-    public AttributeInstance(@NotNull StatMap statMap, @NotNull String attributeId) {
+    public AttributeInstance(@NotNull PlayerData owner, @NotNull String attributeId) {
+        this.owner = owner.getMMOPlayerData();
         this.attributeId = attributeId;
-        this.enumName = UtilityMethods.enumName(this.attributeId);
         this.mythicLibstatId = asMythicLibStat(this.attributeId);
         this.attribute = Lazy.persistent(() -> MMOCore.plugin.attributeManager.get(this.attributeId));
-        this.handle = statMap.getInstance(this.mythicLibstatId);
     }
 
     public void flushReference() {
@@ -52,8 +48,18 @@ public class AttributeInstance {
     }
 
     /**
+     * @return MythicLib handle
+     * @implNote Cannot use a direct reference as
+     *         it changes with time due to profiles
+     */
+    @NotNull
+    private StatInstance getHandle() {
+        return this.owner.getStatMap().getInstance(this.mythicLibstatId);
+    }
+
+    /**
      * Used to store the player's attribute values even when
-     * attributes are missing from the console. This is foolproof
+     * attributes are missing from the console. This is error-proof
      * and avoids some data corruption.
      *
      * @return ID of attribute
@@ -69,11 +75,6 @@ public class AttributeInstance {
     @Nullable
     public PlayerAttribute getAttribute() {
         return attribute.get();
-    }
-
-    @NotNull
-    public StatInstance getHandle() {
-        return handle;
     }
 
     @NotNull
@@ -104,8 +105,11 @@ public class AttributeInstance {
     private void updateBaseModifier() {
         // Very important - use the same UUID so that
         // it overrides the previous modifier
-        var baseModifier = new StatModifier(BASE_MODIFIER_UNIQUE_ID, MODIFIER_KEY, this.mythicLibstatId, this.spent, ModifierType.FLAT, EquipmentSlot.OTHER, ModifierSource.OTHER);
-        this.handle.registerModifier(baseModifier);
+        if (this.spent == 0) getHandle().removeModifier(BASE_MODIFIER_UNIQUE_ID);
+        else {
+            var baseModifier = new StatModifier(BASE_MODIFIER_UNIQUE_ID, MODIFIER_KEY, this.mythicLibstatId, this.spent, ModifierType.FLAT, EquipmentSlot.OTHER, ModifierSource.OTHER);
+            getHandle().registerModifier(baseModifier);
+        }
     }
 
     //endregion

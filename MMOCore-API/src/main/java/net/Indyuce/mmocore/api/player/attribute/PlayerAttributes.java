@@ -16,12 +16,10 @@ import java.util.logging.Level;
 
 public class PlayerAttributes {
     private final PlayerData data;
-    private final StatMap statMap;
     private final Map<String, AttributeInstance> instances = new HashMap<>();
 
     public PlayerAttributes(PlayerData data) {
         this.data = data;
-        this.statMap = data.getMMOPlayerData().getStatMap();
     }
 
     /**
@@ -90,7 +88,7 @@ public class PlayerAttributes {
                 // [Backwards compatibility] Failsafe, ignore attributes that are not saved
                 if (!attribute.isSaved()) continue;
 
-                final AttributeInstance ins = new AttributeInstance(this.statMap, id);
+                final AttributeInstance ins = new AttributeInstance(this.data, id);
                 ins.setBase(entry.getValue().getAsInt());
                 instances.put(id, ins);
             } catch (Exception exception) {
@@ -113,7 +111,7 @@ public class PlayerAttributes {
                 // [Backwards compatibility] Failsafe, ignore attributes that are not saved
                 if (!attribute.isSaved()) continue;
 
-                final var ins = new AttributeInstance(this.statMap, attributeId);
+                final var ins = new AttributeInstance(this.data, attributeId);
                 ins.setBase(config.getInt(key));
                 instances.put(attributeId, ins);
             } catch (Exception exception) {
@@ -145,7 +143,7 @@ public class PlayerAttributes {
 
     @NotNull
     public AttributeInstance getInstance(String attribute) {
-        return instances.computeIfAbsent(attribute, attributeId -> new AttributeInstance(this.statMap, attributeId));
+        return instances.computeIfAbsent(attribute, attributeId -> new AttributeInstance(this.data, attributeId));
     }
 
     @NotNull

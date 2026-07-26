@@ -1,11 +1,13 @@
 package net.Indyuce.mmocore.manager;
 
 import io.lumine.mythic.lib.MythicLib;
-import io.lumine.mythic.lib.api.stat.StatInstance;
+import io.lumine.mythic.lib.player.modifier.ModifierType;
+import io.lumine.mythic.lib.stat.StatProxy;
 import io.lumine.mythic.lib.util.FileUtils;
 import net.Indyuce.mmocore.MMOCore;
-import net.Indyuce.mmocore.api.player.PlayerData;
+import net.Indyuce.mmocore.api.player.attribute.AttributeInstance;
 import net.Indyuce.mmocore.api.player.attribute.PlayerAttribute;
+import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,6 +17,12 @@ import java.util.Map;
 
 public class AttributeManager implements MMOCoreManager {
     private final Map<String, PlayerAttribute> map = new HashMap<>();
+
+    private final NamespacedKey attributeSource;
+
+    public AttributeManager(MMOCore plugin) {
+        attributeSource = new NamespacedKey(plugin, "attribute");
+    }
 
     @Nullable
     public PlayerAttribute get(String id) {
@@ -38,25 +46,47 @@ public class AttributeManager implements MMOCoreManager {
         return map.values();
     }
 
-    @Override
-    public void initialize(boolean clearBefore) {
-        if (clearBefore)
-            map.clear();
-
-        FileUtils.loadObjectsFromFolder(MMOCore.plugin, "attributes", (key, config) -> {
-            final String path = key.toLowerCase().replace("_", "-").replace(" ", "-");
-            map.put(path, new PlayerAttribute(config));
-        }, "Could not load attribute '%s' from file '%s': %s");
-
-        // MythicLib stat handlers
-        for (PlayerAttribute attr : getAll()) {
-            final var statId = attr.getId().toUpperCase().replace("-", "_") + "_PERCENT";
-            MythicLib.plugin.getStats().computeStat(statId).addUpdateListener(ins -> this.updateMMOCoreStatAttributeValue(ins, attr));
-        }
+    public boolean isMMOCoreAttribute(StatProxy proxy) {
+        return proxy.getSource().equals(this.attributeSource);
     }
 
-    private void updateMMOCoreStatAttributeValue(@NotNull StatInstance instance, PlayerAttribute attribute) {
-        final var playerData = PlayerData.get(instance.getMap().getPlayerData());
-        playerData.getAttributes().getInstance(attribute).updateStats();
+    public NamespacedKey getAttributeSource() {
+        return attributeSource;
+    }
+
+    private void clearExistingProxies() {
+        MythicLib.plugin.getStats().getHandlers().forEach(handler -> handler.getChildren().removeIf(this::isMMOCoreAttribute));
+    }
+
+    public void registerAttribute(@NotNull PlayerAttribute attribute) {
+
+        // MMOCore registry
+        if (map.containsKey(attribute.getId()))
+            throw new IllegalArgumentException("Found existing attribute with ID '" + attribute.getId() + "'");
+        map.put(attribute.getId(), attribute);
+
+        // Add corresponding stat proxies to MythicLib
+        var attributeStatId = AttributeInstance.asMythicLibStat(attribute.getId());
+        var targetStatHandler = MythicLib.plugin.getStats().computeStat(attributeStatId);
+        for (var proxy : attribute.getBuffs()) targetStatHandler.getChildren().add(proxy);
+
+        // ADDITIONAL_xxxx stat
+        // This is for backwards compatibility with MMOItems
+        // TODO move backwards compatibility to MMOItems with a legacy NBT mapping or something
+        var miBcStatId = "ADDITIONAL_" + attribute.getId().toUpperCase().replace("-", "_");
+        var targetMiStatHandler = MythicLib.plugin.getStats().computeStat(miBcStatId);
+        targetMiStatHandler.getChildren().add(new StatProxy(this.attributeSource, attributeStatId, ModifierType.FLAT, 1));
+    }
+
+    @Override
+    public void initialize(boolean clearBefore) {
+        if (clearBefore) {
+            map.clear();
+            this.clearExistingProxies();
+        }
+
+        FileUtils.loadObjectsFromFolder(MMOCore.plugin, "attributes",
+                (key, config) -> registerAttribute(new PlayerAttribute(config)),
+                "Could not load attribute '%s' from file '%s': %s");
     }
 }

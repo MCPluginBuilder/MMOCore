@@ -4,6 +4,8 @@ import io.lumine.mythic.lib.api.player.EquipmentSlot;
 import io.lumine.mythic.lib.api.stat.modifier.StatModifier;
 import io.lumine.mythic.lib.player.modifier.ModifierSource;
 import io.lumine.mythic.lib.player.modifier.ModifierType;
+import io.lumine.mythic.lib.util.configobject.ConfigObject;
+import io.lumine.mythic.lib.util.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
@@ -14,6 +16,12 @@ import java.util.UUID;
  */
 public class AttributeModifier extends StatModifier {
     private final PlayerAttribute attribute;
+
+    public AttributeModifier(ConfigObject config) {
+        super(config);
+
+        throw new NotImplementedException("Not implemented");
+    }
 
     public AttributeModifier(@NotNull UUID uniqueId, @NotNull String key, @NotNull PlayerAttribute attribute, double value, @NotNull ModifierType type, @NotNull EquipmentSlot slot, @NotNull ModifierSource source) {
         super(uniqueId, key, AttributeInstance.asMythicLibStat(attribute.getId()), value, type, slot, source);

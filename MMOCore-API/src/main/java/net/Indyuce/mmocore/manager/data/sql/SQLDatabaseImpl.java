@@ -106,6 +106,9 @@ public class SQLDatabaseImpl extends SQLDatabase<PlayerData, OfflinePlayerData> 
         // Reset stats linked to triggers
         playerData.resetTriggerStats();
 
+        // Reset stats due to attributes
+        playerData.resetAttributeStats();
+
         playerData.setClassPoints(result.getInt("class_points"));
         playerData.setSkillPoints(result.getInt("skill_points"));
         playerData.setSkillReallocationPoints(result.getInt("skill_reallocation_points"));
@@ -151,8 +154,6 @@ public class SQLDatabaseImpl extends SQLDatabase<PlayerData, OfflinePlayerData> 
             if (guild != null && guild.hasMember(playerData.getUniqueId())) playerData.setGuild(guild);
         }
         if (!isEmpty(result.getString("attributes"))) playerData.getAttributes().load(result.getString("attributes"));
-        if (playerData.isOnline())
-            MMOCore.plugin.attributeManager.getAll().forEach(attribute -> playerData.getAttributes().getInstance(attribute).updateStats());
         if (!isEmpty(result.getString("professions")))
             playerData.getCollectionSkills().load(result.getString("professions"));
         if (!isEmpty(result.getString("quests"))) playerData.getQuestData().load(result.getString("quests"));

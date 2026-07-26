@@ -16,6 +16,7 @@ import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.*;
 import net.Indyuce.mmocore.api.event.unlocking.ItemLockedEvent;
 import net.Indyuce.mmocore.api.event.unlocking.ItemUnlockedEvent;
+import net.Indyuce.mmocore.api.player.attribute.AttributeInstance;
 import net.Indyuce.mmocore.api.player.attribute.PlayerAttribute;
 import net.Indyuce.mmocore.api.player.attribute.PlayerAttributes;
 import net.Indyuce.mmocore.api.player.profess.PlayerClass;
@@ -222,7 +223,7 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     @Override
     protected void onSessionReady() {
 
-        Bukkit.broadcastMessage("Playerdata#onSessionReady");
+        UtilityMethods.debug(MMOCore.plugin, "SQL", String.format("{ class: %s, level: %d }", this.getProfess().getId(), this.getLevel()));
 
         // Update class stats and all
         this.setupSkillTrees();
@@ -292,6 +293,10 @@ public class PlayerData extends SynchronizedDataHolder implements OfflinePlayerD
     public void resetTriggerStats() {
         getMMOPlayerData().getStatMap().getInstances().forEach(statInstance -> statInstance.removeIf(Trigger.STAT_MODIFIER_KEY::equals));
         getMMOPlayerData().getSkillModifierMap().removeModifiers(Trigger.STAT_MODIFIER_KEY);
+    }
+
+    public void resetAttributeStats() {
+        getMMOPlayerData().getStatMap().getInstances().forEach(statInstance -> statInstance.removeIf(AttributeInstance.MODIFIER_KEY::equals));
     }
 
     //region Skill trees

@@ -11,7 +11,6 @@ import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerAttributeUseEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.attribute.PlayerAttribute;
-import net.Indyuce.mmocore.api.player.attribute.PlayerAttributes;
 import net.Indyuce.mmocore.player.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -98,9 +97,10 @@ public class AttributeView extends EditableInventory {
             holders.register("attribute_points", inv.playerData.getAttributePoints());
             holders.register("shift_points", shiftCost);
             attribute.getBuffs().forEach(buff -> {
-                final String stat = buff.getStat();
-                holders.register("buff_" + buff.getStat().toLowerCase(), StatManager.format(stat, buff.getValue()));
-                holders.register("total_" + buff.getStat().toLowerCase(), StatManager.format(stat, buff.multiply(total).getValue()));
+                final String stat = buff.getTargetStat();
+                var statBuffValue = buff.getCoefficient();
+                holders.register("buff_" + buff.getTargetStat().toLowerCase(), StatManager.format(stat, statBuffValue));
+                holders.register("total_" + buff.getTargetStat().toLowerCase(), StatManager.format(stat, statBuffValue * total));
             });
 
             return holders;

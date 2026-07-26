@@ -74,7 +74,7 @@ public class MMOCore extends MMOPlugin {
     public final ClassManager classManager = new ClassManager();
     public final DropTableManager dropTableManager = new DropTableManager();
     public final BoosterManager boosterManager = new BoosterManager();
-    public final AttributeManager attributeManager = new AttributeManager();
+    public final AttributeManager attributeManager = new AttributeManager(this);
     public final PartyManager partyManager = new PartyManager();
     public final QuestManager questManager = new QuestManager();
     public final ProfessionManager professionManager = new ProfessionManager();
