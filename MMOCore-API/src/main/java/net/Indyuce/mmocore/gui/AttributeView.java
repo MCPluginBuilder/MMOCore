@@ -18,6 +18,8 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 public class AttributeView extends EditableInventory {
     public AttributeView() {
         super("attribute-view");
@@ -71,14 +73,15 @@ public class AttributeView extends EditableInventory {
     }
 
     public static class AttributeItem extends PhysicalItem<AttrInventory> {
+        @NotNull
         private final PlayerAttribute attribute;
         private final int shiftCost;
 
         public AttributeItem(String function, ConfigurationSection config) {
             super(config);
 
-            attribute = MMOCore.plugin.attributeManager
-                    .get(function.substring("attribute_".length()).toLowerCase().replace(" ", "-").replace("_", "-"));
+            var attributeId = function.substring("attribute_".length()).toLowerCase().replace(" ", "-").replace("_", "-");
+            attribute = Objects.requireNonNull(MMOCore.plugin.attributeManager.get(attributeId), "Could not find attribute with ID '" + attributeId + "'");
             shiftCost = Math.max(config.getInt("shift-cost"), 1);
         }
 
