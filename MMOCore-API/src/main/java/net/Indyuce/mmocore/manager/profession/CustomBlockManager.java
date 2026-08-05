@@ -62,7 +62,10 @@ public class CustomBlockManager extends SpecificProfessionManager {
     }
 
     public void registerBlockType(Function<Block, Optional<BlockType>> function) {
-        blockTypes.add(function);
+        // Very important - add at index 0 so that block types
+        // that are registered later take precedence over default
+        // block types, that are built-in MMOCore
+        blockTypes.add(0, function);
     }
 
     public void register(@NotNull BlockInfo regen) {
@@ -83,8 +86,8 @@ public class CustomBlockManager extends SpecificProfessionManager {
 
     @NotNull
     public BlockType findBlockType(Block block) {
-        for (Function<Block, Optional<BlockType>> blockType : blockTypes) {
-            Optional<BlockType> type = blockType.apply(block);
+        for (var blockType : blockTypes) {
+            var type = blockType.apply(block);
             if (type.isPresent()) return type.get();
         }
 
