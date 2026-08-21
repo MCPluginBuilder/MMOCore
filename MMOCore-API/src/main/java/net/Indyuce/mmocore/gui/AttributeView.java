@@ -11,13 +11,14 @@ import net.Indyuce.mmocore.MMOCore;
 import net.Indyuce.mmocore.api.event.PlayerAttributeUseEvent;
 import net.Indyuce.mmocore.api.player.PlayerData;
 import net.Indyuce.mmocore.api.player.attribute.PlayerAttribute;
-import net.Indyuce.mmocore.api.player.attribute.PlayerAttributes;
 import net.Indyuce.mmocore.player.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
 
 public class AttributeView extends EditableInventory {
     public AttributeView() {
@@ -72,14 +73,15 @@ public class AttributeView extends EditableInventory {
     }
 
     public static class AttributeItem extends PhysicalItem<AttrInventory> {
+        @NotNull
         private final PlayerAttribute attribute;
         private final int shiftCost;
 
         public AttributeItem(String function, ConfigurationSection config) {
             super(config);
 
-            attribute = MMOCore.plugin.attributeManager
-                    .get(function.substring("attribute_".length()).toLowerCase().replace(" ", "-").replace("_", "-"));
+            var attributeId = function.substring("attribute_".length()).toLowerCase().replace(" ", "-").replace("_", "-");
+            attribute = Objects.requireNonNull(MMOCore.plugin.attributeManager.get(attributeId), "Could not find attribute with ID '" + attributeId + "'");
             shiftCost = Math.max(config.getInt("shift-cost"), 1);
         }
 
@@ -98,9 +100,10 @@ public class AttributeView extends EditableInventory {
             holders.register("attribute_points", inv.playerData.getAttributePoints());
             holders.register("shift_points", shiftCost);
             attribute.getBuffs().forEach(buff -> {
-                final String stat = buff.getStat();
-                holders.register("buff_" + buff.getStat().toLowerCase(), StatManager.format(stat, buff.getValue()));
-                holders.register("total_" + buff.getStat().toLowerCase(), StatManager.format(stat, buff.multiply(total).getValue()));
+                final String stat = buff.getTargetStat();
+                var statBuffValue = buff.getCoefficient();
+                holders.register("buff_" + buff.getTargetStat().toLowerCase(), StatManager.format(stat, statBuffValue));
+                holders.register("total_" + buff.getTargetStat().toLowerCase(), StatManager.format(stat, statBuffValue * total));
             });
 
             return holders;
@@ -114,7 +117,7 @@ public class AttributeView extends EditableInventory {
                 return;
             }
 
-            PlayerAttributes.AttributeInstance ins = inv.playerData.getAttributes().getInstance(attribute);
+            var ins = inv.playerData.getAttributes().getInstance(attribute);
             if (attribute.hasMax() && ins.getBase() >= attribute.getMax()) {
                 Message.ATTRIBUTE_MAX_POINTS_HIT.send(inv.playerData);
                 return;

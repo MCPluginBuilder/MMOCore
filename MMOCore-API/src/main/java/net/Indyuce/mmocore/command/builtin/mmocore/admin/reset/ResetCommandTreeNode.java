@@ -161,9 +161,9 @@ public class ResetCommandTreeNode extends CommandTreeNode {
             if (givePoints) {
 
                 int points = 0;
-                for (PlayerAttributes.AttributeInstance ins : data.getAttributes().getInstances()) {
-                    points += ins.getBase();
-                    ins.setBase(0);
+                for (var inst : data.getAttributes().getInstances()) {
+                    points += inst.getBase();
+                    inst.setBase(0);
                 }
 
                 data.giveAttributePoints(points);
